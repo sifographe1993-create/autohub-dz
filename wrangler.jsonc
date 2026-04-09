@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "autohub-dz",
+  "compatibility_date": "2026-03-30",
+  "pages_build_output_dir": "./dist",
+  "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "autohub-production",
+      "database_id": "2e288e4f-c011-4d70-9915-ffbbb7624746"
+    }
+  ]
+}
