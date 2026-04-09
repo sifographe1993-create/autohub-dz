@@ -3366,6 +3366,7 @@ body { font-family: 'Inter', sans-serif; background: #080c1a; color: #fff; }
 </footer>
 </body>
 </html>`
+}
 
 // ========================
 // APP PAGE (SPA) - Enhanced with verification, boutique sources, and refined branding
