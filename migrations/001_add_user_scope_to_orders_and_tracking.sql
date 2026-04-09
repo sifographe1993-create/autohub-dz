@@ -1,11 +1,7 @@
 -- Multi-tenant scope for commandes/suivi
--- Run this migration before relying on strict per-user isolation.
+-- user_id columns already exist in schema, skipping ALTER TABLE
+-- Only creating indexes and backfilling NULL values
 
-ALTER TABLE commandes ADD COLUMN user_id INTEGER;
-ALTER TABLE suivi ADD COLUMN user_id INTEGER;
-
--- Backfill existing rows with admin ownership by default.
--- Adjust this strategy if you have a different tenant mapping.
 UPDATE commandes
 SET user_id = (
   SELECT id FROM users WHERE role = 'admin' ORDER BY id ASC LIMIT 1
