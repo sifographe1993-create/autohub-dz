@@ -2234,8 +2234,7 @@ app.put('/api/admin/payment-requests/:id', async (c) => {
 // ========================
 // PAGES HTML
 // ========================
-app.get('/', (c) => c.html(
-  ()))
+app.get('/', (c) => c.redirect('/login'))
 app.get('/login', (c) => c.html(loginPage()))
 app.get('/register', (c) => c.html(registerPage()))
 app.get('/app', (c) => c.html(appPage()))
