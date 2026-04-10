@@ -4513,7 +4513,7 @@ async function envoyerTous() {
   const count = state.commandes.filter(c => c.statut === 'Confirme').length
   if(!confirm('Envoyer toutes les ' + count + ' commandes Confirmees aux transporteurs ?')) return
   try {
-    const { data } = await api.get('/envoyer-tous')
+    const { data } = await api.post('/envoyer-tous')
     toast(data.sent+' envoyee(s), '+data.errors+' erreur(s)')
     loadCommandes()
   } catch(err) { toast('Erreur envoi en masse', 'error') }
