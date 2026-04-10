@@ -3697,6 +3697,10 @@ const api = axios.create({ baseURL: '/api' })
 const platformIcons = { shopify:'fab fa-shopify', woocommerce:'fab fa-wordpress', youcan:'fas fa-shopping-bag' }
 const platformColors = { shopify:'platform-shopify', woocommerce:'platform-woocommerce', youcan:'platform-youcan' }
 
+function normalizeStatus(status) {
+  return (status || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+}
+
 function computeEmployeAllowedViews(teamRole, permissions) {
   const p = new Set((permissions || []).map(x => String(x).toLowerCase()))
   const views = new Set(['dashboard', 'guide'])
@@ -4156,10 +4160,10 @@ async function loadCommandes() {
   const phones = data.map(c => (c.telephone || ''))
   await loadPhoneVerification(phones)
   
-  const confirmedCount = data.filter(c => c.statut === 'Confirme').length
+  const confirmedCount = data.filter(c => normalizeStatus(c.statut) === 'confirme').length
   const selectedCount = selectedCommandeIds.length
   const selectedSet = new Set(selectedCommandeIds)
-  const selectedConfirmedCount = data.filter(c => selectedSet.has(c.id) && c.statut === 'Confirme').length
+  const selectedConfirmedCount = data.filter(c => selectedSet.has(c.id) && normalizeStatus(c.statut) === 'confirme').length
   const allSelected = data.length > 0 && selectedCount === data.length
   const v = document.getElementById('view-commandes')
   
@@ -4181,7 +4185,7 @@ async function loadCommandes() {
       '<div class="flex gap-1">' +
         '<button onclick="editCommande(' + c.id + ')" class="btn btn-outline text-xs py-1 px-2" title="Modifier"><i class="fas fa-pen"></i></button>' +
         '<button onclick="sendWhatsApp(' + c.id + ')" class="btn btn-whatsapp text-xs py-1 px-2" title="Envoyer sur WhatsApp"><i class="fab fa-whatsapp"></i></button>' +
-        '<button onclick="envoyerCommande(' + c.id + ')" class="btn btn-success text-xs py-1 px-2" title="Envoyer" ' + (c.statut !== 'Confirme' ? 'disabled style="opacity:0.3"' : '') + '><i class="fas fa-paper-plane"></i></button>' +
+        '<button onclick="envoyerCommande(' + c.id + ')" class="btn btn-success text-xs py-1 px-2" title="Envoyer" ' + (normalizeStatus(c.statut) !== 'confirme' ? 'disabled style="opacity:0.3"' : '') + '><i class="fas fa-paper-plane"></i></button>' +
         '<button onclick="deleteCommande(' + c.id + ')" class="btn btn-danger text-xs py-1 px-2" title="Supprimer"><i class="fas fa-trash"></i></button>' +
       '</div>' +
     '</td>' +
@@ -4510,7 +4514,7 @@ async function envoyerCommande(id) {
 }
 
 async function envoyerTous() {
-  const count = state.commandes.filter(c => c.statut === 'Confirme').length
+  const count = state.commandes.filter(c => normalizeStatus(c.statut) === 'confirme').length
   if(!confirm('Envoyer toutes les ' + count + ' commandes Confirmees aux transporteurs ?')) return
   try {
     const { data } = await api.post('/envoyer-tous')
@@ -4551,7 +4555,7 @@ async function deleteSelection() {
 }
 
 async function envoyerSelection() {
-  const targets = state.commandes.filter(c => selectedCommandeIds.includes(c.id) && c.statut === 'Confirme')
+  const targets = state.commandes.filter(c => selectedCommandeIds.includes(c.id) && normalizeStatus(c.statut) === 'confirme')
   if (targets.length === 0) {
     toast('Selection vide ou sans commandes confirmees', 'error')
     return
