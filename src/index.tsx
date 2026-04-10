@@ -47,6 +47,14 @@ async function hasTableColumn(db: D1Database, table: string, column: string): Pr
   return exists
 }
 
+function normalizeStatusWorker(status: string): string {
+  return String(status || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+}
+
+function isConfirmedStatus(status: string): boolean {
+  return normalizeStatusWorker(status) === 'confirme'
+}
+
 async function ensureTeamMembersTable(db: D1Database) {
   await db.prepare(
     `CREATE TABLE IF NOT EXISTS team_members (
@@ -945,7 +953,7 @@ app.post('/api/envoyer/:id', async (c) => {
   const { results } = await c.env.DB.prepare(selectSql).bind(...selectParams).all()
   if (!results || results.length === 0) return c.json({ error: 'Commande introuvable' }, 404)
   const cmd = results[0] as any
-  if (cmd.statut !== 'Confirme') return c.json({ error: 'Seules les commandes confirmees peuvent etre envoyees' }, 400)
+  if (!isConfirmedStatus(cmd.statut)) return c.json({ error: 'Seules les commandes confirmees peuvent etre envoyees' }, 400)
   if (cmd.tracking) return c.json({ error: 'Commande deja expediee' }, 400)
 
   const transporteur = (cmd.transporteur || '').toLowerCase()
@@ -1120,7 +1128,7 @@ app.post('/api/envoyer-tous', async (c) => {
   const userId = c.get('userId')
   const isAdmin = c.get('userRole') === 'admin'
   const hasUserIdColumn = await hasTableColumn(c.env.DB, 'commandes', 'user_id')
-  let query = "SELECT id FROM commandes WHERE statut = 'Confirme' AND (tracking IS NULL OR tracking = '')"
+  let query = "SELECT id FROM commandes WHERE LOWER(statut) LIKE 'confirm%' AND (tracking IS NULL OR tracking = '')"
   const params: any[] = []
   if (!isAdmin && hasUserIdColumn) { query += ' AND user_id = ?'; params.push(userId) }
   const stmt = params.length ? c.env.DB.prepare(query).bind(...params) : c.env.DB.prepare(query)
@@ -1572,7 +1580,7 @@ app.get('/api/stats', async (c) => {
     c.env.DB.prepare(`SELECT COUNT(*) as c FROM suivi WHERE statut LIKE '%RETOURNE%'${suiviAndScope}`).bind(...suiviAndParams).first(),
     c.env.DB.prepare(`SELECT SUM(prix) as total FROM suivi WHERE UPPER(statut) LIKE '%LIVR%'${suiviAndScope}`).bind(...suiviAndParams).first(),
     c.env.DB.prepare('SELECT COUNT(*) as c FROM stock_items WHERE user_id = ? AND active = 1 AND (stock_on_hand - stock_reserved) <= safety_stock').bind(userId).first(),
-    c.env.DB.prepare(`SELECT COUNT(*) as c FROM commandes WHERE UPPER(statut) IN ('EN ATTENTE','CONFIRME')${!isAdmin && hasCmdUserId ? ' AND user_id = ?' : ''}`).bind(...cmdParams).first(),
+    c.env.DB.prepare(`SELECT COUNT(*) as c FROM commandes WHERE (UPPER(statut) IN ('EN ATTENTE','CONFIRME') OR UPPER(statut) LIKE 'CONFIRM%')${!isAdmin && hasCmdUserId ? ' AND user_id = ?' : ''}`).bind(...cmdParams).first(),
     c.env.DB.prepare(`SELECT COUNT(*) as c FROM suivi WHERE (UPPER(statut) LIKE '%EXPEDIE%' OR UPPER(statut) LIKE '%EN LIVRAISON%')${suiviAndScope}`).bind(...suiviAndParams).first(),
     c.env.DB.prepare(
       `SELECT
@@ -3985,7 +3993,7 @@ function getApiIntegrationBadge(c) {
   const t = (c.transporteur || '').toLowerCase()
   // Check if any transporteur has API config
   const hasApi = t.includes('yalidine') || t.includes('zr') || t.includes('ecotrack') || t.includes('dhd') || t.includes('noest')
-  if (hasApi && c.statut === 'Confirme') {
+  if (hasApi && normalizeStatus(c.statut) === 'confirme') {
     return '<span class="badge-status bg-emerald-500/20 text-emerald-300" style="font-size:10px"><i class="fas fa-link" style="font-size:9px;margin-right:3px"></i>API Prete</span>'
   } else if (hasApi && c.tracking) {
     return '<span class="badge-status bg-blue-500/20 text-blue-300" style="font-size:10px"><i class="fas fa-check-circle" style="font-size:9px;margin-right:3px"></i>API Envoyee</span>'
