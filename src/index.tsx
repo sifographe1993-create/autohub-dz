@@ -48,18 +48,11 @@ async function hasTableColumn(db: D1Database, table: string, column: string): Pr
 }
 
 function normalizeStatusWorker(status: string): string {
-  return String(status || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9\s]/g, '').trim().toLowerCase()
+  return String(status || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
 }
 
 function isConfirmedStatus(status: string): boolean {
-  const s = String(status || '').toLowerCase()
-  // Check normalized form first
-  if (normalizeStatusWorker(status).includes('confirme')) return true
-  // Also check raw lowercase for Mojibake-corrupted strings
-  if (s.includes('confirme') || s.includes('confirm')) return true
-  // Check if status contains the confirmed emoji marker
-  if (s.includes('\u2705')) return true
-  return false
+  return normalizeStatusWorker(status) === 'confirme'
 }
 
 async function ensureTeamMembersTable(db: D1Database) {
@@ -752,7 +745,7 @@ app.get('/api/communes/:wilayaId', async (c) => {
 app.get('/api/stop-desks/:wilayaId', async (c) => {
   const wid = c.req.param('wilayaId')
   const transporteur = (c.req.query('transporteur') || '').toLowerCase()
-
+  
   const wilaya = await c.env.DB.prepare('SELECT name FROM wilayas WHERE id = ?').bind(wid).first() as any
   if (!wilaya) return c.json([])
   const wilayaName = wilaya.name
@@ -799,7 +792,7 @@ app.get('/api/stop-desks/:wilayaId', async (c) => {
         }
       }
     }
-
+    
     else if (transporteur.includes('yalidine')) {
       const config = apiConfigs['yalidine']
       if (config?.api_id && config?.api_token) {
@@ -844,9 +837,9 @@ app.get('/api/stop-desks/:wilayaId', async (c) => {
       'SELECT name FROM stop_desks WHERE wilaya_id = ? AND transporteur LIKE ? ORDER BY name'
     ).bind(wid, '%' + transporteur + '%').all()
     if (results && results.length > 0) return c.json(results)
-
+    
     return c.json([])
-
+    
   } catch (e: any) {
     console.error('Stop desks error:', e.message)
     const { results } = await c.env.DB.prepare(
@@ -900,11 +893,11 @@ app.post('/api/commandes', async (c) => {
     ? await c.env.DB.prepare(
       `INSERT INTO commandes (nom, prix, telephone, produit, commune, adresse, wilaya, livraison, statut, transporteur, notes, user_id)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-    ).bind(nom, prix || 0, telephone, produit, commune, adresse || '', wilaya, livraison || 'A domicile', statut || 'Nouvelle', transporteur || '', notes || '', userId).run()
+    ).bind(nom, prix || 0, telephone, produit, commune, adresse || '', wilaya, livraison || 'A domicile', statut || 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂºÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â Nouvelle', transporteur || '', notes || '', userId).run()
     : await c.env.DB.prepare(
       `INSERT INTO commandes (nom, prix, telephone, produit, commune, adresse, wilaya, livraison, statut, transporteur, notes)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-    ).bind(nom, prix || 0, telephone, produit, commune, adresse || '', wilaya, livraison || 'A domicile', statut || 'Nouvelle', transporteur || '', notes || '').run()
+    ).bind(nom, prix || 0, telephone, produit, commune, adresse || '', wilaya, livraison || 'A domicile', statut || 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂºÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â Nouvelle', transporteur || '', notes || '').run()
   await c.env.DB.prepare('INSERT INTO historique (action, details, commande_id) VALUES (?, ?, ?)').bind('CREATION', `Nouvelle commande enregistree pour ${nom}`, result.meta.last_row_id).run()
   return c.json({ id: result.meta.last_row_id, success: true })
 })
@@ -1135,7 +1128,7 @@ app.post('/api/envoyer-tous', async (c) => {
   const userId = c.get('userId')
   const isAdmin = c.get('userRole') === 'admin'
   const hasUserIdColumn = await hasTableColumn(c.env.DB, 'commandes', 'user_id')
-  let query = "SELECT id FROM commandes WHERE (LOWER(statut) LIKE '%confirm%' OR LOWER(statut) LIKE '%confirme%') AND (tracking IS NULL OR tracking = '')"
+  let query = "SELECT id FROM commandes WHERE LOWER(statut) LIKE 'confirm%' AND (tracking IS NULL OR tracking = '')"
   const params: any[] = []
   if (!isAdmin && hasUserIdColumn) { query += ' AND user_id = ?'; params.push(userId) }
   const stmt = params.length ? c.env.DB.prepare(query).bind(...params) : c.env.DB.prepare(query)
@@ -1191,7 +1184,7 @@ app.get('/api/suivi/historique/:tracking', async (c) => {
     const row = await c.env.DB.prepare('SELECT id FROM suivi WHERE tracking = ? AND user_id = ?').bind(tracking, userId).first()
     if (!row) return c.json({ history: [] })
   }
-
+  
   const { results: configsRecords } = await c.env.DB.prepare("SELECT provider, config_json FROM api_config WHERE active = 1").all()
   const apiConfigs: Record<string, any> = {}
   for (const row of (configsRecords || [])) {
@@ -1207,15 +1200,13 @@ app.get('/api/suivi/historique/:tracking', async (c) => {
       if (resp.ok) {
         const data: any = await resp.json()
         if (data.history && Array.isArray(data.history)) {
-          return c.json({
-            history: data.history.map((h: any) => ({
+          return c.json({ history: data.history.map((h:any) => ({
               date: pickHistoryDate(h),
               status: h.state?.name || h.state,
               situation: h.situation?.name || h.situation || ''
-            }))
-          })
+          })) })
         } else if (data.state) {
-          return c.json({ history: [{ date: data.updated_at || '', status: data.state?.name || data.state, situation: data.situation?.name || '' }] })
+           return c.json({ history: [{ date: data.updated_at || '', status: data.state?.name || data.state, situation: data.situation?.name || '' }] })
         }
       }
     }
@@ -1228,18 +1219,16 @@ app.get('/api/suivi/historique/:tracking', async (c) => {
         const data: any = await resp.json()
         let items = data?.data || data?.[tracking] || []
         if (Array.isArray(items)) {
-          return c.json({
-            history: items.map((h: any) => ({
+          return c.json({ history: items.map((h:any) => ({
               date: pickHistoryDate(h),
               status: h.status || h.status_id,
               situation: h.commune_name || h.center_name || ''
-            }))
-          })
+          })) })
         }
       }
     }
     return c.json({ history: [] })
-  } catch (e: any) {
+  } catch(e:any) {
     return c.json({ error: e.message }, 500)
   }
 })
@@ -1286,14 +1275,14 @@ app.post('/api/actualiser-statuts', async (c) => {
             if (data.situation.metadata?.comment) situationText += ` (${data.situation.metadata.comment})`
           }
         } else { errors++; continue; }
-      }
+      } 
       else if (trans.includes('yalidine') && apiConfigs['yalidine']) {
         const config = apiConfigs['yalidine']
         // Utiliser l'API histories plus fiable pour rÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©cupÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©rer le dernier statut
         const resp = await fetch(`https://api.yalidine.com/v1/histories/?tracking=${tracking}`, {
           headers: { 'X-API-ID': config.api_id, 'X-API-TOKEN': config.api_token }
         })
-
+        
         if (resp.ok) {
           const data: any = await resp.json()
           let parcel = null
@@ -1307,7 +1296,7 @@ app.post('/api/actualiser-statuts', async (c) => {
           if (parcel && typeof parcel === 'object' && (parcel.status_id !== undefined || parcel.status !== undefined)) {
             const rawStatus = parcel.status_id || parcel.status
             let mappedStatut = traduireStatutYalidine(rawStatus)
-
+            
             // Map specific statuses manually
             if (String(rawStatus) === '8' || String(rawStatus).toLowerCase().includes('vers wilaya') || String(parcel.status).toLowerCase().includes('vers wilaya')) mappedStatut = 'Vers Wilaya'
             if (String(rawStatus) === '13' || String(rawStatus).toLowerCase().includes('tentative') || String(parcel.status).toLowerCase().includes('tentative')) mappedStatut = 'Tentative ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©chouÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©e'
@@ -1315,16 +1304,16 @@ app.post('/api/actualiser-statuts', async (c) => {
             newStatut = mappedStatut
             situationText = parcel.status || ''
             if (parcel.commune_name) situationText += ` - ${parcel.commune_name}`
-          } else {
+          } else { 
             // Pour le debugging en cas de format inattendu
             await c.env.DB.prepare('UPDATE suivi SET situation = ? WHERE id = ?').bind('ERR FORMAT: ' + JSON.stringify(data).substring(0, 100), item.id).run()
-            errors++; continue;
+            errors++; continue; 
           }
-        } else {
+        } else { 
           // HTTP Error
           const errText = await resp.text()
           await c.env.DB.prepare('UPDATE suivi SET situation = ? WHERE id = ?').bind(`HTTP ${resp.status}: ` + errText.substring(0, 50), item.id).run()
-          errors++; continue;
+          errors++; continue; 
         }
       }
       else {
@@ -1333,7 +1322,7 @@ app.post('/api/actualiser-statuts', async (c) => {
 
       if (newStatut && newStatut !== oldStatut && newStatut !== 'UNDEFINED') {
         await c.env.DB.prepare('UPDATE suivi SET statut = ?, situation = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').bind(newStatut, situationText, item.id).run()
-
+        
         const tel = (item.telephone || '').replace(/[\s\-\.\']/g, '')
         if (tel) {
           const isNewDelivered = newStatut.toUpperCase().includes('LIVRE') && !oldStatut.includes('LIVRE')
@@ -1353,7 +1342,7 @@ app.post('/api/actualiser-statuts', async (c) => {
       }
     } catch (e: any) {
       await c.env.DB.prepare('UPDATE suivi SET situation = ? WHERE id = ?').bind('Exception: ' + e.message, item.id).run()
-      errors++
+      errors++ 
     }
   }
   return c.json({ updated, errors })
@@ -1760,7 +1749,7 @@ app.post('/api/webhook', async (c) => {
           await c.env.DB.prepare('INSERT INTO historique (action, details, commande_id) VALUES (?, ?, ?)').bind(
             'WEBHOOK_UPDATE', `Mise ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â  jour via Webhook: ${newStatut} (${situationText || 'aucun dÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©tail'})`, null
           ).run()
-
+          
           processedCount++
         }
       }
@@ -2143,7 +2132,7 @@ app.get('/api/wilayas-full', async (c) => {
   for (const c of (communes || [])) {
     const wid = (c as any).wilaya_id
     if (!communesByWilaya[wid]) communesByWilaya[wid] = []
-    communesByWilaya[wid].push(c)
+  communesByWilaya[wid].push(c)
   }
   return c.json({ wilayas, communesByWilaya })
 })
@@ -2232,7 +2221,7 @@ app.put('/api/admin/payment-requests/:id', async (c) => {
     ).bind('approved', adminId, id).run()
 
     await c.env.DB.prepare('UPDATE users SET subscription = ? WHERE id = ?').bind(request.plan, request.user_id).run()
-
+    
     await c.env.DB.prepare('INSERT INTO historique (action, details) VALUES (?, ?)').bind(
       'PAYMENT_APPROVED', `Payment ${id} approved by admin ${adminId} for user ${request.user_id}`
     ).run()
@@ -3391,7 +3380,7 @@ body { font-family: 'Inter', sans-serif; background: #080c1a; color: #fff; }
 // APP PAGE (SPA) - Enhanced with verification, boutique sources, and refined branding
 // ========================
 function appPage(): string {
-  return String.raw`<!DOCTYPE html>
+  return `<!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
@@ -3717,24 +3706,11 @@ const platformIcons = { shopify:'fab fa-shopify', woocommerce:'fab fa-wordpress'
 const platformColors = { shopify:'platform-shopify', woocommerce:'platform-woocommerce', youcan:'platform-youcan' }
 
 function normalizeStatus(status) {
-  const raw = String(status || '')
-  // First try standard NFD normalization (works for proper UTF-8)
-  const normalized = raw.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9\s]/g, '').trim().toLowerCase()
-  return normalized
+  return (status || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
 }
 
-// More robust check specifically for "confirmed" status detection
-// Handles Mojibake-corrupted strings from the database
-function isConfirmedFrontend(status) {
-  const s = String(status || '')
-  // Standard normalized check
-  if (normalizeStatus(s).includes('confirme')) return true
-  // Direct lowercase check (catches Mojibake where 'Confirm' survives corruption)
-  const lower = s.toLowerCase()
-  if (lower.includes('confirmee') || lower.includes('confirmée') || lower.includes('confirme') || lower.includes('confirm')) return true
-  // Check for the ✅ emoji (U+2705) which marks confirmed status
-  if (s.includes('\u2705')) return true
-  return false
+function isConfirmedStatus(status) {
+  return normalizeStatus(status).startsWith('confirm')
 }
 
 function computeEmployeAllowedViews(teamRole, permissions) {
@@ -3899,9 +3875,9 @@ function navigateTo(view) {
 // ===================== CONSTANTS =====================
 const livraisons = ['A domicile', 'Stop Desk']
 const statuts = [
-  '🆕 Nouvelle', '✅ Confirmée', '📵 Pas de réponse', '🚫 Numéro erroné', '👯 Doublon',
-  '📦 Prêt à expédier', '🚚 Ramassé', '🚢 En cours de transit', '🚴 En cours de livraison',
-  '💰 Livré & Encaissé', '🔄 Retour Expéditeur', 'Annule', 'Reporte'
+  'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂºÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â Nouvelle', 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¦ ConfirmÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©e', 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âµ Pas de rÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©ponse', 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â« NumÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©ro erronÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©', 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¹Ãƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¯ Doublon',
+  'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¦ PrÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âªt ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â  expÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©dier', 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ RamassÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©', 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¾ En cours de transit', 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â´ En cours de livraison',
+  'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â° LivrÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â© & EncaissÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©', 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¾ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ Retour ExpÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©diteur', 'Annule', 'Reporte'
 ]
 
 // ===================== STATUS COLORS =====================
@@ -4021,7 +3997,7 @@ function getApiIntegrationBadge(c) {
   const t = (c.transporteur || '').toLowerCase()
   // Check if any transporteur has API config
   const hasApi = t.includes('yalidine') || t.includes('zr') || t.includes('ecotrack') || t.includes('dhd') || t.includes('noest')
-  if (hasApi && isConfirmedFrontend(c.statut)) {
+  if (hasApi && normalizeStatus(c.statut) === 'confirme') {
     return '<span class="badge-status bg-emerald-500/20 text-emerald-300" style="font-size:10px"><i class="fas fa-link" style="font-size:9px;margin-right:3px"></i>API Prete</span>'
   } else if (hasApi && c.tracking) {
     return '<span class="badge-status bg-blue-500/20 text-blue-300" style="font-size:10px"><i class="fas fa-check-circle" style="font-size:9px;margin-right:3px"></i>API Envoyee</span>'
@@ -4196,10 +4172,10 @@ async function loadCommandes() {
   const phones = data.map(c => (c.telephone || ''))
   await loadPhoneVerification(phones)
   
-  const confirmedCount = data.filter(c => isConfirmedFrontend(c.statut)).length
+  const confirmedCount = data.filter(c => isConfirmedStatus(c.statut)).length
   const selectedCount = selectedCommandeIds.length
   const selectedSet = new Set(selectedCommandeIds)
-  const selectedConfirmedCount = data.filter(c => selectedSet.has(c.id) && isConfirmedFrontend(c.statut)).length
+  const selectedConfirmedCount = data.filter(c => selectedSet.has(c.id) && isConfirmedStatus(c.statut)).length
   const allSelected = data.length > 0 && selectedCount === data.length
   const v = document.getElementById('view-commandes')
   
@@ -4221,7 +4197,7 @@ async function loadCommandes() {
       '<div class="flex gap-1">' +
         '<button onclick="editCommande(' + c.id + ')" class="btn btn-outline text-xs py-1 px-2" title="Modifier"><i class="fas fa-pen"></i></button>' +
         '<button onclick="sendWhatsApp(' + c.id + ')" class="btn btn-whatsapp text-xs py-1 px-2" title="Envoyer sur WhatsApp"><i class="fab fa-whatsapp"></i></button>' +
-        '<button onclick="envoyerCommande(' + c.id + ')" class="btn btn-success text-xs py-1 px-2" title="Envoyer" ' + (!isConfirmedFrontend(c.statut) ? 'disabled style="opacity:0.3"' : '') + '><i class="fas fa-paper-plane"></i></button>' +
+        '<button onclick="envoyerCommande(' + c.id + ')" class="btn btn-success text-xs py-1 px-2" title="Envoyer" ' + (!isConfirmedStatus(c.statut) ? 'disabled style="opacity:0.3"' : '') + '><i class="fas fa-paper-plane"></i></button>' +
         '<button onclick="deleteCommande(' + c.id + ')" class="btn btn-danger text-xs py-1 px-2" title="Supprimer"><i class="fas fa-trash"></i></button>' +
       '</div>' +
     '</td>' +
@@ -4550,7 +4526,7 @@ async function envoyerCommande(id) {
 }
 
 async function envoyerTous() {
-  const count = state.commandes.filter(c => isConfirmedFrontend(c.statut)).length
+  const count = state.commandes.filter(c => isConfirmedStatus(c.statut)).length
   if(!confirm('Envoyer toutes les ' + count + ' commandes Confirmees aux transporteurs ?')) return
   try {
     const { data } = await api.post('/envoyer-tous')
@@ -4591,7 +4567,7 @@ async function deleteSelection() {
 }
 
 async function envoyerSelection() {
-  const targets = state.commandes.filter(c => selectedCommandeIds.includes(c.id) && isConfirmedFrontend(c.statut))
+  const targets = state.commandes.filter(c => selectedCommandeIds.includes(c.id) && isConfirmedStatus(c.statut))
   if (targets.length === 0) {
     toast('Selection vide ou sans commandes confirmees', 'error')
     return
@@ -4955,7 +4931,7 @@ async function loadEquipe() {
   const { data } = await api.get('/team-members')
   state.equipe = data || []
   const rows = state.equipe.map(m => {
-    const perms = (() => { try { return JSON.parse(m.permissions_json || '[]') } catch { return [] } })()
+    const perms = (() => { try { return JSON.parse(m.permissions_json || '[]') } catch(e) { return [] } })()
     return '<tr>' +
       '<td class="font-medium text-white">' + (m.nom || '') + '</td>' +
       '<td class="text-gray-300">' + (m.email || '--') + '</td>' +
@@ -4980,7 +4956,7 @@ async function loadEquipe() {
     '<button onclick="showTeamMemberModal()" class="btn btn-primary"><i class="fas fa-user-plus mr-1"></i> Ajouter membre</button>' +
     '</div>' +
     '<div class="card overflow-x-auto"><table><thead><tr><th>Nom</th><th>Email</th><th>Telephone</th><th>Role</th><th>Permissions</th><th>Acces</th><th>Actions</th></tr></thead><tbody>' + rows + '</tbody></table>' +
-    (state.equipe.length === 0 ? '<div class="text-center py-12 text-gray-500"><i class="fas fa-users text-4xl mb-3 block"></i><p>Aucun membre d&apos;equipe</p></div>' : '') +
+    (state.equipe.length === 0 ? '<div class="text-center py-12 text-gray-500"><i class="fas fa-users text-4xl mb-3 block"></i><p>Aucun membre d\'equipe</p></div>' : '') +
     '</div>'
 }
 
@@ -5681,10 +5657,10 @@ async function loadPricing() {
   const currentSub = (state.user?.subscription || 'starter').toLowerCase()
   let rows = ''
   requests.forEach((r) => {
-    const statusClass = r.status === 'approved' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                      r.status === 'rejected' ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' :
+    const statusClass = r.status === 'approved' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 
+                      r.status === 'rejected' ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' : 
                       'bg-amber-500/10 text-amber-400 border-amber-500/20'
-    const statusLabel = r.status === 'approved' ? 'Approuv\u00e9' : r.status === 'rejected' ? 'Refus\u00e9' : 'En attente'
+    const statusLabel = r.status === 'approved' ? 'ApprouvÃƒÆ’Ã‚Â©' : r.status === 'rejected' ? 'RefusÃƒÆ’Ã‚Â©' : 'En attente'
     rows += '<tr>' +
       '<td class="py-3 px-4 text-xs text-gray-400">' + new Date(r.created_at).toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'}) + '</td>' +
       '<td class="py-3 px-4 font-bold text-white text-xs uppercase">' + r.plan + '</td>' +
@@ -5696,121 +5672,56 @@ async function loadPricing() {
   })
   container.innerHTML = \`
     <div class="mb-10 text-center">
-      <span class="text-indigo-400 text-xs uppercase tracking-widest font-semibold">Plans & Tarification</span>
-      <h1 class="text-3xl font-extrabold text-white mt-2 mb-2">Choisissez votre plan</h1>
-      <p class="text-gray-400">Des offres adapt\u00e9es \u00e0 chaque \u00e9tape de votre croissance</p>
+      <h1 class="text-3xl font-extrabold text-white mb-2">Tarification & Plans</h1>
+      <p class="text-gray-400">Boostez votre boutique avec nos plans premium</p>
     </div>
-    <div class="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto mb-10">
-      <div class="card-glass p-8 flex flex-col relative overflow-hidden group \${currentSub === 'starter' ? 'border-indigo-500/30 ring-1 ring-indigo-500/20' : ''}">
+    <div class="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto mb-16">
+      <div class="card-glass p-8 flex flex-col items-center text-center relative overflow-hidden group \${currentSub === 'starter' ? 'border-indigo-500/30 ring-1 ring-indigo-500/20' : ''}">
         \${currentSub === 'starter' ? '<div class="bg-indigo-600 text-white text-[10px] font-bold px-3 py-1 rounded-full absolute top-4 right-4 uppercase">Actuel</div>' : ''}
-        <div class="w-14 h-14 rounded-2xl bg-gray-500/10 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform"><i class="fas fa-seedling text-gray-400 text-xl"></i></div>
-        <h3 class="text-xl font-bold mb-1">Starter</h3>
-        <div class="text-3xl font-black mb-1">Gratuit<span class="text-sm text-gray-500 font-medium ml-1">/mois</span></div>
-        <p class="text-xs text-gray-500 mb-5">Pour d\u00e9marrer votre activit\u00e9</p>
-        <ul class="text-sm text-gray-400 space-y-2.5 mb-8 flex-1">
-          <li class="flex items-center gap-2"><i class="fas fa-check-circle text-indigo-400 flex-shrink-0"></i><span>500 commandes / mois</span></li>
-          <li class="flex items-center gap-2"><i class="fas fa-check-circle text-indigo-400 flex-shrink-0"></i><span>Dashboard basique</span></li>
-          <li class="flex items-center gap-2"><i class="fas fa-check-circle text-indigo-400 flex-shrink-0"></i><span>1 Boutique connect\u00e9e</span></li>
-          <li class="flex items-center gap-2"><i class="fas fa-check-circle text-indigo-400 flex-shrink-0"></i><span>Suivi de livraison</span></li>
-          <li class="flex items-center gap-2 opacity-30"><i class="fas fa-times-circle text-gray-500 flex-shrink-0"></i><span>Support prioritaire</span></li>
-          <li class="flex items-center gap-2 opacity-30"><i class="fas fa-times-circle text-gray-500 flex-shrink-0"></i><span>Automatisation WhatsApp</span></li>
+        <div class="w-16 h-16 rounded-2xl bg-gray-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"><i class="fas fa-seedling text-gray-400 text-2xl"></i></div>
+        <h3 class="text-xl font-bold mb-2">Starter</h3>
+        <div class="text-3xl font-black mb-4">0 DA<span class="text-sm text-gray-500 font-medium">/mois</span></div>
+        <ul class="text-sm text-gray-400 space-y-3 mb-10 text-left w-full">
+          <li><i class="fas fa-check text-indigo-400 mr-2"></i> 50 commandes / mois</li>
+          <li><i class="fas fa-check text-indigo-400 mr-2"></i> Dashboard basique</li>
+          <li><i class="fas fa-check text-indigo-400 mr-2"></i> 1 Boutique</li>
         </ul>
-        <button class="btn btn-outline w-full py-3 rounded-xl opacity-50 cursor-not-allowed text-sm" disabled>Plan inclus</button>
+        <button class="btn btn-outline w-full py-3 rounded-xl mt-auto opacity-50 cursor-not-allowed" disabled>Inclus</button>
       </div>
-      <div class="card-glass p-8 flex flex-col relative overflow-hidden group scale-105" style="border-color:rgba(99,102,241,0.5);box-shadow:0 0 40px rgba(99,102,241,0.15),0 25px 50px -12px rgba(0,0,0,0.5)">
-        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
-        \${currentSub === 'pro'
-          ? '<div class="bg-indigo-600 text-white text-[10px] font-bold px-3 py-1 rounded-full absolute top-4 right-4 uppercase">Actuel</div>'
-      npm run deploy  <div class="w-14 h-14 rounded-2xl bg-indigo-500/20 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform"><i class="fas fa-rocket text-indigo-400 text-xl"></i></div>
-        <h3 class="text-xl font-bold mb-1 text-white">Pro</h3>
-        <div class="text-3xl font-black mb-1 text-indigo-300">2\u202f900 DA<span class="text-sm text-gray-500 font-medium ml-1">/mois</span></div>
-        <p class="text-xs text-indigo-400/70 mb-5">\u2248 15 USD \u2014 Pour les vendeurs actifs</p>
-        <ul class="text-sm text-gray-300 space-y-2.5 mb-8 flex-1">
-          <li class="flex items-center gap-2"><i class="fas fa-check-circle text-indigo-400 flex-shrink-0"></i><span>1\u202f500 commandes / mois</span></li>
-          <li class="flex items-center gap-2"><i class="fas fa-check-circle text-indigo-400 flex-shrink-0"></i><span>\u00c9tiquettes personnalis\u00e9es</span></li>
-          <li class="flex items-center gap-2"><i class="fas fa-check-circle text-indigo-400 flex-shrink-0"></i><span>Analyse de stock avanc\u00e9e</span></li>
-          <li class="flex items-center gap-2"><i class="fas fa-check-circle text-indigo-400 flex-shrink-0"></i><span>Jusqu\u2019\u00e0 3 boutiques</span></li>
-          <li class="flex items-center gap-2"><i class="fas fa-check-circle text-indigo-400 flex-shrink-0"></i><span>Support 24/7</span></li>
-          <li class="flex items-center gap-2"><i class="fas fa-check-circle text-indigo-400 flex-shrink-0"></i><span>Automatisation WhatsApp</span></li>
+      <div class="card-glass p-8 flex flex-col items-center text-center relative overflow-hidden group scale-105 shadow-2xl shadow-indigo-500/10 border-indigo-500/40">
+        \${currentSub === 'pro' ? '<div class="bg-indigo-600 text-white text-[10px] font-bold px-3 py-1 rounded-full absolute top-4 right-4 uppercase">Actuel</div>' : '<div class="bg-indigo-600 text-white text-[10px] font-bold px-3 py-1 rounded-full absolute top-4 right-4 uppercase tracking-wider">Populaire</div>'}
+        <div class="absolute top-0 left-0 w-full h-1 bg-indigo-500"></div>
+        <div class="w-16 h-16 rounded-2xl bg-indigo-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"><i class="fas fa-rocket text-indigo-400 text-2xl"></i></div>
+        <h3 class="text-xl font-bold mb-2">Pro</h3>
+        <div class="text-3xl font-black mb-4">2,900 DA<span class="text-sm text-gray-500 font-medium">/mois</span></div>
+        <ul class="text-sm text-gray-400 space-y-3 mb-10 text-left w-full">
+          <li><i class="fas fa-check text-indigo-400 mr-2"></i> 1,500 commandes / mois</li>
+          <li><i class="fas fa-check text-indigo-400 mr-2"></i> ÃƒÆ’Ã¢â‚¬Â°tiquettes personnalisÃƒÆ’Ã‚Â©es</li>
+          <li><i class="fas fa-check text-indigo-400 mr-2"></i> Analyse de stock avancÃƒÆ’Ã‚Â©e</li>
+          <li><i class="fas fa-check text-indigo-400 mr-2"></i> Jusqu'ÃƒÆ’Ã‚Â  3 Boutiques</li>
         </ul>
-        <button onclick="showPaymentModal('pro')" class="btn btn-primary w-full py-3 rounded-xl shadow-lg shadow-indigo-500/30 text-sm font-bold" \${currentSub === 'pro' ? 'disabled' : ''}>\${currentSub === 'pro' ? 'Plan Actuel' : '\ud83d\ude80 D\u00e9marrer maintenant'}</button>
+        <button onclick="showPaymentModal('pro')" class="btn btn-primary w-full py-3 rounded-xl mt-auto shadow-lg shadow-indigo-500/20" \${currentSub === 'pro' ? 'disabled' : ''}>\${currentSub === 'pro' ? 'Plan Actuel' : 'Passer au Plan Pro'}</button>
       </div>
-      <div class="card-glass p-8 flex flex-col relative overflow-hidden group \${currentSub === 'business' ? 'border-emerald-500/30 ring-1 ring-emerald-500/20' : ''}">
+      <div class="card-glass p-8 flex flex-col items-center text-center relative overflow-hidden group \${currentSub === 'business' ? 'border-emerald-500/30 ring-1 ring-emerald-500/20' : ''}">
         \${currentSub === 'business' ? '<div class="bg-emerald-600 text-white text-[10px] font-bold px-3 py-1 rounded-full absolute top-4 right-4 uppercase">Actuel</div>' : ''}
-        <div class="w-14 h-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform"><i class="fas fa-building text-emerald-400 text-xl"></i></div>
-        <h3 class="text-xl font-bold mb-1">Business</h3>
-        <div class="text-3xl font-black mb-1 text-emerald-300">6\u202f900 DA<span class="text-sm text-gray-500 font-medium ml-1">/mois</span></div>
-        <p class="text-xs text-emerald-400/70 mb-5">\u2248 35 USD \u2014 Pour les \u00e9quipes & entreprises</p>
-        <ul class="text-sm text-gray-300 space-y-2.5 mb-8 flex-1">
-          <li class="flex items-center gap-2"><i class="fas fa-check-circle text-emerald-400 flex-shrink-0"></i><span>Commandes illimit\u00e9es</span></li>
-          <li class="flex items-center gap-2"><i class="fas fa-check-circle text-emerald-400 flex-shrink-0"></i><span>Multi-utilisateurs (\u00c9quipe)</span></li>
-          <li class="flex items-center gap-2"><i class="fas fa-check-circle text-emerald-400 flex-shrink-0"></i><span>Support Prioritaire d\u00e9di\u00e9</span></li>
-          <li class="flex items-center gap-2"><i class="fas fa-check-circle text-emerald-400 flex-shrink-0"></i><span>Boutiques illimit\u00e9es</span></li>
-          <li class="flex items-center gap-2"><i class="fas fa-check-circle text-emerald-400 flex-shrink-0"></i><span>Int\u00e9gration API illimit\u00e9e</span></li>
-          <li class="flex items-center gap-2"><i class="fas fa-check-circle text-emerald-400 flex-shrink-0"></i><span>Acc\u00e8s complet au stock</span></li>
+        <div class="w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"><i class="fas fa-building text-emerald-400 text-2xl"></i></div>
+        <h3 class="text-xl font-bold mb-2">Business</h3>
+        <div class="text-3xl font-black mb-4">6,900 DA<span class="text-sm text-gray-500 font-medium">/mois</span></div>
+        <ul class="text-sm text-gray-400 space-y-3 mb-10 text-left w-full">
+          <li><i class="fas fa-check text-emerald-400 mr-2"></i> Commandes illimitÃƒÆ’Ã‚Â©es</li>
+          <li><i class="fas fa-check text-emerald-400 mr-2"></i> Multi-utilisateurs (ÃƒÆ’Ã¢â‚¬Â°quipe)</li>
+          <li><i class="fas fa-check text-emerald-400 mr-2"></i> Support Prioritaire</li>
+          <li><i class="fas fa-check text-emerald-400 mr-2"></i> Boutiques illimitÃƒÆ’Ã‚Â©es</li>
         </ul>
-        <button onclick="showPaymentModal('business')" class="w-full py-3 rounded-xl text-sm font-bold transition-all" style="border:1px solid rgba(16,185,129,0.4);color:#6ee7b7;background:transparent" onmouseover="this.style.background='rgba(16,185,129,0.08)'" onmouseout="this.style.background='transparent'" \${currentSub === 'business' ? 'disabled' : ''}>\${currentSub === 'business' ? 'Plan Actuel' : 'Passer \u00e0 la vitesse sup\u00e9rieure \u2192'}</button>
-      </div>
-    </div>
-    <div class="max-w-4xl mx-auto mb-10">
-      <div class="card-glass p-6">
-        <p class="text-center text-xs text-gray-500 uppercase tracking-widest mb-5 font-semibold">M\u00e9thodes de paiement accept\u00e9es</p>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div class="flex flex-col items-center gap-2 p-4 rounded-xl bg-white/3 hover:bg-white/5 transition">
-            <div class="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center"><i class="fas fa-mobile-alt text-amber-400 text-lg"></i></div>
-            <span class="text-xs font-bold text-amber-300">BaridiMob</span>
-            <span class="text-[10px] text-gray-500">Paiement local</span>
-          </div>
-          <div class="flex flex-col items-center gap-2 p-4 rounded-xl bg-white/3 hover:bg-white/5 transition">
-            <div class="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center"><i class="fas fa-university text-yellow-400 text-lg"></i></div>
-            <span class="text-xs font-bold text-yellow-300">CCP Alg\u00e9rie</span>
-            <span class="text-[10px] text-gray-500">Virement postal</span>
-          </div>
-          <div class="flex flex-col items-center gap-2 p-4 rounded-xl bg-white/3 hover:bg-white/5 transition">
-            <div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center"><i class="fab fa-bitcoin text-emerald-400 text-lg"></i></div>
-            <span class="text-xs font-bold text-emerald-300">RedotPay</span>
-            <span class="text-[10px] text-gray-500">USDT / Crypto</span>
-          </div>
-          <div class="flex flex-col items-center gap-2 p-4 rounded-xl bg-white/3 hover:bg-white/5 transition">
-            <div class="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center"><i class="fas fa-globe text-blue-400 text-lg"></i></div>
-            <span class="text-xs font-bold text-blue-300">Payera</span>
-            <span class="text-[10px] text-gray-500">International</span>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="max-w-4xl mx-auto mb-10">
-      <div class="flex items-center gap-3 mb-4"><i class="fas fa-shield-alt text-indigo-400"></i><h2 class="text-lg font-bold">Garanties & R\u00e9assurance</h2></div>
-      <div class="grid md:grid-cols-3 gap-4">
-        <div class="card-glass p-5 flex items-start gap-4">
-          <div class="w-10 h-10 rounded-xl bg-emerald-500/15 flex items-center justify-center flex-shrink-0"><i class="fas fa-bolt text-emerald-400"></i></div>
-          <div>
-            <h4 class="text-sm font-bold text-white mb-1">Activation instantan\u00e9e</h4>
-            <p class="text-xs text-gray-400">Votre plan est activ\u00e9 dans les <strong class="text-emerald-300">2\u00a0heures</strong> apr\u00e8s v\u00e9rification de votre paiement.</p>
-          </div>
-        </div>
-        <div class="card-glass p-5 flex items-start gap-4">
-          <div class="w-10 h-10 rounded-xl bg-indigo-500/15 flex items-center justify-center flex-shrink-0"><i class="fas fa-lock text-indigo-400"></i></div>
-          <div>
-            <h4 class="text-sm font-bold text-white mb-1">Aucun frais cach\u00e9</h4>
-            <p class="text-xs text-gray-400">Le prix affich\u00e9 est le prix final. <strong class="text-indigo-300">Pas de surprise</strong> sur votre facture.</p>
-          </div>
-        </div>
-        <div class="card-glass p-5 flex items-start gap-4">
-          <div class="w-10 h-10 rounded-xl bg-purple-500/15 flex items-center justify-center flex-shrink-0"><i class="fas fa-headset text-purple-400"></i></div>
-          <div>
-            <h4 class="text-sm font-bold text-white mb-1">Support r\u00e9actif</h4>
-            <p class="text-xs text-gray-400">Notre \u00e9quipe vous accompagne \u00e0 chaque \u00e9tape via <strong class="text-purple-300">WhatsApp & email</strong>.</p>
-          </div>
-        </div>
+        <button onclick="showPaymentModal('business')" class="btn btn-outline w-full py-3 rounded-xl mt-auto hover:bg-emerald-500/5" \${currentSub === 'business' ? 'disabled' : ''}>\${currentSub === 'business' ? 'Plan Actuel' : 'Choisir Business'}</button>
       </div>
     </div>
     <div class="max-w-4xl mx-auto">
       <div class="flex items-center gap-3 mb-6"><i class="fas fa-history text-indigo-400"></i><h2 class="text-xl font-bold">Historique des paiements</h2></div>
       <div class="card overflow-hidden">
         <table class="w-full text-left">
-          <thead><tr class="bg-white/3"><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">Date</th><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">Plan</th><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">Montant</th><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">M\u00e9thode</th><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">Statut</th><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">Notes Admin</th></tr></thead>
-          <tbody class="divide-y divide-white/5">\${rows || '<tr><td colspan="6" class="py-10 text-center text-gray-500">Aucun paiement enregistr\u00e9</td></tr>'}</tbody>
+          <thead><tr class="bg-white/3"><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">Date</th><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">Plan</th><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">Montant</th><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">MÃƒÆ’Ã‚Â©thode</th><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">Statut</th><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">Notes Admin</th></tr></thead>
+          <tbody class="divide-y divide-white/5">\${rows || '<tr><td colspan="6" class="py-10 text-center text-gray-500">Aucun paiement enregistrÃƒÆ’Ã‚Â©</td></tr>'}</tbody>
         </table>
       </div>
     </div>
@@ -5818,144 +5729,76 @@ async function loadPricing() {
 }
 
 function showPaymentModal(plan) {
-  const price = plan === 'pro' ? '2\u202f900 DA' : '6\u202f900 DA'
+  const price = plan === 'pro' ? '2,900 DA' : '6,900 DA'
   const usdPrice = plan === 'pro' ? '15 USD' : '35 USD'
   document.getElementById('modals').innerHTML = \`
-    <div class="modal-overlay-v2" onclick = "closeModalV2(event)">
-      <div class="modal-v2" onclick="event.stopPropagation()" style="max-width:580px">
+    <div class="modal-overlay-v2" onclick="closeModalV2(event)">
+      <div class="modal-v2" onclick="event.stopPropagation()" style="max-width:550px">
         <div class="modal-v2-header">
           <h2><span class="header-icon"><i class="fas fa-credit-card"></i></span> Activer le Plan \${plan.toUpperCase()}</h2>
           <button class="modal-v2-close" onclick="closeModalAnimated()"><i class="fas fa-xmark"></i></button>
         </div>
         <div class="modal-v2-body">
-          <div class="flex items-center justify-center gap-4 mb-6 p-4 rounded-xl" style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.15)">
-            <div class="text-center">
-              <div class="text-2xl font-black text-white">\${price}</div>
-              <div class="text-xs text-indigo-400">\u2248 \${usdPrice}</div>
-            </div>
-            <div class="text-gray-600 text-xl">/</div>
-            <div class="text-sm text-gray-300">Plan <strong class="text-indigo-300 uppercase">\${plan}</strong><br><span class="text-xs text-gray-500">Abonnement mensuel</span></div>
-          </div>
-          <p class="text-sm text-gray-400 mb-3">Choisissez votre m\u00e9thode de paiement\u00a0:</p>
-          <div class="mb-1">
-            <div class="text-[10px] uppercase tracking-widest text-amber-400/80 font-bold mb-2 px-1">\ud83c\udde9\ud83c\uddff Paiement Local (Alg\u00e9rie)</div>
-            <div class="space-y-2">
-              <label class="flex items-start gap-4 p-4 rounded-xl border cursor-pointer transition-all" style="border-color:rgba(255,255,255,0.06);background:rgba(255,255,255,0.02)" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='rgba(255,255,255,0.02)'">
+          <p class="text-sm text-gray-400 mb-6 text-center">Effectuez le transfert vers l'une des mÃƒÆ’Ã‚Â©thodes ci-dessous, puis renseignez la rÃƒÆ’Ã‚Â©fÃƒÆ’Ã‚Â©rence de transaction.</p>
+          <div class="space-y-4 mb-6">
+             <label class="flex items-start gap-4 p-4 rounded-xl border border-white/5 bg-white/2 hover:bg-white/5 cursor-pointer transition">
                 <input type="radio" name="payment-method" value="baridimob" checked onchange="updatePaymentInstructions('baridimob')" class="mt-1 w-4 h-4 accent-indigo-500">
-                  <div class="flex-1">
-                    <div class="font-bold text-sm text-white flex items-center gap-2 flex-wrap">
-                      <span class="px-2 py-0.5 rounded text-[10px] font-black" style="background:rgba(251,191,36,0.2);color:#fbbf24;border:1px solid rgba(251,191,36,0.3)">BARIDIMOB</span>
-                      <span class="text-gray-400 text-xs">Virement instantan\u00e9</span>
-                      <span class="ml-auto text-indigo-300 font-black">\${price}</span>
-                    </div>
-                    <p class="text-xs text-gray-500 mt-1.5">Num\u00e9ro de compte RIP\u00a0:</p>
-                    <code class="block mt-1 p-2 rounded text-indigo-300 text-[11px] font-mono select-all cursor-text" style="background:rgba(0,0,0,0.3)">00799999XXXXXXXXXX99</code>
-                  </div>
-              </label>
-              <label class="flex items-start gap-4 p-4 rounded-xl border cursor-pointer transition-all" style="border-color:rgba(255,255,255,0.06);background:rgba(255,255,255,0.02)" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='rgba(255,255,255,0.02)'">
+                <div class="flex-1">
+                  <div class="font-bold text-sm text-white flex items-center justify-between">BaridiMob <span>\${price}</span></div>
+                  <p class="text-xs text-gray-400 mt-1">Virement instantanÃƒÆ’Ã‚Â© vers RIP :</p>
+                  <code class="block mt-1 p-2 bg-black/30 rounded text-indigo-300 text-[11px] font-mono select-all">00799999XXXXXXXXXX99</code>
+                </div>
+             </label>
+             <label class="flex items-start gap-4 p-4 rounded-xl border border-white/5 bg-white/2 hover:bg-white/5 cursor-pointer transition">
                 <input type="radio" name="payment-method" value="ccp" onchange="updatePaymentInstructions('ccp')" class="mt-1 w-4 h-4 accent-indigo-500">
-                  <div class="flex-1">
-                    <div class="font-bold text-sm text-white flex items-center gap-2 flex-wrap">
-                      <span class="px-2 py-0.5 rounded text-[10px] font-black" style="background:rgba(234,179,8,0.2);color:#eab308;border:1px solid rgba(234,179,8,0.3)">CCP</span>
-                      <span class="text-gray-400 text-xs">Versement / Virement postal</span>
-                      <span class="ml-auto text-indigo-300 font-black">\${price}</span>
-                    </div>
-                    <p class="text-xs text-gray-500 mt-1.5">Num\u00e9ro de compte CCP\u00a0:</p>
-                    <code class="block mt-1 p-2 rounded text-amber-300 text-[11px] font-mono select-all cursor-text" style="background:rgba(0,0,0,0.3)">XXXXXXXXXX cl\u00e9 XX</code>
-                  </div>
-              </label>
-            </div>
-          </div>
-          <div class="mt-4 mb-5">
-            <div class="text-[10px] uppercase tracking-widest text-emerald-400/80 font-bold mb-2 px-1">\ud83c\udf0d Paiement International / Crypto</div>
-            <div class="space-y-2">
-              <label class="flex items-start gap-4 p-4 rounded-xl border cursor-pointer transition-all" style="border-color:rgba(255,255,255,0.06);background:rgba(255,255,255,0.02)" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='rgba(255,255,255,0.02)'">
-                <input type="radio" name="payment-method" value="redotpay" onchange="updatePaymentInstructions('redotpay')" class="mt-1 w-4 h-4 accent-emerald-500">
-                  <div class="flex-1">
-                    <div class="font-bold text-sm text-white flex items-center gap-2 flex-wrap">
-                      <span class="px-2 py-0.5 rounded text-[10px] font-black" style="background:rgba(16,185,129,0.2);color:#34d399;border:1px solid rgba(16,185,129,0.3)">REDOTPAY</span>
-                      <span class="text-gray-400 text-xs">USDT TRC20</span>
-                      <span class="ml-auto text-emerald-300 font-black">\${usdPrice}</span>
-                    </div>
-                    <p class="text-xs text-gray-500 mt-1.5">Adresse USDT TRC20\u00a0:</p>
-                    <code class="block mt-1 p-2 rounded text-emerald-300 text-[11px] font-mono select-all cursor-text" style="background:rgba(0,0,0,0.3)">TXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</code>
-                  </div>
-              </label>
-              <label class="flex items-start gap-4 p-4 rounded-xl border cursor-pointer transition-all" style="border-color:rgba(255,255,255,0.06);background:rgba(255,255,255,0.02)" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='rgba(255,255,255,0.02)'">
-                <input type="radio" name="payment-method" value="payera" onchange="updatePaymentInstructions('payera')" class="mt-1 w-4 h-4 accent-blue-500">
-                  <div class="flex-1">
-                    <div class="font-bold text-sm text-white flex items-center gap-2 flex-wrap">
-                      <span class="px-2 py-0.5 rounded text-[10px] font-black" style="background:rgba(59,130,246,0.2);color:#60a5fa;border:1px solid rgba(59,130,246,0.3)">PAYERA</span>
-                      <span class="text-gray-400 text-xs">Paiement international</span>
-                      <span class="ml-auto text-blue-300 font-black">\${usdPrice}</span>
-                    </div>
-                    <p class="text-xs text-gray-500 mt-1.5">ID / Adresse Payera\u00a0:</p>
-                    <code class="block mt-1 p-2 rounded text-blue-300 text-[11px] font-mono select-all cursor-text" style="background:rgba(0,0,0,0.3)">PAYERA-ID-XXXXXXXXXXXX</code>
-                  </div>
-              </label>
-            </div>
-          </div>
-          <div class="p-4 rounded-xl mb-5" style="background:rgba(37,211,102,0.07);border:1px solid rgba(37,211,102,0.2)">
-            <div class="flex items-center gap-2 mb-1.5">
-              <i class="fab fa-whatsapp text-green-400 text-lg"></i>
-              <span class="text-sm font-bold text-green-300">Envoyer la preuve via WhatsApp</span>
-            </div>
-            <p class="text-xs text-gray-400 mb-3">Apr\u00e8s le virement, envoyez une capture d\u2019\u00e9cran de votre re\u00e7u. L\u2019activation est effectu\u00e9e sous 2\u00a0h.</p>
-            <button onclick="sendProofViaWhatsApp('\${plan}', '\${price}')" class="w-full py-2.5 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all" style="background:rgba(37,211,102,0.12);color:#4ade80;border:1px solid rgba(37,211,102,0.3)" onmouseover="this.style.background='rgba(37,211,102,0.22)'" onmouseout="this.style.background='rgba(37,211,102,0.12)'">
-              <i class="fab fa-whatsapp"></i> Envoyer ma capture d\u2019\u00e9cran
-            </button>
+                <div class="flex-1">
+                  <div class="font-bold text-sm text-white flex items-center justify-between">Vers CCP <span>\${price}</span></div>
+                  <p class="text-xs text-gray-400 mt-1">Versement guichet ou virement vers :</p>
+                  <code class="block mt-1 p-2 bg-black/30 rounded text-amber-300 text-[11px] font-mono select-all">XXXXXXXXXX clÃƒÆ’Ã‚Â© XX</code>
+                </div>
+             </label>
+             <label class="flex items-start gap-4 p-4 rounded-xl border border-white/5 bg-white/2 hover:bg-white/5 cursor-pointer transition">
+                <input type="radio" name="payment-method" value="redotpay" onchange="updatePaymentInstructions('redotpay')" class="mt-1 w-4 h-4 accent-indigo-500">
+                <div class="flex-1">
+                  <div class="font-bold text-sm text-white flex items-center justify-between">RedotPay (USDT) <span>\${usdPrice}</span></div>
+                  <p class="text-xs text-gray-400 mt-1">Transfert USDT TRC20 vers l'adresse :</p>
+                  <code class="block mt-1 p-2 bg-black/30 rounded text-emerald-300 text-[11px] font-mono select-all">TXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</code>
+                </div>
+             </label>
           </div>
           <div class="modal-v2-section">
-            <div class="modal-v2-section-title"><i class="fas fa-receipt"></i> R\u00e9f\u00e9rence de transaction (optionnel)</div>
-            <div class="form-grid">
-              <div class="float-field full-width">
-                <i class="fas fa-hashtag field-icon"></i>
-                <input type="text" id="pay-ref" placeholder=" ">
-                  <label id="pay-ref-label">R\u00e9f\u00e9rence de transaction / N\u00b0 Bordereau</label>
-              </div>
-              <div class="float-field full-width">
-                <i class="fas fa-comment-dots field-icon"></i>
-                <input type="text" id="pay-notes" placeholder=" ">
+             <div class="modal-v2-section-title"><i class="fas fa-receipt"></i> Preuve de paiement</div>
+             <div class="form-grid">
+                <div class="float-field full-width">
+                  <i class="fas fa-hashtag field-icon"></i>
+                  <input type="text" id="pay-ref" placeholder=" " required>
+                  <label id="pay-ref-label">RÃƒÆ’Ã‚Â©fÃƒÆ’Ã‚Â©rence de transaction (NÃƒâ€šÃ‚Â° Bordereau / ID)*</label>
+                </div>
+                <div class="float-field full-width">
+                  <i class="fas fa-comment-dots field-icon"></i>
+                  <input type="text" id="pay-notes" placeholder=" ">
                   <label>Notes ou message (optionnel)</label>
-              </div>
-            </div>
+                </div>
+             </div>
           </div>
           <div class="modal-v2-footer">
             <button class="btn-v2-cancel" onclick="closeModalAnimated()">Annuler</button>
             <button class="btn-v2-submit" id="pay-submit-btn" onclick="submitPaymentRequest('\${plan}')">
-              <i class="fas fa-paper-plane"></i> <span id="pay-submit-text">Envoyer ma demande</span>
+              <i class="fas fa-paper-plane"></i> <span id="pay-submit-text">Envoyer ma preuve</span>
             </button>
           </div>
         </div>
       </div>
     </div>
-    \`
+  \`
 }
 
 function updatePaymentInstructions(method) {
   const lbl = document.getElementById('pay-ref-label')
   if (!lbl) return
-  if (method === 'redotpay') lbl.innerText = 'Transaction Hash (TXID)'
-  else if (method === 'payera') lbl.innerText = 'ID de transaction Payera'
-  else if (method === 'baridimob') lbl.innerText = 'R\u00e9f\u00e9rence de transaction BaridiMob'
-  else lbl.innerText = 'N\u00b0 Bordereau ou R\u00e9f\u00e9rence mandat'
-}
-
-function sendProofViaWhatsApp(plan, price) {
-  const method = (document.querySelector('input[name="payment-method"]:checked') || {}).value || 'paiement'
-  const userName = (typeof state !== 'undefined' && state.user?.prenom) ? state.user.prenom : 'Client'
-  const storeName = (typeof state !== 'undefined' && state.user?.store_name) ? state.user.store_name : ''
-  const msg = encodeURIComponent(
-    'Bonjour AutoHub DZ \ud83d\udc4b\n\n' +
-    'Je souhaite activer le plan *' + plan.toUpperCase() + '* (' + price + '/mois).\n' +
-    'M\u00e9thode de paiement\u00a0: *' + method.toUpperCase() + '*\n' +
-    (storeName ? 'Boutique\u00a0: ' + storeName + '\n' : '') +
-    'Nom\u00a0: ' + userName + '\n\n' +
-    'Ci-joint la capture d\u2019\u00e9cran de mon re\u00e7u de paiement. \ud83d\udcce'
-  )
-  // Remplacez le numero ci-dessous par votre numero WhatsApp Business (format international sans +)
-  const waNumber = '213552295894'
-  window.open('https://wa.me/' + waNumber + '?text=' + msg, '_blank')
+  if (method === 'redotpay') lbl.innerText = 'Transaction Hash (TXID) *'
+  else if (method === 'baridimob') lbl.innerText = 'RÃƒÆ’Ã‚Â©fÃƒÆ’Ã‚Â©rence de transaction BaridiMob *'
+  else lbl.innerText = 'NÃƒâ€šÃ‚Â° Bordereau ou RÃƒÆ’Ã‚Â©fÃƒÆ’Ã‚Â©rence mandat *'
 }
 
 async function submitPaymentRequest(plan) {
@@ -5964,18 +5807,20 @@ async function submitPaymentRequest(plan) {
   const proof_reference = document.getElementById('pay-ref').value.trim()
   const payment_method = document.querySelector('input[name="payment-method"]:checked').value
   const proof_notes = document.getElementById('pay-notes').value.trim()
-
+  
+  if (!proof_reference) { toast('Veuillez entrer la rÃƒÆ’Ã‚Â©fÃƒÆ’Ã‚Â©rence de la transaction', 'error'); return }
+  
   if (btn) btn.disabled = true
   if (btnText) btnText.innerHTML = '<span class="spinner-sm"></span> Envoi...'
-
+  
   try {
     const { data } = await api.post('/payment-request', { plan, payment_method, proof_reference, proof_notes })
-    toast(data.message || 'Demande transmise avec succ\u00e8s !')
+    toast(data.message || 'Demande transmise avec succÃƒÆ’Ã‚Â¨s !')
     closeModalAnimated(); loadPricing()
   } catch (e) {
     toast(e.response?.data?.error || 'Erreur lors de l\'envoi', 'error')
     if (btn) btn.disabled = false
-    if (btnText) btnText.innerHTML = 'Envoyer ma demande'
+    if (btnText) btnText.innerHTML = 'Envoyer ma preuve'
   }
 }
 
