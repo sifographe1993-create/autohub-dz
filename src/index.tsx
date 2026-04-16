@@ -2323,22 +2323,158 @@ app.put('/api/admin/payment-requests/:id', async (c) => {
 // PAGES HTML (served as static files from public/)
 // ========================
 app.get('/', (c) => c.redirect('/login'))
-app.get('/login', async (c) => {
-  const res = await c.env.ASSETS.fetch(new URL('/login.html', c.req.url))
-  return new Response(res.body, { headers: { 'Content-Type': 'text/html;charset=UTF-8' } })
+
+const loginHtml = `<!DOCTYPE html>
+<html lang="fr">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AutoHub DZ - Connexion</title>
+<link rel="stylesheet" href="/static/style.css">
+<link rel="stylesheet" href="/static/tailwind.css">
+</head>
+<body class="min-h-screen bg-gray-50 flex items-center justify-center">
+<div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+  <h1 class="text-2xl font-bold text-center mb-6">AutoHub DZ</h1>
+  <form id="loginForm" class="space-y-4">
+    <input id="username" type="text" placeholder="Email ou nom d'utilisateur" class="w-full border rounded-lg px-4 py-2" required>
+    <input id="password" type="password" placeholder="Mot de passe" class="w-full border rounded-lg px-4 py-2" required>
+    <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700">Se connecter</button>
+    <p id="loginError" class="text-red-500 text-sm hidden"></p>
+  </form>
+  <p class="text-center text-sm mt-4">Pas de compte ? <a href="/register" class="text-blue-600">S'inscrire</a></p>
+</div>
+<script>
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault()
+  const err = document.getElementById('loginError')
+  err.classList.add('hidden')
+  const res = await fetch('/api/auth/login', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ username: document.getElementById('username').value, password: document.getElementById('password').value })
+  })
+  const data = await res.json()
+  if (data.success) { window.location.href = '/app' }
+  else { err.textContent = data.error || 'Erreur de connexion'; err.classList.remove('hidden') }
 })
-app.get('/register', async (c) => {
-  const res = await c.env.ASSETS.fetch(new URL('/register.html', c.req.url))
-  return new Response(res.body, { headers: { 'Content-Type': 'text/html;charset=UTF-8' } })
+</script>
+</body></html>`
+
+const registerHtml = `<!DOCTYPE html>
+<html lang="fr">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AutoHub DZ - Inscription</title>
+<link rel="stylesheet" href="/static/style.css">
+<link rel="stylesheet" href="/static/tailwind.css">
+</head>
+<body class="min-h-screen bg-gray-50 flex items-center justify-center">
+<div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+  <h1 class="text-2xl font-bold text-center mb-6">Créer un compte</h1>
+  <form id="regForm" class="space-y-4">
+    <input id="prenom" type="text" placeholder="Prénom" class="w-full border rounded-lg px-4 py-2" required>
+    <input id="email" type="email" placeholder="Email" class="w-full border rounded-lg px-4 py-2" required>
+    <input id="telephone" type="tel" placeholder="Téléphone (05xxxxxxxx)" class="w-full border rounded-lg px-4 py-2" required>
+    <input id="store_name" type="text" placeholder="Nom du magasin" class="w-full border rounded-lg px-4 py-2" required>
+    <input id="password" type="password" placeholder="Mot de passe" class="w-full border rounded-lg px-4 py-2" required>
+    <input id="confirm_password" type="password" placeholder="Confirmer le mot de passe" class="w-full border rounded-lg px-4 py-2" required>
+    <button type="submit" class="w-full bg-green-600 text-white py-2 rounded-lg font-semibold hover:bg-green-700">S'inscrire</button>
+    <p id="regError" class="text-red-500 text-sm hidden"></p>
+  </form>
+  <p class="text-center text-sm mt-4">Déjà un compte ? <a href="/login" class="text-blue-600">Se connecter</a></p>
+</div>
+<script>
+document.getElementById('regForm').addEventListener('submit', async (e) => {
+  e.preventDefault()
+  const err = document.getElementById('regError')
+  err.classList.add('hidden')
+  const res = await fetch('/api/auth/register', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      prenom: document.getElementById('prenom').value,
+      email: document.getElementById('email').value,
+      telephone: document.getElementById('telephone').value,
+      store_name: document.getElementById('store_name').value,
+      password: document.getElementById('password').value,
+      confirm_password: document.getElementById('confirm_password').value
+    })
+  })
+  const data = await res.json()
+  if (data.success) { window.location.href = '/app' }
+  else { err.textContent = data.error || 'Erreur inscription'; err.classList.remove('hidden') }
 })
-app.get('/app', async (c) => {
-  const res = await c.env.ASSETS.fetch(new URL('/app.html', c.req.url))
-  return new Response(res.body, { headers: { 'Content-Type': 'text/html;charset=UTF-8' } })
-})
-app.get('/app/*', async (c) => {
-  const res = await c.env.ASSETS.fetch(new URL('/app.html', c.req.url))
-  return new Response(res.body, { headers: { 'Content-Type': 'text/html;charset=UTF-8' } })
-})
+</script>
+</body></html>`
+
+const appHtml = `<!DOCTYPE html>
+<html lang="fr">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AutoHub DZ</title>
+<link rel="stylesheet" href="/static/style.css">
+<link rel="stylesheet" href="/static/tailwind.css">
+</head>
+<body class="min-h-screen bg-gray-100">
+<div id="app-loading" class="flex items-center justify-center min-h-screen">
+  <div class="text-center">
+    <div class="text-4xl mb-4">🚚</div>
+    <p class="text-gray-600 text-lg font-semibold">AutoHub DZ</p>
+    <p class="text-gray-400 text-sm mt-2">Chargement...</p>
+  </div>
+</div>
+<div id="app-root" class="hidden">
+  <nav class="bg-white shadow-sm border-b px-6 py-3 flex items-center justify-between">
+    <div class="font-bold text-lg text-blue-700">🚚 AutoHub DZ</div>
+    <div class="flex items-center gap-4">
+      <span id="nav-user" class="text-sm text-gray-600"></span>
+      <button onclick="logout()" class="text-sm text-red-500 hover:underline">Déconnexion</button>
+    </div>
+  </nav>
+  <main class="p-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div class="bg-white rounded-xl p-4 shadow-sm border">
+        <p class="text-gray-500 text-sm">Commandes ce mois</p>
+        <p id="stat-orders" class="text-3xl font-bold text-blue-700 mt-1">—</p>
+      </div>
+      <div class="bg-white rounded-xl p-4 shadow-sm border">
+        <p class="text-gray-500 text-sm">Plan actuel</p>
+        <p id="stat-plan" class="text-3xl font-bold text-green-600 mt-1">—</p>
+      </div>
+      <div class="bg-white rounded-xl p-4 shadow-sm border">
+        <p class="text-gray-500 text-sm">Transporteurs actifs</p>
+        <p id="stat-transporteurs" class="text-3xl font-bold text-purple-600 mt-1">—</p>
+      </div>
+    </div>
+    <div class="bg-white rounded-xl p-6 shadow-sm border">
+      <h2 class="text-lg font-semibold mb-4">Bienvenue sur AutoHub DZ</h2>
+      <p class="text-gray-500">Votre plateforme de gestion des commandes et livraisons en Algérie.</p>
+      <p class="text-gray-400 text-sm mt-2">Transporteurs disponibles : Yalidine, ZR Express, Ecotrack PDEX, DHD, NOEST</p>
+    </div>
+  </main>
+</div>
+<script>
+async function init() {
+  const res = await fetch('/api/auth/check')
+  const data = await res.json()
+  if (!data.authenticated) { window.location.href = '/login'; return }
+  document.getElementById('app-loading').classList.add('hidden')
+  document.getElementById('app-root').classList.remove('hidden')
+  document.getElementById('nav-user').textContent = data.user.prenom || data.user.username
+  document.getElementById('stat-plan').textContent = (data.user.subscription || 'starter').toUpperCase()
+  const t = await fetch('/api/transporteurs')
+  const tData = await t.json()
+  document.getElementById('stat-transporteurs').textContent = Array.isArray(tData) ? tData.length : '—'
+}
+async function logout() {
+  await fetch('/api/auth/logout', { method: 'POST' })
+  window.location.href = '/login'
+}
+init()
+</script>
+</body></html>`
+
+app.get('/login', (c) => c.html(loginHtml))
+app.get('/register', (c) => c.html(registerHtml))
+app.get('/app', (c) => c.html(appHtml))
+app.get('/app/*', (c) => c.html(appHtml))
 
 export default app
 
