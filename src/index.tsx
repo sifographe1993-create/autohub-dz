@@ -2390,6 +2390,12 @@ async function diminuerStock(db: D1Database, produit: string) {
 // ========================
 // REGISTER PAGE - Style Yalidine Dashboard
 // ========================
+// ⚠️  RÈGLES D'ÉCHAPPEMENT DANS CE TEMPLATE LITERAL (NE PAS OUBLIER):
+//   • \n  dans une string JS  → écrire \\n  (sinon → saut de ligne réel = SyntaxError navigateur)
+//   • \t  dans une string JS  → écrire \\t
+//   • \`  pour un backtick    → écrire \\` ou \${"`"}  (nécessaire pour les template literals imbriqués)
+//   • \${ pour désactiver ${ → écrire \\${  (dans le code JS du navigateur)
+//   Règle simple : si tu vois un \ seul dans du code JS inline → doubler en \\
 function registerPage(): string {
   return `<!DOCTYPE html>
 <html lang="fr">
@@ -2865,6 +2871,12 @@ fetch('/api/auth/check').then(r=>r.json()).then(d=>{ if(d.authenticated) window.
 // ========================
 // LOGIN PAGE - Yalidine Green Style
 // ========================
+// ⚠️  RÈGLES D'ÉCHAPPEMENT DANS CE TEMPLATE LITERAL (NE PAS OUBLIER):
+//   • \n  dans une string JS  → écrire \\n  (sinon → saut de ligne réel = SyntaxError navigateur)
+//   • \t  dans une string JS  → écrire \\t
+//   • \`  pour un backtick    → écrire \\` ou \${"`"}  (nécessaire pour les template literals imbriqués)
+//   • \${ pour désactiver ${ → écrire \\${  (dans le code JS du navigateur)
+//   Règle simple : si tu vois un \ seul dans du code JS inline → doubler en \\
 function loginPage(): string {
   return `<!DOCTYPE html>
 <html lang="fr">
@@ -3455,6 +3467,12 @@ body { font-family: 'Inter', sans-serif; background: #080c1a; color: #fff; }
 // ========================
 // APP PAGE (SPA) - Enhanced with verification, boutique sources, and refined branding
 // ========================
+// ⚠️  RÈGLES D'ÉCHAPPEMENT DANS CE TEMPLATE LITERAL (NE PAS OUBLIER):
+//   • \n  dans une string JS  → écrire \\n  (sinon → saut de ligne réel = SyntaxError navigateur)
+//   • \t  dans une string JS  → écrire \\t
+//   • \`  pour un backtick    → écrire \\` ou \${"`"}  (nécessaire pour les template literals imbriqués)
+//   • \${ pour désactiver ${ → écrire \\${  (dans le code JS du navigateur)
+//   Règle simple : si tu vois un \ seul dans du code JS inline → doubler en \\
 function appPage(): string {
   return `<!DOCTYPE html>
 <html lang="fr">
@@ -5951,6 +5969,7 @@ function openWhatsAppPayment(plan) {
   const method = document.querySelector('input[name="payment-method"]:checked')?.value || 'baridimob'
   const methodLabel = method === 'baridimob' ? 'BaridiMob' : method === 'ccp' ? 'CCP' : 'RedotPay (USDT)'
   const amount = plan === 'pro' ? '2,900 DA' : '6,900 DA'
+  // ⚠️  \\n utilisé ici (pas \n) pour éviter SyntaxError navigateur
   const msg = 'Bonjour, j' + "'" + 'ai effectue le paiement du Plan ' + plan.toUpperCase() + '.\\nReference : ' + ref + '\\nMethode : ' + methodLabel + '\\nMontant : ' + amount
   const text = encodeURIComponent(msg)
   window.open('https://wa.me/213552295894?text=' + text, '_blank')
