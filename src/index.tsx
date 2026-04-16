@@ -2390,12 +2390,6 @@ async function diminuerStock(db: D1Database, produit: string) {
 // ========================
 // REGISTER PAGE - Style Yalidine Dashboard
 // ========================
-// ⚠️  RÈGLES D'ÉCHAPPEMENT DANS CE TEMPLATE LITERAL (NE PAS OUBLIER):
-//   • \n  dans une string JS  → écrire \\n  (sinon → saut de ligne réel = SyntaxError navigateur)
-//   • \t  dans une string JS  → écrire \\t
-//   • \`  pour un backtick    → écrire \\` ou \${"`"}  (nécessaire pour les template literals imbriqués)
-//   • \${ pour désactiver ${ → écrire \\${  (dans le code JS du navigateur)
-//   Règle simple : si tu vois un \ seul dans du code JS inline → doubler en \\
 function registerPage(): string {
   return `<!DOCTYPE html>
 <html lang="fr">
@@ -2871,12 +2865,6 @@ fetch('/api/auth/check').then(r=>r.json()).then(d=>{ if(d.authenticated) window.
 // ========================
 // LOGIN PAGE - Yalidine Green Style
 // ========================
-// ⚠️  RÈGLES D'ÉCHAPPEMENT DANS CE TEMPLATE LITERAL (NE PAS OUBLIER):
-//   • \n  dans une string JS  → écrire \\n  (sinon → saut de ligne réel = SyntaxError navigateur)
-//   • \t  dans une string JS  → écrire \\t
-//   • \`  pour un backtick    → écrire \\` ou \${"`"}  (nécessaire pour les template literals imbriqués)
-//   • \${ pour désactiver ${ → écrire \\${  (dans le code JS du navigateur)
-//   Règle simple : si tu vois un \ seul dans du code JS inline → doubler en \\
 function loginPage(): string {
   return `<!DOCTYPE html>
 <html lang="fr">
@@ -3467,12 +3455,6 @@ body { font-family: 'Inter', sans-serif; background: #080c1a; color: #fff; }
 // ========================
 // APP PAGE (SPA) - Enhanced with verification, boutique sources, and refined branding
 // ========================
-// ⚠️  RÈGLES D'ÉCHAPPEMENT DANS CE TEMPLATE LITERAL (NE PAS OUBLIER):
-//   • \n  dans une string JS  → écrire \\n  (sinon → saut de ligne réel = SyntaxError navigateur)
-//   • \t  dans une string JS  → écrire \\t
-//   • \`  pour un backtick    → écrire \\` ou \${"`"}  (nécessaire pour les template literals imbriqués)
-//   • \${ pour désactiver ${ → écrire \\${  (dans le code JS du navigateur)
-//   Règle simple : si tu vois un \ seul dans du code JS inline → doubler en \\
 function appPage(): string {
   return `<!DOCTYPE html>
 <html lang="fr">
@@ -5898,7 +5880,7 @@ function showPaymentModal(plan) {
           <p class="text-sm text-gray-400 mb-6 text-center">Effectuez le transfert vers l'une des méthodes ci-dessous, puis renseignez la référence de transaction.</p>
           <div class="space-y-4 mb-6">
              <label class="flex items-start gap-4 p-4 rounded-xl border border-white/5 bg-white/2 hover:bg-white/5 cursor-pointer transition">
-                <input type="radio" name="payment-method" value="baridimob" checked onchange="updatePaymentInstructions('baridimob')" class="mt-1 w-4 h-4 accent-indigo-500">
+                <input type="radio" name="payment-method" value="baridimob" checked onchange="updatePaymentInstructions('baridimob'); updateWhatsAppBtn('\${plan}')" class="mt-1 w-4 h-4 accent-indigo-500">
                 <div class="flex-1">
                   <div class="font-bold text-sm text-white flex items-center justify-between">BaridiMob <span>\${price}</span></div>
                   <p class="text-xs text-gray-400 mt-1">Virement instantané vers RIP :</p>
@@ -5906,7 +5888,7 @@ function showPaymentModal(plan) {
                 </div>
              </label>
              <label class="flex items-start gap-4 p-4 rounded-xl border border-white/5 bg-white/2 hover:bg-white/5 cursor-pointer transition">
-                <input type="radio" name="payment-method" value="ccp" onchange="updatePaymentInstructions('ccp')" class="mt-1 w-4 h-4 accent-indigo-500">
+                <input type="radio" name="payment-method" value="ccp" onchange="updatePaymentInstructions('ccp'); updateWhatsAppBtn('\${plan}')" class="mt-1 w-4 h-4 accent-indigo-500">
                 <div class="flex-1">
                   <div class="font-bold text-sm text-white flex items-center justify-between">Vers CCP <span>\${price}</span></div>
                   <p class="text-xs text-gray-400 mt-1">Versement guichet ou virement vers :</p>
@@ -5914,7 +5896,7 @@ function showPaymentModal(plan) {
                 </div>
              </label>
              <label class="flex items-start gap-4 p-4 rounded-xl border border-white/5 bg-white/2 hover:bg-white/5 cursor-pointer transition">
-                <input type="radio" name="payment-method" value="redotpay" onchange="updatePaymentInstructions('redotpay')" class="mt-1 w-4 h-4 accent-indigo-500">
+                <input type="radio" name="payment-method" value="redotpay" onchange="updatePaymentInstructions('redotpay'); updateWhatsAppBtn('\${plan}')" class="mt-1 w-4 h-4 accent-indigo-500">
                 <div class="flex-1">
                   <div class="font-bold text-sm text-white flex items-center justify-between">RedotPay (USDT) <span>\${usdPrice}</span></div>
                   <p class="text-xs text-gray-400 mt-1">Transfert USDT TRC20 vers l'adresse :</p>
@@ -5922,23 +5904,49 @@ function showPaymentModal(plan) {
                 </div>
              </label>
           </div>
+
+          <!-- Séparateur WhatsApp Direct -->
+          <div class="flex items-center gap-3 my-4">
+            <div style="flex:1;height:1px;background:rgba(255,255,255,0.08)"></div>
+            <span class="text-xs text-gray-500 uppercase tracking-widest">Commandez directement</span>
+            <div style="flex:1;height:1px;background:rgba(255,255,255,0.08)"></div>
+          </div>
+
+          <!-- Bouton WhatsApp Direct (sans référence obligatoire) -->
+          <a href="https://wa.me/213552295894?text=\${encodeURIComponent('Bonjour, je souhaite activer le Plan ' + plan.toUpperCase() + ' sur AutoHub DZ.')}"
+             target="_blank"
+             class="flex items-center justify-center gap-3 w-full py-3.5 rounded-xl font-bold text-base mb-2 transition-all"
+             style="background:#25D366;color:white;text-decoration:none;border:none">
+            <i class="fab fa-whatsapp text-xl"></i> Commander via WhatsApp
+          </a>
+          <p class="text-xs text-gray-500 text-center mb-5">
+            <i class="fas fa-phone-alt mr-1"></i>Contactez-nous directement au <span class="text-gray-300 font-mono font-bold">0552 29 58 94</span>
+          </p>
+
+          <!-- Séparateur formulaire référence -->
+          <div class="flex items-center gap-3 my-4">
+            <div style="flex:1;height:1px;background:rgba(255,255,255,0.08)"></div>
+            <span class="text-xs text-gray-500 uppercase tracking-widest">Ou soumettez votre référence</span>
+            <div style="flex:1;height:1px;background:rgba(255,255,255,0.08)"></div>
+          </div>
+
           <div class="modal-v2-section">
              <div class="modal-v2-section-title"><i class="fas fa-hashtag"></i> Reference de transaction</div>
              <div class="form-grid">
                 <div class="float-field full-width">
                   <i class="fas fa-hashtag field-icon"></i>
-                  <input type="text" id="pay-ref" placeholder=" " required oninput="updateWhatsAppBtn()">
+                  <input type="text" id="pay-ref" placeholder=" " required oninput="updateWhatsAppBtn('\${plan}')">
                   <label id="pay-ref-label">Reference de transaction (N Bordereau / ID)*</label>
                 </div>
              </div>
           </div>
-          <div class="flex flex-col items-center gap-3 mt-6 mb-2">
+          <div class="flex flex-col items-center gap-3 mt-4 mb-2">
             <button id="wa-pay-btn" onclick="openWhatsAppPayment('\${plan}')" disabled
-              class="w-full py-3.5 rounded-xl font-bold text-base flex items-center justify-center gap-3 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-              style="background:#25D366;color:white;border:none">
-              <i class="fab fa-whatsapp text-xl"></i> Envoyer via WhatsApp
+              class="w-full py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+              style="background:rgba(37,211,102,0.15);color:#25D366;border:1px solid rgba(37,211,102,0.3)">
+              <i class="fab fa-whatsapp"></i> Envoyer ma référence via WhatsApp
             </button>
-            <p class="text-xs text-gray-500 text-center"><i class="fas fa-info-circle mr-1"></i>Envoyez votre recu via WhatsApp pour activation</p>
+            <p class="text-xs text-gray-500 text-center"><i class="fas fa-info-circle mr-1"></i>Le message sera pré-rempli avec votre référence et méthode de paiement</p>
           </div>
           <div class="modal-v2-footer" style="margin-top:12px">
             <button class="btn-v2-cancel" onclick="closeModalAnimated()">Annuler</button>
@@ -5957,10 +5965,18 @@ function updatePaymentInstructions(method) {
   else lbl.innerText = 'N Bordereau ou Reference mandat *'
 }
 
-function updateWhatsAppBtn() {
+function updateWhatsAppBtn(plan) {
   const ref = (document.getElementById('pay-ref')?.value || '').trim()
   const btn = document.getElementById('wa-pay-btn')
-  if (btn) btn.disabled = !ref
+  if (!btn) return
+  btn.disabled = !ref
+  if (ref && plan) {
+    const method = document.querySelector('input[name="payment-method"]:checked')?.value || 'baridimob'
+    const methodLabel = method === 'baridimob' ? 'BaridiMob' : method === 'ccp' ? 'CCP' : 'RedotPay (USDT)'
+    const amount = plan === 'pro' ? '2,900 DA' : '6,900 DA'
+    const msg = 'Bonjour, j\u2019ai effectue le paiement du Plan ' + plan.toUpperCase() + '.\nReference : ' + ref + '\nMethode : ' + methodLabel + '\nMontant : ' + amount
+    btn.onclick = () => window.open('https://wa.me/213552295894?text=' + encodeURIComponent(msg), '_blank')
+  }
 }
 
 function openWhatsAppPayment(plan) {
@@ -5969,10 +5985,8 @@ function openWhatsAppPayment(plan) {
   const method = document.querySelector('input[name="payment-method"]:checked')?.value || 'baridimob'
   const methodLabel = method === 'baridimob' ? 'BaridiMob' : method === 'ccp' ? 'CCP' : 'RedotPay (USDT)'
   const amount = plan === 'pro' ? '2,900 DA' : '6,900 DA'
-  // ⚠️  \\n utilisé ici (pas \\n) pour éviter SyntaxError navigateur
-  const msg = 'Bonjour, j' + "'" + 'ai effectue le paiement du Plan ' + plan.toUpperCase() + '.\\nReference : ' + ref + '\\nMethode : ' + methodLabel + '\\nMontant : ' + amount
-  const text = encodeURIComponent(msg)
-  window.open('https://wa.me/213552295894?text=' + text, '_blank')
+  const msg = 'Bonjour, j\u2019ai effectue le paiement du Plan ' + plan.toUpperCase() + '.\nReference : ' + ref + '\nMethode : ' + methodLabel + '\nMontant : ' + amount
+  window.open('https://wa.me/213552295894?text=' + encodeURIComponent(msg), '_blank')
 }
 
 async function submitPaymentRequest(plan) {
