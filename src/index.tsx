@@ -2335,9 +2335,9 @@ function traduireStatutZR(stateName: string): string {
     dispatch: '📦 Prêt à expédier', ready: '📦 Prêt à expédier',
     confirme_au_bureau: '🚚 Ramassé', picked: '🚚 Ramassé', ramasse: '🚚 Ramassé',
     vers_wilaya: '🔄 En cours de transit', transit: '🔄 En cours de transit', in_transit: '🔄 En cours de transit', transfert: '🔄 En cours de transit',
-    sortie_en_livraison: '?? En cours de livraison', en_livraison: '?? En cours de livraison', out_for_delivery: '?? En cours de livraison', delivery: '?? En cours de livraison',
-    livre: '?? Livré & Encaissé', delivered: '?? Livré & Encaissé', encaisse: '?? Livré & Encaissé',
-    retour: '??? Retour Expéditeur', returned: '??? Retour Expéditeur', retourne: '??? Retour Expéditeur', echec: '??? Retour Expéditeur',
+    sortie_en_livraison: '🚛 En cours de livraison', en_livraison: '🚛 En cours de livraison', out_for_delivery: '🚛 En cours de livraison', delivery: '🚛 En cours de livraison',
+    livre: '✅ Livré & Encaissé', delivered: '✅ Livré & Encaissé', encaisse: '✅ Livré & Encaissé',
+    retour: '↩️ Retour Expéditeur', returned: '↩️ Retour Expéditeur', retourne: '↩️ Retour Expéditeur', echec: '↩️ Retour Expéditeur',
     annule: 'Annule', cancelled: 'Annule', canceled: 'Annule'
   }
   if (mapping[s]) return mapping[s]
@@ -2350,15 +2350,15 @@ function traduireStatutYalidine(status: any): string {
   const mapping: Record<string, string> = {
     '1': '🛍️ Nouvelle', '2': '✅ Confirmée', '3': 'Annule', '4': '📦 Prêt à expédier', '5': 'EXPEDIE',
     '6': '🚚 Ramassé', '7': '🔄 En cours de transit', '8': '🔄 En cours de transit', '9': '🔄 En cours de transit', '10': '🔄 En cours de transit',
-    '11': '?? En cours de livraison', '12': '?? Livré & Encaissé', '13': 'ECHEC LIVRAISON', '14': '??? Retour Expéditeur', '15': '??? Retour Expéditeur'
+    '11': '🚛 En cours de livraison', '12': '✅ Livré & Encaissé', '13': 'ECHEC LIVRAISON', '14': '↩️ Retour Expéditeur', '15': '↩️ Retour Expéditeur'
   }
   if (mapping[s]) return mapping[s]
 
   const text = s.toLowerCase()
-  if (text.includes('livre')) return '?? Livré & Encaissé'
-  if (text.includes('retour')) return '??? Retour Expéditeur'
+  if (text.includes('livre')) return '✅ Livré & Encaissé'
+  if (text.includes('retour')) return '↩️ Retour Expéditeur'
   if (text.includes('transit')) return '🔄 En cours de transit'
-  if (text.includes('livraison')) return '?? En cours de livraison'
+  if (text.includes('livraison')) return '🚛 En cours de livraison'
   if (text.includes('pret')) return '📦 Prêt à expédier'
   if (text.includes('ramasse')) return '🚚 Ramassé'
   if (text.includes('annul')) return 'Annule'
@@ -2371,8 +2371,8 @@ function traduireStatutEcotrack(status: any): string {
   const mapping: Record<string, string> = {
     'nouveau': '🛍️ Nouvelle', 'en attente': 'EN ATTENTE', 'pret': '📦 Prêt à expédier',
     'expedie': 'EXPEDIE', 'recu': '🚚 Ramassé', 'en cours': '🔄 En cours de transit',
-    'en livraison': '?? En cours de livraison', 'livre': '?? Livré & Encaissé', 'echoue': '??? Retour Expéditeur',
-    'retourne': '??? Retour Expéditeur', 'annule': 'Annule'
+    'en livraison': '🚛 En cours de livraison', 'livre': '✅ Livré & Encaissé', 'echoue': '↩️ Retour Expéditeur',
+    'retourne': '↩️ Retour Expéditeur', 'annule': 'Annule'
   }
   if (mapping[s]) return mapping[s]
   for (const [key, value] of Object.entries(mapping)) { if (s.includes(key)) return value }
@@ -3957,8 +3957,8 @@ function navigateTo(view) {
 const livraisons = ['A domicile', 'Stop Desk']
 const statuts = [
   '🛍️ Nouvelle', '✅ Confirmée', '?? Pas de réponse', '?? Numéro erroné', '?? Doublon',
-  '📦 Prêt à expédier', '🚚 Ramassé', '🔄 En cours de transit', '?? En cours de livraison',
-  '?? Livré & Encaissé', '??? Retour Expéditeur', 'Annule', 'Reporte'
+  '📦 Prêt à expédier', '🚚 Ramassé', '🔄 En cours de transit', '🚛 En cours de livraison',
+  '✅ Livré & Encaissé', '↩️ Retour Expéditeur', 'Annule', 'Reporte'
 ]
 
 // ===================== STATUS COLORS =====================
@@ -4803,7 +4803,7 @@ function setAdminFilterSuivi(userId) {
 async function returnOrder(id) {
   if(!confirm('Marquer cet envoi comme RETOURNE ?')) return
   try {
-    await api.put('/commandes/'+id, { statut: '??? Retour Expéditeur', situation: 'Marqué comme retour manuellement' })
+    await api.put('/commandes/'+id, { statut: '↩️ Retour Expéditeur', situation: 'Marqué comme retour manuellement' })
     toast('Colis marqué comme retour'); loadSuivi()
   } catch(e) { toast('Erreur', 'error') }
 }
@@ -5565,50 +5565,46 @@ async function loadWilayasPage() {
   }
   const container = document.getElementById('view-wilayaspage')
   if (!container) return
-  container.innerHTML = \`
-    <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-      <div>
-        <h1 class="text-2xl font-bold"><i class="fas fa-map-marked-alt text-indigo-400 mr-2"></i>Wilayas & Communes</h1>
-        <p class="text-gray-400 text-sm">Consultez les zones de livraison et activez/désactivez des communes.</p>
-      </div>
-      <div class="flex gap-2">
-        <button onclick="toggleAllWilayas()" class="btn btn-outline text-xs"><i class="fas fa-layer-group mr-1"></i> Tout basculer</button>
-      </div>
-    </div>
-    <div class="mb-6 relative">
-      <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
-      <input type="text" oninput="filterWilayas(this.value)" placeholder="Rechercher une wilaya ou une commune..." class="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-indigo-500/50 transition-all outline-none">
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="wilayas-grid">
-      \${state.wilayasFull.map(w => \`
-        <div class="wilaya-card card border border-white/5 bg-white/2 hover:border-white/10 transition-all" data-wilaya-name="\${w.name.toLowerCase()}">
-          <button onclick="toggleWilaya(this)" class="w-full flex items-center justify-between p-4" aria-expanded="false">
-            <div class="flex items-center gap-3">
-              <span class="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center font-bold text-indigo-400 text-xs">\${w.id}</span>
-              <span class="font-bold text-gray-200">\${w.name}</span>
-            </div>
-            <i class="fas fa-chevron-down text-gray-600 transition-transform"></i>
-          </button>
-          <div class="hidden border-t border-white/5 bg-black/20 p-4">
-             <div class="grid grid-cols-1 gap-2">
-               \${w.communes.map(c => \`
-                 <div class="commune-item flex items-center justify-between py-1.5 px-3 rounded-lg hover:bg-white/5 transition" data-commune-name="\${c.name.toLowerCase()}">
-                   <div class="flex items-center gap-2">
-                     <i class="fas fa-location-dot text-[10px] text-gray-600"></i>
-                     <span class="text-sm text-gray-400">\${c.name}</span>
-                   </div>
-                   <div class="toggle-switch transform scale-75">
-                     <input type="checkbox" \${c.active ? 'checked' : ''} onchange="toggleCommune(\${c.id}, this.checked)">
-                     <label class="slider"></label>
-                   </div>
-                 </div>
-               \`).join('')}
-             </div>
-          </div>
-        </div>
-      \`).join('')}
-    </div>
-  \`
+  var wilayasHtml = state.wilayasFull.map(function(w) {
+    var communesHtml = w.communes.map(function(c) {
+      return '<div class="commune-item flex items-center justify-between py-1.5 px-3 rounded-lg hover:bg-white/5 transition" data-commune-name="' + c.name.toLowerCase() + '">' +
+        '<div class="flex items-center gap-2">' +
+          '<i class="fas fa-location-dot text-[10px] text-gray-600"></i>' +
+          '<span class="text-sm text-gray-400">' + c.name + '</span>' +
+        '</div>' +
+        '<div class="toggle-switch transform scale-75">' +
+          '<input type="checkbox" ' + (c.active ? 'checked' : '') + ' onchange="toggleCommune(' + c.id + ', this.checked)">' +
+          '<label class="slider"></label>' +
+        '</div>' +
+      '</div>'
+    }).join('')
+    return '<div class="wilaya-card card border border-white/5 bg-white/2 hover:border-white/10 transition-all" data-wilaya-name="' + w.name.toLowerCase() + '">' +
+      '<button onclick="toggleWilaya(this)" class="w-full flex items-center justify-between p-4" aria-expanded="false">' +
+        '<div class="flex items-center gap-3">' +
+          '<span class="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center font-bold text-indigo-400 text-xs">' + w.id + '</span>' +
+          '<span class="font-bold text-gray-200">' + w.name + '</span>' +
+        '</div>' +
+        '<i class="fas fa-chevron-down text-gray-600 transition-transform"></i>' +
+      '</button>' +
+      '<div class="hidden border-t border-white/5 bg-black/20 p-4">' +
+        '<div class="grid grid-cols-1 gap-2">' + communesHtml + '</div>' +
+      '</div>' +
+    '</div>'
+  }).join('')
+  container.innerHTML = '<div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">' +
+    '<div>' +
+      '<h1 class="text-2xl font-bold"><i class="fas fa-map-marked-alt text-indigo-400 mr-2"></i>Wilayas & Communes</h1>' +
+      '<p class="text-gray-400 text-sm">Consultez les zones de livraison et activez/désactivez des communes.</p>' +
+    '</div>' +
+    '<div class="flex gap-2">' +
+      '<button onclick="toggleAllWilayas()" class="btn btn-outline text-xs"><i class="fas fa-layer-group mr-1"></i> Tout basculer</button>' +
+    '</div>' +
+  '</div>' +
+  '<div class="mb-6 relative">' +
+    '<i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>' +
+    '<input type="text" oninput="filterWilayas(this.value)" placeholder="Rechercher une wilaya ou une commune..." class="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-indigo-500/50 transition-all outline-none">' +
+  '</div>' +
+  '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="wilayas-grid">' + wilayasHtml + '</div>'
 }
 
 function toggleAllWilayas() {
@@ -5672,70 +5668,57 @@ function showAddCompanyModal(edit = null) {
   const title = (isEdit ? 'Modifier' : 'Ajouter') + ' Societe de Livraison'
   const icon = isEdit ? 'fa-pen-to-square' : 'fa-truck-fast'
 
-  document.getElementById('modals').innerHTML = \`
-    <div class="modal-overlay-v2" onclick="closeModalV2(event)">
-      <div class="modal-v2" style="max-width:550px" onclick="event.stopPropagation()">
-        <div class="modal-v2-header">
-          <h2><span class="header-icon"><i class="fas \${icon}"></i></span> \${title}</h2>
-          <button class="modal-v2-close" onclick="closeModalAnimated()"><i class="fas fa-xmark"></i></button>
-        </div>
-        <div class="modal-v2-body">
-          <form onsubmit="saveCompany(event, \${isEdit ? edit.id : 'null'})" class="space-y-4">
-            <div class="modal-v2-section">
-              <div class="modal-v2-section-title"><i class="fas fa-info-circle"></i> Identite</div>
-              <div class="form-grid">
-                <div class="float-field full-width">
-                  <i class="fas fa-building field-icon"></i>
-                  <input type="text" id="dc-name" value="\${c.name || ''}" placeholder=" " required>
-                  <label>Nom de la societe *</label>
-                </div>
-              </div>
-            </div>
-            <div class="modal-v2-section">
-              <div class="modal-v2-section-title"><i class="fas fa-plug"></i> Configuration API</div>
-              <div class="form-grid">
-                <div class="float-field">
-                  <i class="fas fa-laptop-code field-icon"></i>
-                  <select id="dc-type">
-                    <option \${c.api_type === 'manual' ? 'selected' : ''} value="manual">Manuel (sans API)</option>
-                    <option \${c.api_type === 'rest' ? 'selected' : ''} value="rest">REST API</option>
-                    <option \${c.api_type === 'custom' ? 'selected' : ''} value="custom">Personnalise</option>
-                  </select>
-                  <label>Type d'API</label>
-                </div>
-                <div class="float-field">
-                  <i class="fas fa-link field-icon"></i>
-                  <input type="text" id="dc-url" value="\${c.api_url || ''}" placeholder=" ">
-                  <label>URL de l'API</label>
-                </div>
-                <div class="float-field">
-                  <i class="fas fa-key field-icon"></i>
-                  <input type="password" id="dc-key" value="\${c.api_key || ''}" placeholder=" ">
-                  <label>Cle API</label>
-                </div>
-                <div class="float-field">
-                  <i class="fas fa-shield-cat field-icon"></i>
-                  <input type="password" id="dc-token" value="\${c.api_token || ''}" placeholder=" ">
-                  <label>Token / Secret</label>
-                </div>
-              </div>
-            </div>
-            <div class="modal-v2-section last">
-               <div class="modal-v2-section-title"><i class="fas fa-comment-dots"></i> Notes</div>
-               <div class="float-field full-width">
-                 <input type="text" id="dc-notes" value="\${c.notes || ''}" placeholder=" ">
-                 <label>Notes internes</label>
-               </div>
-            </div>
-            <div class="modal-v2-footer">
-              <button type="button" class="btn-v2-cancel" onclick="closeModalAnimated()">Annuler</button>
-              <button type="submit" class="btn-v2-submit"><i class="fas fa-save"></i> Enregistrer</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  \`
+  document.getElementById('modals').innerHTML = '<div class="modal-overlay-v2" onclick="closeModalV2(event)">' +
+    '<div class="modal-v2" style="max-width:550px" onclick="event.stopPropagation()">' +
+      '<div class="modal-v2-header">' +
+        '<h2><span class="header-icon"><i class="fas ' + icon + '"></i></span> ' + title + '</h2>' +
+        '<button class="modal-v2-close" onclick="closeModalAnimated()"><i class="fas fa-xmark"></i></button>' +
+      '</div>' +
+      '<div class="modal-v2-body">' +
+        '<form onsubmit="saveCompany(event, ' + (isEdit ? edit.id : 'null') + ')" class="space-y-4">' +
+          '<div class="modal-v2-section">' +
+            '<div class="modal-v2-section-title"><i class="fas fa-info-circle"></i> Identite</div>' +
+            '<div class="form-grid"><div class="float-field full-width">' +
+              '<i class="fas fa-building field-icon"></i>' +
+              '<input type="text" id="dc-name" value="' + (c.name || '') + '" placeholder=" " required>' +
+              '<label>Nom de la societe *</label>' +
+            '</div></div>' +
+          '</div>' +
+          '<div class="modal-v2-section">' +
+            '<div class="modal-v2-section-title"><i class="fas fa-plug"></i> Configuration API</div>' +
+            '<div class="form-grid">' +
+              '<div class="float-field"><i class="fas fa-laptop-code field-icon"></i>' +
+                '<select id="dc-type">' +
+                  '<option ' + (c.api_type === 'manual' ? 'selected' : '') + ' value="manual">Manuel (sans API)</option>' +
+                  '<option ' + (c.api_type === 'rest' ? 'selected' : '') + ' value="rest">REST API</option>' +
+                  '<option ' + (c.api_type === 'custom' ? 'selected' : '') + ' value="custom">Personnalise</option>' +
+                '</select><label>Type d&#39;API</label></div>' +
+              '<div class="float-field"><i class="fas fa-link field-icon"></i>' +
+                '<input type="text" id="dc-url" value="' + (c.api_url || '') + '" placeholder=" ">' +
+                '<label>URL de l&#39;API</label></div>' +
+              '<div class="float-field"><i class="fas fa-key field-icon"></i>' +
+                '<input type="password" id="dc-key" value="' + (c.api_key || '') + '" placeholder=" ">' +
+                '<label>Cle API</label></div>' +
+              '<div class="float-field"><i class="fas fa-shield-cat field-icon"></i>' +
+                '<input type="password" id="dc-token" value="' + (c.api_token || '') + '" placeholder=" ">' +
+                '<label>Token / Secret</label></div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="modal-v2-section last">' +
+            '<div class="modal-v2-section-title"><i class="fas fa-comment-dots"></i> Notes</div>' +
+            '<div class="float-field full-width">' +
+              '<input type="text" id="dc-notes" value="' + (c.notes || '') + '" placeholder=" ">' +
+              '<label>Notes internes</label>' +
+            '</div>' +
+          '</div>' +
+          '<div class="modal-v2-footer">' +
+            '<button type="button" class="btn-v2-cancel" onclick="closeModalAnimated()">Annuler</button>' +
+            '<button type="submit" class="btn-v2-submit"><i class="fas fa-save"></i> Enregistrer</button>' +
+          '</div>' +
+        '</form>' +
+      '</div>' +
+    '</div>' +
+  '</div>'
 }
 
 async function saveCompany(e, id) {
@@ -5808,153 +5791,119 @@ async function loadPricing() {
       '<td class="py-3 px-4 text-xs text-gray-500">' + (r.admin_notes || '-') + '</td>' +
     '</tr>'
   })
-  container.innerHTML = \`
-    <div class="mb-10 text-center">
-      <h1 class="text-3xl font-extrabold text-white mb-2">Tarification & Plans</h1>
-      <p class="text-gray-400">Boostez votre boutique avec nos plans premium</p>
-    </div>
-    <div class="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto mb-16">
-      <div class="card-glass p-8 flex flex-col items-center text-center relative overflow-hidden group \${currentSub === 'starter' ? 'border-indigo-500/30 ring-1 ring-indigo-500/20' : ''}">
-        \${currentSub === 'starter' ? '<div class="bg-indigo-600 text-white text-[10px] font-bold px-3 py-1 rounded-full absolute top-4 right-4 uppercase">Actuel</div>' : ''}
-        <div class="w-16 h-16 rounded-2xl bg-gray-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"><i class="fas fa-seedling text-gray-400 text-2xl"></i></div>
-        <h3 class="text-xl font-bold mb-2">Starter</h3>
-        <div class="text-3xl font-black mb-4">0 DA<span class="text-sm text-gray-500 font-medium">/mois</span></div>
-        <ul class="text-sm text-gray-400 space-y-3 mb-10 text-left w-full">
-          <li><i class="fas fa-check text-indigo-400 mr-2"></i> 50 commandes / mois</li>
-          <li><i class="fas fa-check text-indigo-400 mr-2"></i> Dashboard basique</li>
-          <li><i class="fas fa-check text-indigo-400 mr-2"></i> 1 Boutique</li>
-        </ul>
-        <button class="btn btn-outline w-full py-3 rounded-xl mt-auto opacity-50 cursor-not-allowed" disabled>Inclus</button>
-      </div>
-      <div class="card-glass p-8 flex flex-col items-center text-center relative overflow-hidden group scale-105 shadow-2xl shadow-indigo-500/10 border-indigo-500/40">
-        \${currentSub === 'pro' ? '<div class="bg-indigo-600 text-white text-[10px] font-bold px-3 py-1 rounded-full absolute top-4 right-4 uppercase">Actuel</div>' : '<div class="bg-indigo-600 text-white text-[10px] font-bold px-3 py-1 rounded-full absolute top-4 right-4 uppercase tracking-wider">Populaire</div>'}
-        <div class="absolute top-0 left-0 w-full h-1 bg-indigo-500"></div>
-        <div class="w-16 h-16 rounded-2xl bg-indigo-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"><i class="fas fa-rocket text-indigo-400 text-2xl"></i></div>
-        <h3 class="text-xl font-bold mb-2">Pro</h3>
-        <div class="text-3xl font-black mb-4">2,900 DA<span class="text-sm text-gray-500 font-medium">/mois</span></div>
-        <ul class="text-sm text-gray-400 space-y-3 mb-10 text-left w-full">
-          <li><i class="fas fa-check text-indigo-400 mr-2"></i> 1,500 commandes / mois</li>
-          <li><i class="fas fa-check text-indigo-400 mr-2"></i> ?tiquettes personnalisées</li>
-          <li><i class="fas fa-check text-indigo-400 mr-2"></i> Analyse de stock avancée</li>
-          <li><i class="fas fa-check text-indigo-400 mr-2"></i> Jusqu'à 3 Boutiques</li>
-        </ul>
-        <button onclick="showPaymentModal('pro')" class="btn btn-primary w-full py-3 rounded-xl mt-auto shadow-lg shadow-indigo-500/20" \${currentSub === 'pro' ? 'disabled' : ''}>\${currentSub === 'pro' ? 'Plan Actuel' : 'Passer au Plan Pro'}</button>
-      </div>
-      <div class="card-glass p-8 flex flex-col items-center text-center relative overflow-hidden group \${currentSub === 'business' ? 'border-emerald-500/30 ring-1 ring-emerald-500/20' : ''}">
-        \${currentSub === 'business' ? '<div class="bg-emerald-600 text-white text-[10px] font-bold px-3 py-1 rounded-full absolute top-4 right-4 uppercase">Actuel</div>' : ''}
-        <div class="w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"><i class="fas fa-building text-emerald-400 text-2xl"></i></div>
-        <h3 class="text-xl font-bold mb-2">Business</h3>
-        <div class="text-3xl font-black mb-4">6,900 DA<span class="text-sm text-gray-500 font-medium">/mois</span></div>
-        <ul class="text-sm text-gray-400 space-y-3 mb-10 text-left w-full">
-          <li><i class="fas fa-check text-emerald-400 mr-2"></i> Commandes illimitées</li>
-          <li><i class="fas fa-check text-emerald-400 mr-2"></i> Multi-utilisateurs (?quipe)</li>
-          <li><i class="fas fa-check text-emerald-400 mr-2"></i> Support Prioritaire</li>
-          <li><i class="fas fa-check text-emerald-400 mr-2"></i> Boutiques illimitées</li>
-        </ul>
-        <button onclick="showPaymentModal('business')" class="btn btn-outline w-full py-3 rounded-xl mt-auto hover:bg-emerald-500/5" \${currentSub === 'business' ? 'disabled' : ''}>\${currentSub === 'business' ? 'Plan Actuel' : 'Choisir Business'}</button>
-      </div>
-    </div>
-    <div class="max-w-4xl mx-auto">
-      <div class="flex items-center gap-3 mb-6"><i class="fas fa-history text-indigo-400"></i><h2 class="text-xl font-bold">Historique des paiements</h2></div>
-      <div class="card overflow-hidden">
-        <table class="w-full text-left">
-          <thead><tr class="bg-white/3"><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">Date</th><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">Plan</th><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">Montant</th><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">Méthode</th><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">Statut</th><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">Notes Admin</th></tr></thead>
-          <tbody class="divide-y divide-white/5">\${rows || '<tr><td colspan="6" class="py-10 text-center text-gray-500">Aucun paiement enregistré</td></tr>'}</tbody>
-        </table>
-      </div>
-    </div>
-  \`
+  container.innerHTML = '<div class="mb-10 text-center">' +
+    '<h1 class="text-3xl font-extrabold text-white mb-2">Tarification & Plans</h1>' +
+    '<p class="text-gray-400">Boostez votre boutique avec nos plans premium</p>' +
+  '</div>' +
+  '<div class="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto mb-16">' +
+    '<div class="card-glass p-8 flex flex-col items-center text-center relative overflow-hidden group ' + (currentSub === 'starter' ? 'border-indigo-500/30 ring-1 ring-indigo-500/20' : '') + '">' +
+      (currentSub === 'starter' ? '<div class="bg-indigo-600 text-white text-[10px] font-bold px-3 py-1 rounded-full absolute top-4 right-4 uppercase">Actuel</div>' : '') +
+      '<div class="w-16 h-16 rounded-2xl bg-gray-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"><i class="fas fa-seedling text-gray-400 text-2xl"></i></div>' +
+      '<h3 class="text-xl font-bold mb-2">Starter</h3>' +
+      '<div class="text-3xl font-black mb-4">0 DA<span class="text-sm text-gray-500 font-medium">/mois</span></div>' +
+      '<ul class="text-sm text-gray-400 space-y-3 mb-10 text-left w-full">' +
+        '<li><i class="fas fa-check text-indigo-400 mr-2"></i> 50 commandes / mois</li>' +
+        '<li><i class="fas fa-check text-indigo-400 mr-2"></i> Dashboard basique</li>' +
+        '<li><i class="fas fa-check text-indigo-400 mr-2"></i> 1 Boutique</li>' +
+      '</ul>' +
+      '<button class="btn btn-outline w-full py-3 rounded-xl mt-auto opacity-50 cursor-not-allowed" disabled>Inclus</button>' +
+    '</div>' +
+    '<div class="card-glass p-8 flex flex-col items-center text-center relative overflow-hidden group scale-105 shadow-2xl shadow-indigo-500/10 border-indigo-500/40">' +
+      (currentSub === 'pro' ? '<div class="bg-indigo-600 text-white text-[10px] font-bold px-3 py-1 rounded-full absolute top-4 right-4 uppercase">Actuel</div>' : '<div class="bg-indigo-600 text-white text-[10px] font-bold px-3 py-1 rounded-full absolute top-4 right-4 uppercase tracking-wider">Populaire</div>') +
+      '<div class="absolute top-0 left-0 w-full h-1 bg-indigo-500"></div>' +
+      '<div class="w-16 h-16 rounded-2xl bg-indigo-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"><i class="fas fa-rocket text-indigo-400 text-2xl"></i></div>' +
+      '<h3 class="text-xl font-bold mb-2">Pro</h3>' +
+      '<div class="text-3xl font-black mb-4">2,900 DA<span class="text-sm text-gray-500 font-medium">/mois</span></div>' +
+      '<ul class="text-sm text-gray-400 space-y-3 mb-10 text-left w-full">' +
+        '<li><i class="fas fa-check text-indigo-400 mr-2"></i> 1,500 commandes / mois</li>' +
+        '<li><i class="fas fa-check text-indigo-400 mr-2"></i> Étiquettes personnalisées</li>' +
+        '<li><i class="fas fa-check text-indigo-400 mr-2"></i> Analyse de stock avancée</li>' +
+        '<li><i class="fas fa-check text-indigo-400 mr-2"></i> Jusqu&#39;à 3 Boutiques</li>' +
+      '</ul>' +
+      '<button onclick="showPaymentModal(&apos;pro&apos;)" class="btn btn-primary w-full py-3 rounded-xl mt-auto shadow-lg shadow-indigo-500/20" ' + (currentSub === 'pro' ? 'disabled' : '') + '>' + (currentSub === 'pro' ? 'Plan Actuel' : 'Passer au Plan Pro') + '</button>' +
+    '</div>' +
+    '<div class="card-glass p-8 flex flex-col items-center text-center relative overflow-hidden group ' + (currentSub === 'business' ? 'border-emerald-500/30 ring-1 ring-emerald-500/20' : '') + '">' +
+      (currentSub === 'business' ? '<div class="bg-emerald-600 text-white text-[10px] font-bold px-3 py-1 rounded-full absolute top-4 right-4 uppercase">Actuel</div>' : '') +
+      '<div class="w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"><i class="fas fa-building text-emerald-400 text-2xl"></i></div>' +
+      '<h3 class="text-xl font-bold mb-2">Business</h3>' +
+      '<div class="text-3xl font-black mb-4">6,900 DA<span class="text-sm text-gray-500 font-medium">/mois</span></div>' +
+      '<ul class="text-sm text-gray-400 space-y-3 mb-10 text-left w-full">' +
+        '<li><i class="fas fa-check text-emerald-400 mr-2"></i> Commandes illimitées</li>' +
+        '<li><i class="fas fa-check text-emerald-400 mr-2"></i> Multi-utilisateurs (Équipe)</li>' +
+        '<li><i class="fas fa-check text-emerald-400 mr-2"></i> Support Prioritaire</li>' +
+        '<li><i class="fas fa-check text-emerald-400 mr-2"></i> Boutiques illimitées</li>' +
+      '</ul>' +
+      '<button onclick="showPaymentModal(&apos;business&apos;)" class="btn btn-outline w-full py-3 rounded-xl mt-auto hover:bg-emerald-500/5" ' + (currentSub === 'business' ? 'disabled' : '') + '>' + (currentSub === 'business' ? 'Plan Actuel' : 'Choisir Business') + '</button>' +
+    '</div>' +
+  '</div>' +
+  '<div class="max-w-4xl mx-auto">' +
+    '<div class="flex items-center gap-3 mb-6"><i class="fas fa-history text-indigo-400"></i><h2 class="text-xl font-bold">Historique des paiements</h2></div>' +
+    '<div class="card overflow-hidden">' +
+      '<table class="w-full text-left">' +
+        '<thead><tr class="bg-white/3"><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">Date</th><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">Plan</th><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">Montant</th><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">Méthode</th><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">Statut</th><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">Notes Admin</th></tr></thead>' +
+        '<tbody class="divide-y divide-white/5">' + (rows || '<tr><td colspan="6" class="py-10 text-center text-gray-500">Aucun paiement enregistré</td></tr>') + '</tbody>' +
+      '</table>' +
+    '</div>' +
+  '</div>'
 }
 
 function showPaymentModal(plan) {
   const price = plan === 'pro' ? '2,900 DA' : '6,900 DA'
   const usdPrice = plan === 'pro' ? '15 USD' : '35 USD'
-  document.getElementById('modals').innerHTML = \`
-    <div class="modal-overlay-v2" onclick="closeModalV2(event)">
-      <div class="modal-v2" onclick="event.stopPropagation()" style="max-width:550px">
-        <div class="modal-v2-header">
-          <h2><span class="header-icon"><i class="fas fa-credit-card"></i></span> Activer le Plan \${plan.toUpperCase()}</h2>
-          <button class="modal-v2-close" onclick="closeModalAnimated()"><i class="fas fa-xmark"></i></button>
-        </div>
-        <div class="modal-v2-body">
-          <p class="text-sm text-gray-400 mb-6 text-center">Effectuez le transfert vers l'une des méthodes ci-dessous, puis renseignez la référence de transaction.</p>
-          <div class="space-y-4 mb-6">
-             <label class="flex items-start gap-4 p-4 rounded-xl border border-white/5 bg-white/2 hover:bg-white/5 cursor-pointer transition">
-                <input type="radio" name="payment-method" value="baridimob" checked onchange="updatePaymentInstructions('baridimob'); updateWhatsAppBtn('\${plan}')" class="mt-1 w-4 h-4 accent-indigo-500">
-                <div class="flex-1">
-                  <div class="font-bold text-sm text-white flex items-center justify-between">BaridiMob <span>\${price}</span></div>
-                  <p class="text-xs text-gray-400 mt-1">Virement instantané vers RIP :</p>
-                  <code class="block mt-1 p-2 bg-black/30 rounded text-indigo-300 text-[11px] font-mono select-all">00799999XXXXXXXXXX99</code>
-                </div>
-             </label>
-             <label class="flex items-start gap-4 p-4 rounded-xl border border-white/5 bg-white/2 hover:bg-white/5 cursor-pointer transition">
-                <input type="radio" name="payment-method" value="ccp" onchange="updatePaymentInstructions('ccp'); updateWhatsAppBtn('\${plan}')" class="mt-1 w-4 h-4 accent-indigo-500">
-                <div class="flex-1">
-                  <div class="font-bold text-sm text-white flex items-center justify-between">Vers CCP <span>\${price}</span></div>
-                  <p class="text-xs text-gray-400 mt-1">Versement guichet ou virement vers :</p>
-                  <code class="block mt-1 p-2 bg-black/30 rounded text-amber-300 text-[11px] font-mono select-all">XXXXXXXXXX clé XX</code>
-                </div>
-             </label>
-             <label class="flex items-start gap-4 p-4 rounded-xl border border-white/5 bg-white/2 hover:bg-white/5 cursor-pointer transition">
-                <input type="radio" name="payment-method" value="redotpay" onchange="updatePaymentInstructions('redotpay'); updateWhatsAppBtn('\${plan}')" class="mt-1 w-4 h-4 accent-indigo-500">
-                <div class="flex-1">
-                  <div class="font-bold text-sm text-white flex items-center justify-between">RedotPay (USDT) <span>\${usdPrice}</span></div>
-                  <p class="text-xs text-gray-400 mt-1">Transfert USDT TRC20 vers l'adresse :</p>
-                  <code class="block mt-1 p-2 bg-black/30 rounded text-emerald-300 text-[11px] font-mono select-all">TXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</code>
-                </div>
-             </label>
-          </div>
-
-          <!-- Séparateur WhatsApp Direct -->
-          <div class="flex items-center gap-3 my-4">
-            <div style="flex:1;height:1px;background:rgba(255,255,255,0.08)"></div>
-            <span class="text-xs text-gray-500 uppercase tracking-widest">Commandez directement</span>
-            <div style="flex:1;height:1px;background:rgba(255,255,255,0.08)"></div>
-          </div>
-
-          <!-- Bouton WhatsApp Direct (sans référence obligatoire) -->
-          <a href="https://wa.me/213552295894?text=\${encodeURIComponent('Bonjour, je souhaite activer le Plan ' + plan.toUpperCase() + ' sur AutoHub DZ.')}"
-             target="_blank"
-             class="flex items-center justify-center gap-3 w-full py-3.5 rounded-xl font-bold text-base mb-2 transition-all"
-             style="background:#25D366;color:white;text-decoration:none;border:none">
-            <i class="fab fa-whatsapp text-xl"></i> Commander via WhatsApp
-          </a>
-          <p class="text-xs text-gray-500 text-center mb-5">
-            <i class="fas fa-phone-alt mr-1"></i>Contactez-nous directement au <span class="text-gray-300 font-mono font-bold">0552 29 58 94</span>
-          </p>
-
-          <!-- Séparateur formulaire référence -->
-          <div class="flex items-center gap-3 my-4">
-            <div style="flex:1;height:1px;background:rgba(255,255,255,0.08)"></div>
-            <span class="text-xs text-gray-500 uppercase tracking-widest">Ou soumettez votre référence</span>
-            <div style="flex:1;height:1px;background:rgba(255,255,255,0.08)"></div>
-          </div>
-
-          <div class="modal-v2-section">
-             <div class="modal-v2-section-title"><i class="fas fa-hashtag"></i> Reference de transaction</div>
-             <div class="form-grid">
-                <div class="float-field full-width">
-                  <i class="fas fa-hashtag field-icon"></i>
-                  <input type="text" id="pay-ref" placeholder=" " required oninput="updateWhatsAppBtn('\${plan}')">
-                  <label id="pay-ref-label">Reference de transaction (N Bordereau / ID)*</label>
-                </div>
-             </div>
-          </div>
-          <div class="flex flex-col items-center gap-3 mt-4 mb-2">
-            <button id="wa-pay-btn" onclick="openWhatsAppPayment('\${plan}')" disabled
-              class="w-full py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-              style="background:rgba(37,211,102,0.15);color:#25D366;border:1px solid rgba(37,211,102,0.3)">
-              <i class="fab fa-whatsapp"></i> Envoyer ma référence via WhatsApp
-            </button>
-            <p class="text-xs text-gray-500 text-center"><i class="fas fa-info-circle mr-1"></i>Le message sera pré-rempli avec votre référence et méthode de paiement</p>
-          </div>
-          <div class="modal-v2-footer" style="margin-top:12px">
-            <button class="btn-v2-cancel" onclick="closeModalAnimated()">Annuler</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  \`
+  document.getElementById('modals').innerHTML = '<div class="modal-overlay-v2" onclick="closeModalV2(event)">' +
+    '<div class="modal-v2" onclick="event.stopPropagation()" style="max-width:550px">' +
+      '<div class="modal-v2-header">' +
+        '<h2><span class="header-icon"><i class="fas fa-credit-card"></i></span> Activer le Plan ' + plan.toUpperCase() + '</h2>' +
+        '<button class="modal-v2-close" onclick="closeModalAnimated()"><i class="fas fa-xmark"></i></button>' +
+      '</div>' +
+      '<div class="modal-v2-body">' +
+        '<p class="text-sm text-gray-400 mb-6 text-center">Effectuez le transfert vers l&#39;une des méthodes ci-dessous, puis renseignez la référence de transaction.</p>' +
+        '<div class="space-y-4 mb-6">' +
+          '<label class="flex items-start gap-4 p-4 rounded-xl border border-white/5 bg-white/2 hover:bg-white/5 cursor-pointer transition">' +
+            '<input type="radio" name="payment-method" value="baridimob" checked onchange="updatePaymentInstructions(&apos;baridimob&apos;)" class="mt-1 w-4 h-4 accent-indigo-500">' +
+            '<div class="flex-1">' +
+              '<div class="font-bold text-sm text-white flex items-center justify-between">BaridiMob <span>' + price + '</span></div>' +
+              '<p class="text-xs text-gray-400 mt-1">Virement instantané vers RIP :</p>' +
+              '<code class="block mt-1 p-2 bg-black/30 rounded text-indigo-300 text-[11px] font-mono select-all">00799999XXXXXXXXXX99</code>' +
+            '</div>' +
+          '</label>' +
+          '<label class="flex items-start gap-4 p-4 rounded-xl border border-white/5 bg-white/2 hover:bg-white/5 cursor-pointer transition">' +
+            '<input type="radio" name="payment-method" value="ccp" onchange="updatePaymentInstructions(&apos;ccp&apos;)" class="mt-1 w-4 h-4 accent-indigo-500">' +
+            '<div class="flex-1">' +
+              '<div class="font-bold text-sm text-white flex items-center justify-between">Vers CCP <span>' + price + '</span></div>' +
+              '<p class="text-xs text-gray-400 mt-1">Versement guichet ou virement vers :</p>' +
+              '<code class="block mt-1 p-2 bg-black/30 rounded text-amber-300 text-[11px] font-mono select-all">XXXXXXXXXX clé XX</code>' +
+            '</div>' +
+          '</label>' +
+          '<label class="flex items-start gap-4 p-4 rounded-xl border border-white/5 bg-white/2 hover:bg-white/5 cursor-pointer transition">' +
+            '<input type="radio" name="payment-method" value="redotpay" onchange="updatePaymentInstructions(&apos;redotpay&apos;)" class="mt-1 w-4 h-4 accent-indigo-500">' +
+            '<div class="flex-1">' +
+              '<div class="font-bold text-sm text-white flex items-center justify-between">RedotPay (USDT) <span>' + usdPrice + '</span></div>' +
+              '<p class="text-xs text-gray-400 mt-1">Transfert USDT TRC20 vers l&#39;adresse :</p>' +
+              '<code class="block mt-1 p-2 bg-black/30 rounded text-emerald-300 text-[11px] font-mono select-all">TXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</code>' +
+            '</div>' +
+          '</label>' +
+        '</div>' +
+        '<div class="modal-v2-section">' +
+          '<div class="modal-v2-section-title"><i class="fas fa-hashtag"></i> Reference de transaction</div>' +
+          '<div class="form-grid"><div class="float-field full-width">' +
+            '<i class="fas fa-hashtag field-icon"></i>' +
+            '<input type="text" id="pay-ref" placeholder=" " required oninput="updateWhatsAppBtn()">' +
+            '<label id="pay-ref-label">Reference de transaction (N Bordereau / ID)*</label>' +
+          '</div></div>' +
+        '</div>' +
+        '<div class="flex flex-col items-center gap-3 mt-6 mb-2">' +
+          '<button id="wa-pay-btn" onclick="openWhatsAppPayment(&apos;' + plan + '&apos;)" disabled class="w-full py-3.5 rounded-xl font-bold text-base flex items-center justify-center gap-3 transition-all disabled:opacity-40 disabled:cursor-not-allowed" style="background:#25D366;color:white;border:none">' +
+            '<i class="fab fa-whatsapp text-xl"></i> Envoyer via WhatsApp' +
+          '</button>' +
+          '<p class="text-xs text-gray-500 text-center"><i class="fas fa-info-circle mr-1"></i>Envoyez votre recu via WhatsApp pour activation</p>' +
+        '</div>' +
+        '<div class="modal-v2-footer" style="margin-top:12px">' +
+          '<button class="btn-v2-cancel" onclick="closeModalAnimated()">Annuler</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+  '</div>'
 }
 
 function updatePaymentInstructions(method) {
@@ -5965,18 +5914,10 @@ function updatePaymentInstructions(method) {
   else lbl.innerText = 'N Bordereau ou Reference mandat *'
 }
 
-function updateWhatsAppBtn(plan) {
+function updateWhatsAppBtn() {
   const ref = (document.getElementById('pay-ref')?.value || '').trim()
   const btn = document.getElementById('wa-pay-btn')
-  if (!btn) return
-  btn.disabled = !ref
-  if (ref && plan) {
-    const method = document.querySelector('input[name="payment-method"]:checked')?.value || 'baridimob'
-    const methodLabel = method === 'baridimob' ? 'BaridiMob' : method === 'ccp' ? 'CCP' : 'RedotPay (USDT)'
-    const amount = plan === 'pro' ? '2,900 DA' : '6,900 DA'
-    const msg = 'Bonjour, j\u2019ai effectue le paiement du Plan ' + plan.toUpperCase() + '.\nReference : ' + ref + '\nMethode : ' + methodLabel + '\nMontant : ' + amount
-    btn.onclick = () => window.open('https://wa.me/213552295894?text=' + encodeURIComponent(msg), '_blank')
-  }
+  if (btn) btn.disabled = !ref
 }
 
 function openWhatsAppPayment(plan) {
@@ -5985,8 +5926,9 @@ function openWhatsAppPayment(plan) {
   const method = document.querySelector('input[name="payment-method"]:checked')?.value || 'baridimob'
   const methodLabel = method === 'baridimob' ? 'BaridiMob' : method === 'ccp' ? 'CCP' : 'RedotPay (USDT)'
   const amount = plan === 'pro' ? '2,900 DA' : '6,900 DA'
-  const msg = 'Bonjour, j\u2019ai effectue le paiement du Plan ' + plan.toUpperCase() + '.\nReference : ' + ref + '\nMethode : ' + methodLabel + '\nMontant : ' + amount
-  window.open('https://wa.me/213552295894?text=' + encodeURIComponent(msg), '_blank')
+  const msg = 'Bonjour, j' + "'" + 'ai effectue le paiement du Plan ' + plan.toUpperCase() + '.\\nReference : ' + ref + '\\nMethode : ' + methodLabel + '\\nMontant : ' + amount
+  const text = encodeURIComponent(msg)
+  window.open('https://wa.me/213552295894?text=' + text, '_blank')
 }
 
 async function submitPaymentRequest(plan) {
@@ -6024,40 +5966,34 @@ async function loadAdminPaymentRequests() {
       return
     }
 
-    const rows = data.map((r) => \`
-      <div class="p-4 rounded-xl bg-white/3 border border-indigo-500/10 hover:bg-white/5 transition mb-3">
-        <div class="flex items-center justify-between mb-3">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center font-bold text-indigo-300 capitalize">\${r.username?.[0] || 'U'}</div>
-            <div>
-              <div class="text-sm font-bold text-white">\${r.username || r.email || 'Utilisateur'}</div>
-              <div class="text-[10px] text-gray-500 uppercase font-mono">\${r.store_name || '-'}</div>
-            </div>
-          </div>
-          <div class="text-right">
-            <div class="text-sm font-black text-white">\${Number(r.amount).toLocaleString()} \${r.currency}</div>
-            <div class="text-[10px] text-indigo-400 font-bold uppercase tracking-wider">PLAN \${r.plan}</div>
-          </div>
-        </div>
-        <div class="grid grid-cols-2 gap-2 mb-4">
-          <div class="p-2 rounded bg-black/20">
-            <div class="text-[9px] text-gray-500 uppercase">Methode</div>
-            <div class="text-xs text-gray-300 font-bold uppercase">\${r.payment_method}</div>
-          </div>
-          <div class="p-2 rounded bg-black/20">
-            <div class="text-[9px] text-gray-500 uppercase">Reference</div>
-            <div class="text-xs text-indigo-300 font-mono font-bold select-all truncate">\${r.proof_reference}</div>
-          </div>
-        </div>
-        \${r.proof_notes ? '<div class="text-xs text-gray-400 italic mb-4 bg-white/2 p-2 rounded">"'+r.proof_notes+'"</div>' : ''}
-        <div class="flex gap-2">
-          <button onclick="adminReviewPayment(\${r.id}, 'approved')" class="btn btn-success flex-1 py-2 text-xs font-bold"><i class="fas fa-check mr-1"></i> Approuver</button>
-          <button onclick="adminReviewPayment(\${r.id}, 'rejected')" class="btn btn-danger flex-1 py-2 text-xs font-bold"><i class="fas fa-times mr-1"></i> Rejeter</button>
-        </div>
-      </div>
-    \`).join('')
+    var rows = data.map(function(r) {
+      return '<div class="p-4 rounded-xl bg-white/3 border border-indigo-500/10 hover:bg-white/5 transition mb-3">' +
+        '<div class="flex items-center justify-between mb-3">' +
+          '<div class="flex items-center gap-3">' +
+            '<div class="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center font-bold text-indigo-300 capitalize">' + (r.username ? r.username[0] : 'U') + '</div>' +
+            '<div>' +
+              '<div class="text-sm font-bold text-white">' + (r.username || r.email || 'Utilisateur') + '</div>' +
+              '<div class="text-[10px] text-gray-500 uppercase font-mono">' + (r.store_name || '-') + '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="text-right">' +
+            '<div class="text-sm font-black text-white">' + Number(r.amount).toLocaleString() + ' ' + r.currency + '</div>' +
+            '<div class="text-[10px] text-indigo-400 font-bold uppercase tracking-wider">PLAN ' + r.plan + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="grid grid-cols-2 gap-2 mb-4">' +
+          '<div class="p-2 rounded bg-black/20"><div class="text-[9px] text-gray-500 uppercase">Methode</div><div class="text-xs text-gray-300 font-bold uppercase">' + r.payment_method + '</div></div>' +
+          '<div class="p-2 rounded bg-black/20"><div class="text-[9px] text-gray-500 uppercase">Reference</div><div class="text-xs text-indigo-300 font-mono font-bold select-all truncate">' + r.proof_reference + '</div></div>' +
+        '</div>' +
+        (r.proof_notes ? '<div class="text-xs text-gray-400 italic mb-4 bg-white/2 p-2 rounded">"' + r.proof_notes + '"</div>' : '') +
+        '<div class="flex gap-2">' +
+          '<button onclick="adminReviewPayment(' + r.id + ', &apos;approved&apos;)" class="btn btn-success flex-1 py-2 text-xs font-bold"><i class="fas fa-check mr-1"></i> Approuver</button>' +
+          '<button onclick="adminReviewPayment(' + r.id + ', &apos;rejected&apos;)" class="btn btn-danger flex-1 py-2 text-xs font-bold"><i class="fas fa-times mr-1"></i> Rejeter</button>' +
+        '</div>' +
+      '</div>'
+    }).join('')
 
-    container.innerHTML = \`<div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">\${rows}</div>\`
+    container.innerHTML = '<div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">' + rows + '</div>'
   } catch (e) {
     console.error(e)
   }
@@ -6393,3 +6329,6 @@ checkAuth().then(ok => {
 </body>
 </html>`
 }
+
+
+
