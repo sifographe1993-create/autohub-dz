@@ -5951,7 +5951,7 @@ function openWhatsAppPayment(plan) {
   const method = document.querySelector('input[name="payment-method"]:checked')?.value || 'baridimob'
   const methodLabel = method === 'baridimob' ? 'BaridiMob' : method === 'ccp' ? 'CCP' : 'RedotPay (USDT)'
   const amount = plan === 'pro' ? '2,900 DA' : '6,900 DA'
-  const msg = 'Bonjour, j' + "'" + 'ai effectue le paiement du Plan ' + plan.toUpperCase() + '.\nReference : ' + ref + '\nMethode : ' + methodLabel + '\nMontant : ' + amount
+  const msg = 'Bonjour, j' + "'" + 'ai effectue le paiement du Plan ' + plan.toUpperCase() + '.\\nReference : ' + ref + '\\nMethode : ' + methodLabel + '\\nMontant : ' + amount
   const text = encodeURIComponent(msg)
   window.open('https://wa.me/213552295894?text=' + text, '_blank')
 }
@@ -6360,6 +6360,3 @@ checkAuth().then(ok => {
 </body>
 </html>`
 }
-
-
-
