@@ -52,7 +52,7 @@ function normalizeStatusWorker(status: string): string {
 }
 
 function isConfirmedStatus(status: string): boolean {
-  return normalizeStatusWorker(status) === 'confirme'
+  return normalizeStatusWorker(status).includes('confirme')
 }
 
 async function ensureTeamMembersTable(db: D1Database) {
@@ -205,7 +205,7 @@ app.use('/api/*', async (c, next) => {
   if (publicRoutes.includes(path)) return next()
 
   const token = getCookie(c, 'session_token') || c.req.header('Authorization')?.replace('Bearer ', '')
-  if (!token) return c.json({ error: 'Non authentifiÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©', code: 'AUTH_REQUIRED' }, 401)
+  if (!token) return c.json({ error: 'Non authentifié', code: 'AUTH_REQUIRED' }, 401)
 
   const session = await c.env.DB.prepare(
     "SELECT s.user_id, u.username, u.nom, u.prenom, u.role, u.subscription, u.email FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token = ? AND s.expires_at > datetime('now')"
@@ -213,7 +213,7 @@ app.use('/api/*', async (c, next) => {
 
   if (!session) {
     deleteCookie(c, 'session_token')
-    return c.json({ error: 'Session expirÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©e', code: 'AUTH_REQUIRED' }, 401)
+    return c.json({ error: 'Session expirée', code: 'AUTH_REQUIRED' }, 401)
   }
 
   c.set('userId', session.user_id)
@@ -274,9 +274,9 @@ app.post('/api/auth/register', async (c) => {
     return c.json({ error: 'Tous les champs sont obligatoires' }, 400)
   }
 
-  // Validation prÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©nom
+  // Validation prénom
   if (prenom.trim().length < 2) {
-    return c.json({ error: 'Le prÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©nom doit contenir au moins 2 caractÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¨res' }, 400)
+    return c.json({ error: 'Le prénom doit contenir au moins 2 caractères' }, 400)
   }
 
   // Validation email
@@ -285,46 +285,46 @@ app.post('/api/auth/register', async (c) => {
     return c.json({ error: 'Adresse email invalide' }, 400)
   }
 
-  // Validation tÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©lÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©phone algÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©rien (05xx, 06xx, 07xx)
+  // Validation téléphone algérien (05xx, 06xx, 07xx)
   const phoneClean = telephone.replace(/[\s\-\.]/g, '')
   const phoneRegex = /^(0[567]\d{8}|\+213[567]\d{8})$/
   if (!phoneRegex.test(phoneClean)) {
-    return c.json({ error: 'NumÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©ro de tÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©lÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©phone invalide (format: 05xxxxxxxx, 06xxxxxxxx, 07xxxxxxxx)' }, 400)
+    return c.json({ error: 'Numéro de téléphone invalide (format: 05xxxxxxxx, 06xxxxxxxx, 07xxxxxxxx)' }, 400)
   }
 
   // Validation store name
   if (store_name.trim().length < 2) {
-    return c.json({ error: 'Le nom du magasin doit contenir au moins 2 caractÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¨res' }, 400)
+    return c.json({ error: 'Le nom du magasin doit contenir au moins 2 caractères' }, 400)
   }
 
   // Validation mot de passe
   if (password.length < 6) {
-    return c.json({ error: 'Le mot de passe doit contenir au moins 6 caractÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¨res' }, 400)
+    return c.json({ error: 'Le mot de passe doit contenir au moins 6 caractères' }, 400)
   }
 
   if (password !== confirm_password) {
     return c.json({ error: 'Les mots de passe ne correspondent pas' }, 400)
   }
 
-  // VÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©rifier si l'email existe dÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©jÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â 
+  // Vérifier si l'email existe déjà
   const existingUser = await c.env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(email.trim().toLowerCase()).first()
   if (existingUser) {
-    return c.json({ error: 'Cette adresse email est dÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©jÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â  utilisÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©e' }, 400)
+    return c.json({ error: 'Cette adresse email est déjà utilisée' }, 400)
   }
 
-  // VÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©rifier si le tÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©lÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©phone existe dÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©jÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â 
+  // Vérifier si le téléphone existe déjà
   const existingPhone = await c.env.DB.prepare('SELECT id FROM users WHERE telephone = ?').bind(phoneClean).first()
   if (existingPhone) {
-    return c.json({ error: 'Ce numÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©ro de tÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©lÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©phone est dÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©jÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â  utilisÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©' }, 400)
+    return c.json({ error: 'Ce numéro de téléphone est déjà utilisé' }, 400)
   }
 
   // Hacher le mot de passe
   const hashedPassword = await hashPassword(password)
 
-  // CrÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©er le username ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â  partir de l'email (partie avant @)
+  // Créer le username à partir de l'email (partie avant @)
   const username = email.trim().toLowerCase().split('@')[0] + '_' + Date.now().toString(36)
 
-  // InsÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©rer l'utilisateur avec abonnement par dÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©faut
+  // Insérer l'utilisateur avec abonnement par défaut
   const result = await c.env.DB.prepare(
     `INSERT INTO users (username, password_hash, prenom, nom, email, telephone, store_name, role, active, subscription)
      VALUES (?, ?, ?, ?, ?, ?, ?, 'client', 1, 'starter')`
@@ -332,12 +332,12 @@ app.post('/api/auth/register', async (c) => {
 
   const userId = result.meta.last_row_id
 
-  // Par dÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©faut, assigner tous les transporteurs disponibles au nouveau client
+  // Par défaut, assigner tous les transporteurs disponibles au nouveau client
   for (const t of TRANSPORTEURS) {
     await c.env.DB.prepare('INSERT OR IGNORE INTO user_transporteurs (user_id, transporteur) VALUES (?, ?)').bind(userId, t).run()
   }
 
-  // CrÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©er la session automatiquement (auto-login)
+  // Créer la session automatiquement (auto-login)
   const token = await generateToken()
   await c.env.DB.prepare(
     "INSERT INTO sessions (token, user_id, expires_at) VALUES (?, ?, datetime('now', '+30 days'))"
@@ -467,7 +467,7 @@ app.get('/api/auth/check', async (c) => {
 app.put('/api/auth/password', async (c) => {
   const { current_password, new_password } = await c.req.json()
   if (!current_password || !new_password) return c.json({ error: 'Champs requis' }, 400)
-  if (new_password.length < 6) return c.json({ error: 'Minimum 6 caractÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¨res' }, 400)
+  if (new_password.length < 6) return c.json({ error: 'Minimum 6 caractères' }, 400)
 
   const userId = c.get('userId')
   const user = await c.env.DB.prepare('SELECT password_hash FROM users WHERE id = ?').bind(userId).first() as any
@@ -484,7 +484,7 @@ app.put('/api/auth/password', async (c) => {
 // ========================
 app.use('/api/admin/*', async (c, next) => {
   if (c.get('userRole') !== 'admin') {
-    return c.json({ error: 'AccÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¨s rÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©servÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â© aux administrateurs', code: 'FORBIDDEN' }, 403)
+    return c.json({ error: 'Accès réservé aux administrateurs', code: 'FORBIDDEN' }, 403)
   }
   return next()
 })
@@ -508,7 +508,7 @@ app.put('/api/admin/users/:id', async (c) => {
     return c.json({ error: 'Aucune modification' }, 400)
   }
   if (role !== undefined && role !== 'admin' && role !== 'client' && role !== 'employe') {
-    return c.json({ error: 'RÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â´le invalide' }, 400)
+    return c.json({ error: 'Rôle invalide' }, 400)
   }
   if (active !== undefined && active !== 0 && active !== 1) {
     return c.json({ error: 'Statut actif invalide' }, 400)
@@ -518,7 +518,7 @@ app.put('/api/admin/users/:id', async (c) => {
   if (!target) return c.json({ error: 'Utilisateur introuvable' }, 404)
 
   if (id === adminId && (role === 'client' || role === 'employe' || active === 0)) {
-    return c.json({ error: 'Vous ne pouvez pas rÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©trograder ou dÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©sactiver votre propre compte' }, 400)
+    return c.json({ error: 'Vous ne pouvez pas rétrograder ou désactiver votre propre compte' }, 400)
   }
 
   const demoteAdmin = target.role === 'admin' && (role === 'client' || role === 'employe')
@@ -548,10 +548,10 @@ app.put('/api/admin/users/:id', async (c) => {
 })
 
 // ========================
-// TRANSPORTEURS - FiltrÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©s par utilisateur
+// TRANSPORTEURS - Filtrés par utilisateur
 // ========================
 app.get('/api/transporteurs', async (c) => {
-  // Si utilisateur authentifiÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©, retourner seulement ses transporteurs liÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©s
+  // Si utilisateur authentifié, retourner seulement ses transporteurs liés
   const token = getCookie(c, 'session_token') || c.req.header('Authorization')?.replace('Bearer ', '')
   if (token) {
     const session = await c.env.DB.prepare(
@@ -566,7 +566,7 @@ app.get('/api/transporteurs', async (c) => {
       }
     }
   }
-  // Fallback : liste complÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¨te pour les non-authentifiÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©s
+  // Fallback : liste complète pour les non-authentifiés
   return c.json(TRANSPORTEURS)
 })
 
@@ -586,13 +586,13 @@ app.put('/api/user-transporteurs', async (c) => {
   const { transporteurs } = await c.req.json()
   if (!Array.isArray(transporteurs)) return c.json({ error: 'Format invalide' }, 400)
 
-  // Valider que chaque transporteur est dans la liste autorisÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©e
+  // Valider que chaque transporteur est dans la liste autorisée
   const validTransporteurs = transporteurs.filter(t => TRANSPORTEURS.includes(t))
 
   // Supprimer les anciens liens
   await c.env.DB.prepare('DELETE FROM user_transporteurs WHERE user_id = ?').bind(userId).run()
 
-  // InsÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©rer les nouveaux
+  // Insérer les nouveaux
   for (const t of validTransporteurs) {
     await c.env.DB.prepare('INSERT INTO user_transporteurs (user_id, transporteur) VALUES (?, ?)').bind(userId, t).run()
   }
@@ -724,7 +724,7 @@ app.get('/api/team-members/me', async (c) => {
   if (!row.active) return c.json({ allowed: false, reason: 'MEMBER_INACTIVE' }, 403)
   if (!row.can_access_platform) return c.json({ allowed: false, reason: 'PLATFORM_ACCESS_DISABLED' }, 403)
   let permissions: string[] = []
-  try { permissions = JSON.parse(row.permissions_json || '[]') } catch { permissions = [] }
+  try { permissions = JSON.parse(row.permissions_json || '[]') } catch(e) { permissions = [] }
   return c.json({ allowed: true, role: row.role || 'confirmateur', permissions, member: { id: row.id, nom: row.nom } })
 })
 
@@ -850,6 +850,60 @@ app.get('/api/stop-desks/:wilayaId', async (c) => {
 })
 
 // ========================
+// STOP DESKS ADMIN CRUD
+// ========================
+app.get('/api/admin/stop-desks', async (c) => {
+  const wilayaId = c.req.query('wilaya_id')
+  const transporteur = c.req.query('transporteur') || ''
+  let query = 'SELECT sd.id, sd.name, sd.address, sd.transporteur, sd.wilaya_id, w.name as wilaya_name FROM stop_desks sd LEFT JOIN wilayas w ON sd.wilaya_id = w.id WHERE 1=1'
+  const params: any[] = []
+  if (wilayaId) { query += ' AND sd.wilaya_id = ?'; params.push(Number(wilayaId)) }
+  if (transporteur) { query += ' AND sd.transporteur = ?'; params.push(transporteur) }
+  query += ' ORDER BY w.id, sd.transporteur, sd.name'
+  const { results } = await c.env.DB.prepare(query).bind(...params).all()
+  return c.json(results || [])
+})
+
+app.post('/api/admin/stop-desks', async (c) => {
+  const body = await c.req.json()
+  const name = (body.name || '').trim()
+  const wilaya_id = Number(body.wilaya_id)
+  const transporteur = (body.transporteur || '').trim()
+  const address = (body.address || '').trim()
+  if (!name) return c.json({ error: 'Nom requis' }, 400)
+  if (!wilaya_id) return c.json({ error: 'Wilaya requise' }, 400)
+  if (!transporteur) return c.json({ error: 'Transporteur requis' }, 400)
+  const result = await c.env.DB.prepare(
+    'INSERT INTO stop_desks (name, wilaya_id, transporteur, address) VALUES (?, ?, ?, ?)'
+  ).bind(name, wilaya_id, transporteur, address).run()
+  return c.json({ success: true, id: result.meta.last_row_id })
+})
+
+app.put('/api/admin/stop-desks/:id', async (c) => {
+  const id = Number(c.req.param('id'))
+  const body = await c.req.json()
+  const name = (body.name || '').trim()
+  const wilaya_id = Number(body.wilaya_id)
+  const transporteur = (body.transporteur || '').trim()
+  const address = (body.address || '').trim()
+  if (!name) return c.json({ error: 'Nom requis' }, 400)
+  if (!wilaya_id) return c.json({ error: 'Wilaya requise' }, 400)
+  if (!transporteur) return c.json({ error: 'Transporteur requis' }, 400)
+  const result = await c.env.DB.prepare(
+    'UPDATE stop_desks SET name = ?, wilaya_id = ?, transporteur = ?, address = ? WHERE id = ?'
+  ).bind(name, wilaya_id, transporteur, address, id).run()
+  if ((result.meta?.changes || 0) === 0) return c.json({ error: 'Point relais introuvable' }, 404)
+  return c.json({ success: true })
+})
+
+app.delete('/api/admin/stop-desks/:id', async (c) => {
+  const id = Number(c.req.param('id'))
+  const result = await c.env.DB.prepare('DELETE FROM stop_desks WHERE id = ?').bind(id).run()
+  if ((result.meta?.changes || 0) === 0) return c.json({ error: 'Point relais introuvable' }, 404)
+  return c.json({ success: true })
+})
+
+// ========================
 // COMMANDES CRUD
 // ========================
 app.get('/api/commandes', async (c) => {
@@ -893,11 +947,11 @@ app.post('/api/commandes', async (c) => {
     ? await c.env.DB.prepare(
       `INSERT INTO commandes (nom, prix, telephone, produit, commune, adresse, wilaya, livraison, statut, transporteur, notes, user_id)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-    ).bind(nom, prix || 0, telephone, produit, commune, adresse || '', wilaya, livraison || 'A domicile', statut || 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂºÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â Nouvelle', transporteur || '', notes || '', userId).run()
+    ).bind(nom, prix || 0, telephone, produit, commune, adresse || '', wilaya, livraison || 'A domicile', statut || '🛍️ Nouvelle', transporteur || '', notes || '', userId).run()
     : await c.env.DB.prepare(
       `INSERT INTO commandes (nom, prix, telephone, produit, commune, adresse, wilaya, livraison, statut, transporteur, notes)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-    ).bind(nom, prix || 0, telephone, produit, commune, adresse || '', wilaya, livraison || 'A domicile', statut || 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂºÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â Nouvelle', transporteur || '', notes || '').run()
+    ).bind(nom, prix || 0, telephone, produit, commune, adresse || '', wilaya, livraison || 'A domicile', statut || '🛍️ Nouvelle', transporteur || '', notes || '').run()
   await c.env.DB.prepare('INSERT INTO historique (action, details, commande_id) VALUES (?, ?, ?)').bind('CREATION', `Nouvelle commande enregistree pour ${nom}`, result.meta.last_row_id).run()
   return c.json({ id: result.meta.last_row_id, success: true })
 })
@@ -941,21 +995,14 @@ app.delete('/api/commandes/:id', async (c) => {
 // ========================
 // ENVOI VERS TRANSPORTEURS
 // ========================
-app.post('/api/envoyer/:id', async (c) => {
-  const userId = c.get('userId')
-  const isAdmin = c.get('userRole') === 'admin'
-  const hasCmdUserId = await hasTableColumn(c.env.DB, 'commandes', 'user_id')
-  const hasSuiviUserId = await hasTableColumn(c.env.DB, 'suivi', 'user_id')
-  const id = c.req.param('id')
-  let selectSql = 'SELECT * FROM commandes WHERE id = ?'
-  const selectParams: any[] = [id]
-  if (!isAdmin && hasCmdUserId) { selectSql += ' AND user_id = ?'; selectParams.push(userId) }
-  const { results } = await c.env.DB.prepare(selectSql).bind(...selectParams).all()
-  if (!results || results.length === 0) return c.json({ error: 'Commande introuvable' }, 404)
-  const cmd = results[0] as any
-  if (!isConfirmedStatus(cmd.statut)) return c.json({ error: 'Seules les commandes confirmees peuvent etre envoyees' }, 400)
-  if (cmd.tracking) return c.json({ error: 'Commande deja expediee' }, 400)
-
+async function expedierCommande(
+  db: D1Database,
+  cmd: any,
+  hasCmdUserId: boolean,
+  hasSuiviUserId: boolean,
+  userId: number,
+  isAdmin: boolean
+): Promise<{ success: boolean, tracking?: string, error?: string }> {
   const transporteur = (cmd.transporteur || '').toLowerCase()
   let providerKey = ''
   if (transporteur.includes('yalidine')) providerKey = 'yalidine'
@@ -963,11 +1010,9 @@ app.post('/api/envoyer/:id', async (c) => {
   else if (transporteur.includes('ecotrack') || transporteur.includes('pdex')) providerKey = 'ecotrack_pdex'
   else if (transporteur.includes('dhd')) providerKey = 'dhd'
   else if (transporteur.includes('noest')) providerKey = 'noest'
-  else {
-    providerKey = transporteur.replace(/[^a-z0-9]/g, '_')
-  }
+  else { providerKey = transporteur.replace(/[^a-z0-9]/g, '_') }
 
-  const { results: configs } = await c.env.DB.prepare('SELECT * FROM api_config WHERE provider = ? AND active = 1').bind(providerKey).all()
+  const { results: configs } = await db.prepare('SELECT * FROM api_config WHERE provider = ? AND active = 1').bind(providerKey).all()
   const config = configs && configs.length > 0 ? JSON.parse((configs[0] as any).config_json) : null
 
   let tracking = ''
@@ -977,7 +1022,7 @@ app.post('/api/envoyer/:id', async (c) => {
     if (providerKey === 'yalidine' && config?.api_id && config?.api_token) {
       const isStop = cmd.livraison?.toLowerCase().includes('stop')
       const data = [{
-        order_id: `CMD-${id}-${Date.now()}`, firstname: cmd.nom, familyname: '',
+        order_id: `CMD-${cmd.id}-${Date.now()}`, firstname: cmd.nom, familyname: '',
         contact_phone: cmd.telephone, address: cmd.adresse, to_wilaya_name: cmd.wilaya,
         to_commune_name: cmd.commune, product_list: cmd.produit, price: cmd.prix,
         is_stopdesk: isStop, has_exchange: 0, freeshipping: 0
@@ -1101,50 +1146,64 @@ app.post('/api/envoyer/:id', async (c) => {
 
   if (tracking) {
     if (hasCmdUserId && hasSuiviUserId) {
-      await c.env.DB.prepare(
+      await db.prepare(
         `INSERT INTO suivi (nom, prix, telephone, produit, commune, adresse, wilaya, livraison, statut, tracking, transporteur, notes, created_at, user_id)
          SELECT nom, prix, telephone, produit, commune, adresse, wilaya, livraison, 'EXPEDIE', ?, transporteur, notes, created_at, user_id FROM commandes WHERE id = ?`
-      ).bind(tracking, id).run()
+      ).bind(tracking, cmd.id).run()
     } else {
-      await c.env.DB.prepare(
+      await db.prepare(
         `INSERT INTO suivi (nom, prix, telephone, produit, commune, adresse, wilaya, livraison, statut, tracking, transporteur, notes, created_at)
          SELECT nom, prix, telephone, produit, commune, adresse, wilaya, livraison, 'EXPEDIE', ?, transporteur, notes, created_at FROM commandes WHERE id = ?`
-      ).bind(tracking, id).run()
+      ).bind(tracking, cmd.id).run()
     }
-    await diminuerStock(c.env.DB, cmd.produit)
+    await diminuerStock(db, cmd.produit)
     let deleteSql = 'DELETE FROM commandes WHERE id = ?'
-    const deleteParams: any[] = [id]
+    const deleteParams: any[] = [cmd.id]
     if (!isAdmin && hasCmdUserId) { deleteSql += ' AND user_id = ?'; deleteParams.push(userId) }
-    await c.env.DB.prepare(deleteSql).bind(...deleteParams).run()
-    await c.env.DB.prepare('INSERT INTO historique (action, details, commande_id) VALUES (?, ?, ?)').bind('EXPEDIE', `Tracking: ${tracking} via ${cmd.transporteur}`, id).run()
-    return c.json({ success: true, tracking })
+    await db.prepare(deleteSql).bind(...deleteParams).run()
+    await db.prepare('INSERT INTO historique (action, details, commande_id) VALUES (?, ?, ?)').bind('EXPEDIE', `Tracking: ${tracking} via ${cmd.transporteur}`, cmd.id).run()
+    return { success: true, tracking }
   } else {
-    await c.env.DB.prepare('UPDATE commandes SET statut = ? WHERE id = ?').bind(`ERREUR: ${error}`, id).run()
-    return c.json({ error }, 500)
+    await db.prepare('UPDATE commandes SET statut = ? WHERE id = ?').bind(`ERREUR: ${error}`, cmd.id).run()
+    return { success: false, error }
   }
+}
+
+app.post('/api/envoyer/:id', async (c) => {
+  const userId = c.get('userId')
+  const isAdmin = c.get('userRole') === 'admin'
+  const hasCmdUserId = await hasTableColumn(c.env.DB, 'commandes', 'user_id')
+  const hasSuiviUserId = await hasTableColumn(c.env.DB, 'suivi', 'user_id')
+  const id = c.req.param('id')
+  let selectSql = 'SELECT * FROM commandes WHERE id = ?'
+  const selectParams: any[] = [id]
+  if (!isAdmin && hasCmdUserId) { selectSql += ' AND user_id = ?'; selectParams.push(userId) }
+  const { results } = await c.env.DB.prepare(selectSql).bind(...selectParams).all()
+  if (!results || results.length === 0) return c.json({ error: 'Commande introuvable' }, 404)
+  const cmd = results[0] as any
+  if (!isConfirmedStatus(cmd.statut)) return c.json({ error: 'Seules les commandes confirmees peuvent etre envoyees' }, 400)
+  if (cmd.tracking) return c.json({ error: 'Commande deja expediee' }, 400)
+  const result = await expedierCommande(c.env.DB, cmd, hasCmdUserId, hasSuiviUserId, userId, isAdmin)
+  if (result.success) return c.json({ success: true, tracking: result.tracking })
+  return c.json({ error: result.error }, 500)
 })
 
 app.post('/api/envoyer-tous', async (c) => {
   const userId = c.get('userId')
   const isAdmin = c.get('userRole') === 'admin'
-  const hasUserIdColumn = await hasTableColumn(c.env.DB, 'commandes', 'user_id')
-  let query = "SELECT id FROM commandes WHERE LOWER(statut) LIKE 'confirm%' AND (tracking IS NULL OR tracking = '')"
+  const hasCmdUserId = await hasTableColumn(c.env.DB, 'commandes', 'user_id')
+  const hasSuiviUserId = await hasTableColumn(c.env.DB, 'suivi', 'user_id')
+  let query = "SELECT * FROM commandes WHERE LOWER(statut) LIKE 'confirm%' AND (tracking IS NULL OR tracking = '')"
   const params: any[] = []
-  if (!isAdmin && hasUserIdColumn) { query += ' AND user_id = ?'; params.push(userId) }
+  if (!isAdmin && hasCmdUserId) { query += ' AND user_id = ?'; params.push(userId) }
   const stmt = params.length ? c.env.DB.prepare(query).bind(...params) : c.env.DB.prepare(query)
   const { results } = await stmt.all()
   const sent: any[] = []
   const errors: any[] = []
   for (const cmd of (results || [])) {
-    try {
-      const resp = await fetch(`${new URL(c.req.url).origin}/api/envoyer/${(cmd as any).id}`, {
-        method: 'POST',
-        headers: { 'Cookie': `session_token=${getCookie(c, 'session_token')}` }
-      })
-      const data: any = await resp.json()
-      if (data.success) sent.push({ id: (cmd as any).id, tracking: data.tracking })
-      else errors.push({ id: (cmd as any).id, error: data.error })
-    } catch (e: any) { errors.push({ id: (cmd as any).id, error: e.message }) }
+    const r = await expedierCommande(c.env.DB, cmd as any, hasCmdUserId, hasSuiviUserId, userId, isAdmin)
+    if (r.success) sent.push({ id: (cmd as any).id, nom: (cmd as any).nom, tracking: r.tracking })
+    else errors.push({ id: (cmd as any).id, nom: (cmd as any).nom, error: r.error })
   }
   return c.json({ sent: sent.length, errors: errors.length, details: { sent, errors } })
 })
@@ -1243,7 +1302,7 @@ app.post('/api/actualiser-statuts', async (c) => {
     apiConfigs[(row as any).provider] = JSON.parse((row as any).config_json)
   }
 
-  // SÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©lectionner uniquement les colis non terminaux pour ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©viter de surcharger les APIs
+  // Sélectionner uniquement les colis non terminaux pour éviter de surcharger les APIs
   let selectSuiviSql = "SELECT * FROM suivi WHERE tracking IS NOT NULL AND tracking != '' AND tracking NOT LIKE 'MAN-%' AND statut NOT LIKE '%LIVRE%' AND statut NOT LIKE '%RETOUR%' AND statut NOT LIKE '%ECHEC%' AND statut NOT LIKE 'Annule'"
   const selectSuiviParams: any[] = []
   if (!isAdmin && hasUserIdColumn) { selectSuiviSql += ' AND user_id = ?'; selectSuiviParams.push(userId) }
@@ -1278,7 +1337,7 @@ app.post('/api/actualiser-statuts', async (c) => {
       } 
       else if (trans.includes('yalidine') && apiConfigs['yalidine']) {
         const config = apiConfigs['yalidine']
-        // Utiliser l'API histories plus fiable pour rÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©cupÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©rer le dernier statut
+        // Utiliser l'API histories plus fiable pour récupérer le dernier statut
         const resp = await fetch(`https://api.yalidine.com/v1/histories/?tracking=${tracking}`, {
           headers: { 'X-API-ID': config.api_id, 'X-API-TOKEN': config.api_token }
         })
@@ -1287,7 +1346,7 @@ app.post('/api/actualiser-statuts', async (c) => {
           const data: any = await resp.json()
           let parcel = null
           if (data?.data && Array.isArray(data.data) && data.data.length > 0) {
-            // L'API Yalidine renvoie l'historique du plus rÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©cent au plus ancien, donc l'index 0 est le statut actuel
+            // L'API Yalidine renvoie l'historique du plus récent au plus ancien, donc l'index 0 est le statut actuel
             parcel = data.data[0]
           } else if (data?.[tracking] && Array.isArray(data[tracking]) && data[tracking].length > 0) {
             parcel = data[tracking][0]
@@ -1299,7 +1358,7 @@ app.post('/api/actualiser-statuts', async (c) => {
             
             // Map specific statuses manually
             if (String(rawStatus) === '8' || String(rawStatus).toLowerCase().includes('vers wilaya') || String(parcel.status).toLowerCase().includes('vers wilaya')) mappedStatut = 'Vers Wilaya'
-            if (String(rawStatus) === '13' || String(rawStatus).toLowerCase().includes('tentative') || String(parcel.status).toLowerCase().includes('tentative')) mappedStatut = 'Tentative ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©chouÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©e'
+            if (String(rawStatus) === '13' || String(rawStatus).toLowerCase().includes('tentative') || String(parcel.status).toLowerCase().includes('tentative')) mappedStatut = 'Tentative échouée'
 
             newStatut = mappedStatut
             situationText = parcel.status || ''
@@ -1336,7 +1395,7 @@ app.post('/api/actualiser-statuts', async (c) => {
           }
         }
         await c.env.DB.prepare('INSERT INTO historique (action, details, commande_id) VALUES (?, ?, ?)').bind(
-          'API_SYNC', `Synchronisation manuelle API: ${newStatut} (${situationText || 'aucun dÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©tail'})`, null
+          'API_SYNC', `Synchronisation manuelle API: ${newStatut} (${situationText || 'aucun détail'})`, null
         ).run()
         updated++
       }
@@ -1651,12 +1710,29 @@ app.put('/api/config/:provider', async (c) => {
   return c.json({ success: true })
 })
 
+
+// ========================
+// USER CONFIG (webhook token)
+// ========================
+app.get('/api/user-config', async (c) => {
+  const userId = c.get('userId')
+  const db = c.env.DB
+  await db.prepare('ALTER TABLE users ADD COLUMN webhook_token TEXT DEFAULT NULL').run().catch(() => {})
+  let row = await db.prepare('SELECT webhook_token FROM users WHERE id = ?').bind(userId).first() as any
+  if (!row?.webhook_token) {
+    const token = await generateToken()
+    await db.prepare('UPDATE users SET webhook_token = ? WHERE id = ?').bind(token, userId).run()
+    row = { webhook_token: token }
+  }
+  return c.json({ webhook_token: row.webhook_token })
+})
+
 // ========================
 // HISTORIQUE
 // ========================
 app.get('/api/historique', async (c) => {
   if (c.get('userRole') !== 'admin') {
-    return c.json({ error: 'AccÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¨s rÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©servÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â© aux administrateurs', code: 'FORBIDDEN' }, 403)
+    return c.json({ error: 'Accès réservé aux administrateurs', code: 'FORBIDDEN' }, 403)
   }
   const { results } = await c.env.DB.prepare('SELECT * FROM historique ORDER BY created_at DESC LIMIT 100').all()
   return c.json(results)
@@ -1747,7 +1823,7 @@ app.post('/api/webhook', async (c) => {
           }
 
           await c.env.DB.prepare('INSERT INTO historique (action, details, commande_id) VALUES (?, ?, ?)').bind(
-            'WEBHOOK_UPDATE', `Mise ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â  jour via Webhook: ${newStatut} (${situationText || 'aucun dÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©tail'})`, null
+            'WEBHOOK_UPDATE', `Mise à jour via Webhook: ${newStatut} (${situationText || 'aucun détail'})`, null
           ).run()
           
           processedCount++
@@ -1801,7 +1877,7 @@ app.post('/api/store-sources/intelligent-config', async (c) => {
   if (!/^https?:\/\//i.test(normalized)) normalized = 'https://' + normalized
 
   let parsed: URL
-  try { parsed = new URL(normalized) } catch { return c.json({ error: 'URL invalide' }, 400) }
+  try { parsed = new URL(normalized) } catch(e) { return c.json({ error: 'URL invalide' }, 400) }
   const domain = parsed.hostname.replace(/^www\./i, '').toLowerCase()
 
   let html = ''
@@ -1991,7 +2067,7 @@ app.post('/api/woo/callback', async (c) => {
     await c.env.DB.prepare(
       `UPDATE store_sources SET consumer_key = ?, consumer_secret = ?, woo_user_id = ?, connected_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
        WHERE user_id = ? AND platform = 'woocommerce' AND active = 1`
-    ).bind(consumer_key, consumer_secret, String(user_id), user_id).run()
+    ).bind(consumer_key, consumer_secret, String(user_id), Number(user_id)).run()
     await c.env.DB.prepare('INSERT INTO historique (action, details) VALUES (?, ?)').bind(
       'WOO_CONNECT', `WooCommerce connected for user ${user_id} (key: ${key_id}, permissions: ${key_permissions})`
     ).run()
@@ -2099,7 +2175,7 @@ app.post('/api/woo/import/:sourceId', async (c) => {
           ).bind(nom.trim(), prix, telephone, produit, commune, adresse.trim(), wilaya, 'A domicile', 'EN ATTENTE', 'woocommerce').run()
         }
         imported++
-      } catch { errors++ }
+      } catch(e) { errors++ }
     }
     await c.env.DB.prepare('INSERT INTO historique (action, details) VALUES (?, ?)').bind(
       'WOO_IMPORT', `Imported ${imported} orders from ${source.domain} (${errors} errors)`
@@ -2159,10 +2235,10 @@ app.post('/api/payment-request', async (c) => {
     return c.json({ error: 'Plan invalide' }, 400)
   }
   if (!['baridimob', 'ccp', 'redotpay'].includes(payment_method)) {
-    return c.json({ error: 'MÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©thode de paiement invalide' }, 400)
+    return c.json({ error: 'Méthode de paiement invalide' }, 400)
   }
   if (!proof_reference) {
-    return c.json({ error: 'RÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©fÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©rence de preuve de paiement requise' }, 400)
+    return c.json({ error: 'Référence de preuve de paiement requise' }, 400)
   }
 
   let amount = 0
@@ -2185,7 +2261,7 @@ app.post('/api/payment-request', async (c) => {
     'PAYMENT_REQUEST', `User ${userId} requested ${plan} plan via ${payment_method}`
   ).run()
 
-  return c.json({ success: true, id: result.meta.last_row_id, message: 'Demande envoyÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©e, en attente de validation' })
+  return c.json({ success: true, id: result.meta.last_row_id, message: 'Demande envoyée, en attente de validation' })
 })
 
 app.get('/api/admin/payment-requests', async (c) => {
@@ -2256,12 +2332,12 @@ export default app
 function traduireStatutZR(stateName: string): string {
   const s = String(stateName).toLowerCase().trim()
   const mapping: Record<string, string> = {
-    dispatch: 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¦ PrÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âªt ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â  expÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©dier', ready: 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¦ PrÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âªt ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â  expÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©dier',
-    confirme_au_bureau: 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ RamassÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©', picked: 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ RamassÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©', ramasse: 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ RamassÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©',
-    vers_wilaya: 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¾ En cours de transit', transit: 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¾ En cours de transit', in_transit: 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¾ En cours de transit', transfert: 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¾ En cours de transit',
-    sortie_en_livraison: 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â´ En cours de livraison', en_livraison: 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â´ En cours de livraison', out_for_delivery: 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â´ En cours de livraison', delivery: 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â´ En cours de livraison',
-    livre: 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â° LivrÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â© & EncaissÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©', delivered: 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â° LivrÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â© & EncaissÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©', encaisse: 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â° LivrÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â© & EncaissÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©',
-    retour: 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¾ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ Retour ExpÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©diteur', returned: 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¾ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ Retour ExpÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©diteur', retourne: 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¾ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ Retour ExpÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©diteur', echec: 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¾ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ Retour ExpÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©diteur',
+    dispatch: '📦 Prêt à expédier', ready: '📦 Prêt à expédier',
+    confirme_au_bureau: '🚚 Ramassé', picked: '🚚 Ramassé', ramasse: '🚚 Ramassé',
+    vers_wilaya: '🔄 En cours de transit', transit: '🔄 En cours de transit', in_transit: '🔄 En cours de transit', transfert: '🔄 En cours de transit',
+    sortie_en_livraison: '?? En cours de livraison', en_livraison: '?? En cours de livraison', out_for_delivery: '?? En cours de livraison', delivery: '?? En cours de livraison',
+    livre: '?? Livré & Encaissé', delivered: '?? Livré & Encaissé', encaisse: '?? Livré & Encaissé',
+    retour: '??? Retour Expéditeur', returned: '??? Retour Expéditeur', retourne: '??? Retour Expéditeur', echec: '??? Retour Expéditeur',
     annule: 'Annule', cancelled: 'Annule', canceled: 'Annule'
   }
   if (mapping[s]) return mapping[s]
@@ -2272,19 +2348,19 @@ function traduireStatutZR(stateName: string): string {
 function traduireStatutYalidine(status: any): string {
   const s = String(status).trim()
   const mapping: Record<string, string> = {
-    '1': 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂºÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â Nouvelle', '2': 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¦ ConfirmÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©e', '3': 'Annule', '4': 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¦ PrÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âªt ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â  expÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©dier', '5': 'EXPEDIE',
-    '6': 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ RamassÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©', '7': 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¾ En cours de transit', '8': 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¾ En cours de transit', '9': 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¾ En cours de transit', '10': 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¾ En cours de transit',
-    '11': 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â´ En cours de livraison', '12': 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â° LivrÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â© & EncaissÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©', '13': 'ECHEC LIVRAISON', '14': 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¾ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ Retour ExpÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©diteur', '15': 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¾ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ Retour ExpÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©diteur'
+    '1': '🛍️ Nouvelle', '2': '✅ Confirmée', '3': 'Annule', '4': '📦 Prêt à expédier', '5': 'EXPEDIE',
+    '6': '🚚 Ramassé', '7': '🔄 En cours de transit', '8': '🔄 En cours de transit', '9': '🔄 En cours de transit', '10': '🔄 En cours de transit',
+    '11': '?? En cours de livraison', '12': '?? Livré & Encaissé', '13': 'ECHEC LIVRAISON', '14': '??? Retour Expéditeur', '15': '??? Retour Expéditeur'
   }
   if (mapping[s]) return mapping[s]
 
   const text = s.toLowerCase()
-  if (text.includes('livre')) return 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â° LivrÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â© & EncaissÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©'
-  if (text.includes('retour')) return 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¾ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ Retour ExpÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©diteur'
-  if (text.includes('transit')) return 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¾ En cours de transit'
-  if (text.includes('livraison')) return 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â´ En cours de livraison'
-  if (text.includes('pret')) return 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¦ PrÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âªt ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â  expÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©dier'
-  if (text.includes('ramasse')) return 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ RamassÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©'
+  if (text.includes('livre')) return '?? Livré & Encaissé'
+  if (text.includes('retour')) return '??? Retour Expéditeur'
+  if (text.includes('transit')) return '🔄 En cours de transit'
+  if (text.includes('livraison')) return '?? En cours de livraison'
+  if (text.includes('pret')) return '📦 Prêt à expédier'
+  if (text.includes('ramasse')) return '🚚 Ramassé'
   if (text.includes('annul')) return 'Annule'
 
   return s.toUpperCase()
@@ -2293,10 +2369,10 @@ function traduireStatutYalidine(status: any): string {
 function traduireStatutEcotrack(status: any): string {
   const s = String(status).toLowerCase().trim()
   const mapping: Record<string, string> = {
-    'nouveau': 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂºÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â Nouvelle', 'en attente': 'EN ATTENTE', 'pret': 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¦ PrÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âªt ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â  expÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©dier',
-    'expedie': 'EXPEDIE', 'recu': 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ RamassÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©', 'en cours': 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¾ En cours de transit',
-    'en livraison': 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â´ En cours de livraison', 'livre': 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â° LivrÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â© & EncaissÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©', 'echoue': 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¾ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ Retour ExpÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©diteur',
-    'retourne': 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¾ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ Retour ExpÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©diteur', 'annule': 'Annule'
+    'nouveau': '🛍️ Nouvelle', 'en attente': 'EN ATTENTE', 'pret': '📦 Prêt à expédier',
+    'expedie': 'EXPEDIE', 'recu': '🚚 Ramassé', 'en cours': '🔄 En cours de transit',
+    'en livraison': '?? En cours de livraison', 'livre': '?? Livré & Encaissé', 'echoue': '??? Retour Expéditeur',
+    'retourne': '??? Retour Expéditeur', 'annule': 'Annule'
   }
   if (mapping[s]) return mapping[s]
   for (const [key, value] of Object.entries(mapping)) { if (s.includes(key)) return value }
@@ -3639,6 +3715,7 @@ tr:hover{background:rgba(22,163,74,0.03)}
     <div id="nav-item-suivi" class="nav-item" onclick="navigateTo('suivi')"><i class="fas fa-truck w-5"></i> Suivi</div>
     <div id="nav-item-stock" class="nav-item" onclick="navigateTo('stock')"><i class="fas fa-boxes-stacked w-5"></i> Stock</div>
     <div id="nav-item-wilayaspage" class="nav-item" onclick="navigateTo('wilayaspage')"><i class="fas fa-map-marked-alt w-5"></i> Wilayas & Communes</div>
+    <div id="nav-item-stopdesks" class="nav-item" onclick="navigateTo('stopdesks')"><i class="fas fa-map-pin w-5"></i> Points Relais</div>
     <div id="nav-item-boutique" class="nav-item" onclick="navigateTo('boutique')"><i class="fas fa-store w-5"></i> Boutique</div>
     <div id="nav-item-integration" class="nav-item" onclick="navigateTo('integration')"><i class="fas fa-plug-circle-bolt w-5"></i> Integration API</div>
     <div id="nav-item-historique" class="nav-item" onclick="navigateTo('historique')"><i class="fas fa-clock-rotate-left w-5"></i> Historique</div>
@@ -3676,6 +3753,8 @@ tr:hover{background:rgba(22,163,74,0.03)}
 </div>
 
 <!-- MAIN CONTENT -->
+<div id="toasts"></div>
+<div id="modals"></div>
 <main class="main-content md:pt-0 pt-16" id="main-content">
   <div id="view-dashboard"></div>
   <div id="view-commandes" class="hidden"></div>
@@ -3688,6 +3767,7 @@ tr:hover{background:rgba(22,163,74,0.03)}
   <div id="view-equipe" class="hidden"></div>
   <div id="view-utilisateurs" class="hidden"></div>
   <div id="view-pricing" class="hidden"></div>
+  <div id="view-stopdesks" class="hidden"></div>
   <div id="view-guide" class="hidden"></div>
 </main>
 
@@ -3710,7 +3790,7 @@ function normalizeStatus(status) {
 }
 
 function isConfirmedStatus(status) {
-  return normalizeStatus(status).startsWith('confirm')
+  return normalizeStatus(status).includes('confirm')
 }
 
 function computeEmployeAllowedViews(teamRole, permissions) {
@@ -3740,7 +3820,7 @@ api.interceptors.response.use(r => r, err => {
     window.location.href = '/login'
   }
   if(err.response?.status === 403 && err.response?.data?.code === 'FORBIDDEN') {
-    toast(err.response?.data?.error || 'AccÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¨s refusÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©', 'error')
+    toast(err.response?.data?.error || 'Accès refusé', 'error')
   }
   return Promise.reject(err)
 })
@@ -3792,13 +3872,13 @@ async function checkAuth() {
       navHistorique?.classList.add('hidden')
     }
     // Masquer tout de suite : avant, on attendait /transporteurs, ce qui pouvait laisser
-    // l'overlay plein ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©cran actif (ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©cran "ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©teint ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â  moitiÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©", aucun clic).
+    // l'overlay plein écran actif (écran "éteint à moitié", aucun clic).
     document.getElementById('loading-screen').style.display = 'none'
     closeModal()
     try {
       const t = await api.get('/transporteurs')
       state.transporteurs = t.data
-    } catch {
+    } catch(e) {
       state.transporteurs = []
     }
     return true
@@ -3822,7 +3902,7 @@ function toast(msg, type='success') {
 // ===================== NAVIGATION =====================
 function navigateTo(view) {
   if (view === 'historique' && state.user?.role !== 'admin') {
-    toast('AccÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©s rÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©servÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â© aux administrateurs', 'error')
+    toast('Accés réservé aux administrateurs', 'error')
     return
   }
   if (state.user?.role === 'employe') {
@@ -3833,18 +3913,18 @@ function navigateTo(view) {
     }
   }
   if (view === 'utilisateurs' && state.user?.role !== 'admin') {
-    toast('AccÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©s rÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©servÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â© aux administrateurs', 'error')
+    toast('Accés réservé aux administrateurs', 'error')
     return
   }
   if (state.user?.role === 'employe' && (view === 'boutique' || view === 'integration')) {
-    toast('AccÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©s non autorisÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â© pour le rÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â´le employÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©', 'error')
+    toast('Accés non autorisé pour le rôle employé', 'error')
     return
   }
   if (view !== 'suivi' && suiviAutoRefreshTimer) {
     clearInterval(suiviAutoRefreshTimer)
     suiviAutoRefreshTimer = null
   }
-  const views = ['dashboard','commandes','suivi','stock','wilayaspage','boutique','integration','historique','equipe','utilisateurs','pricing','guide']
+  const views = ['dashboard','commandes','suivi','stock','wilayaspage','stopdesks','boutique','integration','historique','equipe','utilisateurs','pricing','guide']
   views.forEach(v => {
     const el = document.getElementById('view-'+v)
     if (el) el.classList.toggle('hidden', v !== view)
@@ -3866,6 +3946,7 @@ function navigateTo(view) {
   else if (view==='historique') loadHistorique()
   else if (view==='equipe') loadEquipe()
   else if (view==='utilisateurs') loadUtilisateurs()
+  else if (view==='stopdesks') loadStopDesks()
   else if (view==='pricing') loadPricing()
   else if (view==='guide') loadGuide()
   document.getElementById('sidebar').classList.remove('open')
@@ -3875,9 +3956,9 @@ function navigateTo(view) {
 // ===================== CONSTANTS =====================
 const livraisons = ['A domicile', 'Stop Desk']
 const statuts = [
-  'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂºÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â Nouvelle', 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¦ ConfirmÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©e', 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âµ Pas de rÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©ponse', 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â« NumÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©ro erronÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©', 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¹Ãƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¯ Doublon',
-  'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¦ PrÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âªt ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â  expÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©dier', 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ RamassÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©', 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¾ En cours de transit', 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â´ En cours de livraison',
-  'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â° LivrÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â© & EncaissÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©', 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¾ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ Retour ExpÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©diteur', 'Annule', 'Reporte'
+  '🛍️ Nouvelle', '✅ Confirmée', '?? Pas de réponse', '?? Numéro erroné', '?? Doublon',
+  '📦 Prêt à expédier', '🚚 Ramassé', '🔄 En cours de transit', '?? En cours de livraison',
+  '?? Livré & Encaissé', '??? Retour Expéditeur', 'Annule', 'Reporte'
 ]
 
 // ===================== STATUS COLORS =====================
@@ -3997,7 +4078,7 @@ function getApiIntegrationBadge(c) {
   const t = (c.transporteur || '').toLowerCase()
   // Check if any transporteur has API config
   const hasApi = t.includes('yalidine') || t.includes('zr') || t.includes('ecotrack') || t.includes('dhd') || t.includes('noest')
-  if (hasApi && normalizeStatus(c.statut) === 'confirme') {
+  if (hasApi && normalizeStatus(c.statut).includes('confirme')) {
     return '<span class="badge-status bg-emerald-500/20 text-emerald-300" style="font-size:10px"><i class="fas fa-link" style="font-size:9px;margin-right:3px"></i>API Prete</span>'
   } else if (hasApi && c.tracking) {
     return '<span class="badge-status bg-blue-500/20 text-blue-300" style="font-size:10px"><i class="fas fa-check-circle" style="font-size:9px;margin-right:3px"></i>API Envoyee</span>'
@@ -4095,7 +4176,7 @@ async function loadDashboard() {
         '<div class="text-3xl font-bold text-emerald-400"><span id="trial-orders-remaining">' + Number(trialInfo.orders_remaining || 0) + '</span><span class="text-sm text-gray-500"> / ' + Number(trialInfo.orders_limit || 500) + '</span></div>' +
       '</div>' +
       '<div class="stat-card">' +
-        '<div class="text-gray-400 text-xs mb-2"><i class="fas fa-hourglass-half mr-1"></i> Fin de l\\\'essai</div>' +
+        '<div class="text-gray-400 text-xs mb-2"><i class="fas fa-hourglass-half mr-1"></i> Fin de l&apos;essai</div>' +
         '<div class="text-2xl font-bold text-indigo-300" id="trial-countdown">--:--:--:--</div>' +
       '</div>' +
     '</div>'
@@ -4516,13 +4597,34 @@ async function deleteCommande(id) {
   toast('Commande supprimee'); loadCommandes()
 }
 
+function afficherResultatsEnvoi(details) {
+  const sent = details?.sent || []
+  const errors = details?.errors || []
+  const existing = document.getElementById('modal-envoi-results')
+  if (existing) existing.remove()
+  const el = document.createElement('div')
+  el.id = 'modal-envoi-results'
+  el.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;display:flex;align-items:center;justify-content:center'
+  const rows = [
+    ...sent.map(r => '<tr><td class="py-1 pr-4 text-gray-200 max-w-xs truncate">' + (r.nom || '#'+r.id) + '</td><td class="py-1 pr-4 text-green-400 font-mono text-xs">' + (r.tracking || '') + '</td><td class="py-1"><span class="bg-green-900 text-green-300 text-xs px-2 py-0.5 rounded">OK</span></td></tr>'),
+    ...errors.map(r => '<tr><td class="py-1 pr-4 text-gray-200 max-w-xs truncate">' + (r.nom || '#'+r.id) + '</td><td class="py-1 pr-4 text-red-400 text-xs">' + (r.error || 'Erreur') + '</td><td class="py-1"><span class="bg-red-900 text-red-300 text-xs px-2 py-0.5 rounded">ERR</span></td></tr>')
+  ].join('')
+  el.innerHTML = '<div class="bg-gray-900 border border-gray-700 rounded-xl p-6 max-w-lg w-full mx-4 shadow-2xl"><div class="flex items-center justify-between mb-4"><h3 class="text-white font-bold text-lg">Resultats de l&apos;envoi</h3><button onclick="document.getElementById(&apos;modal-envoi-results&apos;).remove()" class="text-gray-400 hover:text-white text-2xl leading-none">&times;</button></div><div class="flex gap-6 mb-4"><span class="text-green-400 font-semibold text-sm">' + sent.length + ' expedie(s)</span><span class="text-red-400 font-semibold text-sm">' + errors.length + ' erreur(s)</span></div><div class="overflow-y-auto max-h-72"><table class="w-full text-sm"><tbody>' + rows + '</tbody></table></div></div>'
+  document.body.appendChild(el)
+  el.addEventListener('click', e => { if (e.target === el) el.remove() })
+}
+
 async function envoyerCommande(id) {
   if(!confirm('Envoyer cette commande au transporteur ?')) return
   try {
     const { data } = await api.post('/envoyer/'+id)
-    toast('Expedie ! Tracking: '+data.tracking)
+    const cmd = state.commandes.find(c => c.id === id)
+    afficherResultatsEnvoi({ sent: [{ id, nom: cmd?.nom, tracking: data.tracking }], errors: [] })
     loadCommandes()
-  } catch(err) { toast(err.response?.data?.error || 'Erreur envoi', 'error') }
+  } catch(err) {
+    const msg = err.response?.data?.error || 'Erreur envoi'
+    toast(msg, 'error')
+  }
 }
 
 async function envoyerTous() {
@@ -4530,7 +4632,7 @@ async function envoyerTous() {
   if(!confirm('Envoyer toutes les ' + count + ' commandes Confirmees aux transporteurs ?')) return
   try {
     const { data } = await api.post('/envoyer-tous')
-    toast(data.sent+' envoyee(s), '+data.errors+' erreur(s)')
+    afficherResultatsEnvoi(data.details)
     loadCommandes()
   } catch(err) { toast('Erreur envoi en masse', 'error') }
 }
@@ -4573,15 +4675,17 @@ async function envoyerSelection() {
     return
   }
   if (!confirm('Envoyer ' + targets.length + ' commande(s) confirmee(s) au transporteur ?')) return
-  let sent = 0
-  let errors = 0
+  const sentList = []
+  const errorsList = []
   for (const cmd of targets) {
     try {
-      await api.post('/envoyer/' + cmd.id)
-      sent++
-    } catch (e) { errors++ }
+      const { data } = await api.post('/envoyer/' + cmd.id)
+      sentList.push({ id: cmd.id, nom: cmd.nom, tracking: data.tracking })
+    } catch (e) {
+      errorsList.push({ id: cmd.id, nom: cmd.nom, error: e.response?.data?.error || 'Erreur' })
+    }
   }
-  toast(sent + ' envoyee(s), ' + errors + ' erreur(s)', errors > 0 ? 'error' : 'success')
+  afficherResultatsEnvoi({ sent: sentList, errors: errorsList })
   loadCommandes()
 }
 
@@ -4659,7 +4763,7 @@ async function loadSuivi() {
     '<td class="text-emerald-400 font-medium">' + Number(s.prix || 0).toLocaleString() + ' DA</td>' +
     '<td class="text-gray-300">' + (s.commune || '') + '</td>' +
     '<td class="text-gray-300">' + (s.wilaya || '') + '</td>' +
-    '<td class="hover:bg-white/5 cursor-pointer transition-colors" onclick="showHistoriqueColis(\\\'' + (s.tracking || '') + '\\\', \\\'' + (s.transporteur || '') + '\\\')" title="Voir historique">' + statusBadge(s.statut) + '</td>' +
+    '<td class="hover:bg-white/5 cursor-pointer transition-colors" onclick="showHistoriqueColis(&apos;' + (s.tracking || '') + '&apos;, &apos;' + (s.transporteur || '') + '&apos;)" title="Voir historique">' + statusBadge(s.statut) + '</td>' +
     '<td class="font-mono text-xs text-green-300">' + (s.tracking || '') + '</td>' +
     '<td class="text-sm text-gray-300">' + (s.transporteur || '') + '</td>' +
     '<td><div class="flex gap-1"><button onclick="returnOrder(' + s.id + ')" class="btn btn-danger text-[10px] py-1 px-2" title="Marquer comme Retour"><i class="fas fa-rotate-left"></i> Retour</button></div></td>' +
@@ -4699,8 +4803,8 @@ function setAdminFilterSuivi(userId) {
 async function returnOrder(id) {
   if(!confirm('Marquer cet envoi comme RETOURNE ?')) return
   try {
-    await api.put('/commandes/'+id, { statut: 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¾ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ Retour ExpÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©diteur', situation: 'MarquÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â© comme retour manuellement' })
-    toast('Colis marquÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â© comme retour'); loadSuivi()
+    await api.put('/commandes/'+id, { statut: '??? Retour Expéditeur', situation: 'Marqué comme retour manuellement' })
+    toast('Colis marqué comme retour'); loadSuivi()
   } catch(e) { toast('Erreur', 'error') }
 }
 
@@ -4809,7 +4913,7 @@ async function loadStock() {
       '<div class="card overflow-x-auto"><div class="p-4 border-b border-white/5"><h3 class="font-semibold"><i class="fas fa-trash-can text-red-300 mr-2"></i>Produits obsoletes (top 20)</h3></div>' +
       '<table><thead><tr><th>Produit</th><th>SKU</th><th>Stock</th></tr></thead><tbody>' + (obsoleteRows || '<tr><td colspan="3" class="text-gray-500">Aucun produit obsolete detecte</td></tr>') + '</tbody></table></div>' +
       '<div class="card overflow-x-auto"><div class="p-4 border-b border-white/5"><h3 class="font-semibold"><i class="fas fa-cart-plus text-emerald-300 mr-2"></i>Reappro recommande (top 20)</h3></div>' +
-      '<table><thead><tr><th>Produit</th><th>Disponible</th><th>QtÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â© suggeree</th></tr></thead><tbody>' + (reorderRows || '<tr><td colspan="3" class="text-gray-500">Aucun besoin de reappro immediat</td></tr>') + '</tbody></table></div>' +
+      '<table><thead><tr><th>Produit</th><th>Disponible</th><th>Qté suggeree</th></tr></thead><tbody>' + (reorderRows || '<tr><td colspan="3" class="text-gray-500">Aucun besoin de reappro immediat</td></tr>') + '</tbody></table></div>' +
     '</div>'
 }
 
@@ -4940,7 +5044,7 @@ async function loadEquipe() {
       '<td class="text-gray-300 text-xs">' + (perms.length ? perms.join(', ') : '--') + '</td>' +
       '<td>' + accessPill(m.can_access_platform, m.active) + '</td>' +
       '<td><div class="flex gap-1">' +
-        '<button onclick="showTeamMemberModal(state.equipe.find(x => x.id === ' + m.id + '))" class="btn btn-outline text-xs py-1 px-2"><i class="fas fa-pen"></i></button>' +
+        '<button onclick="showTeamMemberModal(state.equipe.find(x => x.id === "+ m.id +")" class="btn btn-outline text-xs py-1 px-2"><i class="fas fa-pen"></i></button>' +
         '<button onclick="toggleTeamMemberAccess(' + m.id + ', ' + (m.can_access_platform ? 0 : 1) + ')" class="btn btn-warning text-xs py-1 px-2"><i class="fas fa-key"></i></button>' +
         '<button onclick="toggleTeamMemberActive(' + m.id + ', ' + (m.active ? 0 : 1) + ')" class="btn btn-success text-xs py-1 px-2"><i class="fas fa-power-off"></i></button>' +
         '<button onclick="deleteTeamMember(' + m.id + ')" class="btn btn-danger text-xs py-1 px-2"><i class="fas fa-trash"></i></button>' +
@@ -4949,14 +5053,18 @@ async function loadEquipe() {
   }).join('')
   if (!state.wilayasFull) {
     const { data } = await api.get('/wilayas-full')
-    state.wilayasFull = data
+    const wilayas = (data.wilayas || []).map(function(w) {
+      w.communes = (data.communesByWilaya && data.communesByWilaya[w.id]) || []
+      return w
+    })
+    state.wilayasFull = wilayas
   }
   document.getElementById('view-equipe').innerHTML = '<div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">' +
     '<div><h1 class="text-2xl font-bold"><i class="fas fa-user-shield text-indigo-400 mr-2"></i>Equipe</h1><p class="text-gray-400 text-sm">Gestion confirmateurs/livreurs et acces plateforme</p></div>' +
     '<button onclick="showTeamMemberModal()" class="btn btn-primary"><i class="fas fa-user-plus mr-1"></i> Ajouter membre</button>' +
     '</div>' +
     '<div class="card overflow-x-auto"><table><thead><tr><th>Nom</th><th>Email</th><th>Telephone</th><th>Role</th><th>Permissions</th><th>Acces</th><th>Actions</th></tr></thead><tbody>' + rows + '</tbody></table>' +
-    (state.equipe.length === 0 ? '<div class="text-center py-12 text-gray-500"><i class="fas fa-users text-4xl mb-3 block"></i><p>Aucun membre d\'equipe</p></div>' : '') +
+    (state.equipe.length === 0 ? '<div class="text-center py-12 text-gray-500"><i class="fas fa-users text-4xl mb-3 block"></i><p>Aucun membre d equipe</p></div>' : '') +
     '</div>'
 }
 
@@ -4979,7 +5087,7 @@ function showTeamMemberModal(editMember) {
       '<div class="modal-v2-body">' +
         '<form id="team-member-form" onsubmit="submitTeamMember(event' + (isEdit ? ', ' + m.id : '') + ')">' +
           '<div class="modal-v2-section">' +
-            '<h3><i class="fas fa-id-card"></i> INFORMATIONS GÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°NÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°RALES</h3>' +
+            '<h3><i class="fas fa-id-card"></i> INFORMATIONS G?N?RALES</h3>' +
             '<div class="form-grid">' +
               '<div class="float-field">' +
                 '<i class="fas fa-user field-icon"></i>' +
@@ -4994,7 +5102,7 @@ function showTeamMemberModal(editMember) {
               '<div class="float-field">' +
                 '<i class="fas fa-phone field-icon"></i>' +
                 '<input type="text" id="m-phone" value="' + (m.telephone || '') + '" placeholder=" ">' +
-                '<label>TÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©lÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©phone</label>' +
+                '<label>Téléphone</label>' +
               '</div>' +
               '<div class="float-field">' +
                 '<i class="fas fa-lock field-icon"></i>' +
@@ -5005,10 +5113,10 @@ function showTeamMemberModal(editMember) {
           '</div>' +
           
           '<div class="modal-v2-section">' +
-            '<h3><i class="fas fa-shield-halved"></i> SÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°CURITÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â° & RÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂLE</h3>' +
+            '<h3><i class="fas fa-shield-halved"></i> S?CURIT? & R?LE</h3>' +
             '<div class="form-grid">' +
               '<div>' +
-                '<label class="field-label">RÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â´le SystÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¨me</label>' +
+                '<label class="field-label">Rôle Système</label>' +
                 '<select id="m-role" class="v2-select">' +
                   '<option value="confirmateur" ' + (m.role === 'confirmateur' ? 'selected' : '') + '>Confirmateur (Standard)</option>' +
                   '<option value="livreur" ' + (m.role === 'livreur' ? 'selected' : '') + '>Livreur / Partenaire</option>' +
@@ -5017,7 +5125,7 @@ function showTeamMemberModal(editMember) {
               '</div>' +
               '<div class="flex items-center justify-between p-3 bg-white/3 rounded-xl border border-white/5">' +
                 '<div>' +
-                  '<div class="text-sm font-bold">AccÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¨s Plateforme</div>' +
+                  '<div class="text-sm font-bold">Accès Plateforme</div>' +
                   '<div class="text-[10px] text-gray-500">Autoriser la connexion</div>' +
                 '</div>' +
                 '<label class="v2-toggle">' +
@@ -5030,7 +5138,7 @@ function showTeamMemberModal(editMember) {
 
           '<div class="modal-v2-section">' +
             '<div class="flex items-center justify-between mb-4">' +
-              '<h3><i class="fas fa-key"></i> PERMISSIONS OPÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°RATIONNELLES</h3>' +
+              '<h3><i class="fas fa-key"></i> PERMISSIONS OP?RATIONNELLES</h3>' +
               '<div class="flex gap-2">' +
                 '<button type="button" onclick="toggleAllPerms(true)" class="text-[10px] text-indigo-400 hover:underline">Tout ON</button>' +
                 '<button type="button" onclick="toggleAllPerms(false)" class="text-[10px] text-gray-500 hover:underline">Tout OFF</button>' +
@@ -5045,7 +5153,7 @@ function showTeamMemberModal(editMember) {
           
           '<div class="modal-v2-footer">' +
             '<button type="button" class="btn-v2-cancel" onclick="closeModalAnimated()">Annuler</button>' +
-            '<button type="submit" class="btn-v2-submit"><i class="fas fa-check"></i> ' + (isEdit ? 'Enregistrer les modifications' : 'CrÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©er le membre') + '</button>' +
+            '<button type="submit" class="btn-v2-submit"><i class="fas fa-check"></i> ' + (isEdit ? 'Enregistrer les modifications' : 'Créer le membre') + '</button>' +
           '</div>' +
         '</form>' +
       '</div>' +
@@ -5089,11 +5197,11 @@ async function submitTeamMember(e, id) {
     if(isEdit) await api.put('/team-members/' + id, payload)
     else await api.post('/team-members', payload)
     
-    toast(isEdit ? 'Membre mis ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â  jour' : 'Membre ajoutÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â© avec succÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¨s')
+    toast(isEdit ? 'Membre mis à jour' : 'Membre ajouté avec succès')
     closeModalAnimated()
     loadEquipe()
   } catch(err) {
-    toast(err.response?.data?.error || 'Erreur lors de l\\'enregistrement', 'error')
+    toast(err.response?.data?.error || 'Erreur lors de l&apos;enregistrement', 'error')
   }
 }
 
@@ -5119,7 +5227,7 @@ async function loadSources() {
       '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:32px">' +
         
         '<!-- Carte Shopify -->' +
-        '<div onclick="showConnectStoreModal(\'shopify\')" style="cursor:pointer;background:rgba(21,29,48,0.6);border:1.5px solid rgba(255,255,255,0.06);border-radius:16px;padding:28px 20px;transition:all 0.3s;text-align:center" onmouseover="this.style.borderColor=\'rgba(150,191,72,0.4)\';this.style.transform=\'translateY(-4px)\';this.style.boxShadow=\'0 12px 40px rgba(150,191,72,0.1)\'" onmouseout="this.style.borderColor=\'rgba(255,255,255,0.06)\';this.style.transform=\'none\';this.style.boxShadow=\'none\'">' +
+        '<div onclick="showConnectStoreModal(&apos;shopify&apos;)" style="cursor:pointer;background:rgba(21,29,48,0.6);border:1.5px solid rgba(255,255,255,0.06);border-radius:16px;padding:28px 20px;transition:all 0.3s;text-align:center" onmouseover="this.style.borderColor=&apos;rgba(150,191,72,0.4)&apos;;this.style.transform=&apos;translateY(-4px)&apos;;this.style.boxShadow=&apos;0 12px 40px rgba(150,191,72,0.1)&apos;" onmouseout="this.style.borderColor=&apos;rgba(255,255,255,0.06)&apos;;this.style.transform=&apos;none&apos;;this.style.boxShadow=&apos;none&apos;">' +
           '<div style="width:56px;height:56px;margin:0 auto 16px;border-radius:14px;background:rgba(150,191,72,0.1);display:flex;align-items:center;justify-content:center">' +
             '<i class="fab fa-shopify" style="font-size:28px;color:#96bf48"></i>' +
           '</div>' +
@@ -5131,7 +5239,7 @@ async function loadSources() {
         '</div>' +
 
         '<!-- Carte WooCommerce -->' +
-        '<div onclick="showConnectStoreModal(\'woocommerce\')" style="cursor:pointer;background:rgba(21,29,48,0.6);border:1.5px solid rgba(255,255,255,0.06);border-radius:16px;padding:28px 20px;transition:all 0.3s;text-align:center" onmouseover="this.style.borderColor=\'rgba(150,100,200,0.4)\';this.style.transform=\'translateY(-4px)\';this.style.boxShadow=\'0 12px 40px rgba(150,100,200,0.1)\'" onmouseout="this.style.borderColor=\'rgba(255,255,255,0.06)\';this.style.transform=\'none\';this.style.boxShadow=\'none\'">' +
+        '<div onclick="showConnectStoreModal(&apos;woocommerce&apos;)" style="cursor:pointer;background:rgba(21,29,48,0.6);border:1.5px solid rgba(255,255,255,0.06);border-radius:16px;padding:28px 20px;transition:all 0.3s;text-align:center" onmouseover="this.style.borderColor=&apos;rgba(150,100,200,0.4)&apos;;this.style.transform=&apos;translateY(-4px)&apos;;this.style.boxShadow=&apos;0 12px 40px rgba(150,100,200,0.1)&apos;" onmouseout="this.style.borderColor=&apos;rgba(255,255,255,0.06)&apos;;this.style.transform=&apos;none&apos;;this.style.boxShadow=&apos;none&apos;">' +
           '<div style="width:56px;height:56px;margin:0 auto 16px;border-radius:14px;background:rgba(150,100,200,0.1);display:flex;align-items:center;justify-content:center">' +
             '<i class="fab fa-wordpress" style="font-size:28px;color:#9b5c8f"></i>' +
           '</div>' +
@@ -5143,7 +5251,7 @@ async function loadSources() {
         '</div>' +
 
         '<!-- Carte YouCan -->' +
-        '<div onclick="showConnectStoreModal(\'youcan\')" style="cursor:pointer;background:rgba(21,29,48,0.6);border:1.5px solid rgba(255,255,255,0.06);border-radius:16px;padding:28px 20px;transition:all 0.3s;text-align:center" onmouseover="this.style.borderColor=\'rgba(59,130,246,0.4)\';this.style.transform=\'translateY(-4px)\';this.style.boxShadow=\'0 12px 40px rgba(59,130,246,0.1)\'" onmouseout="this.style.borderColor=\'rgba(255,255,255,0.06)\';this.style.transform=\'none\';this.style.boxShadow=\'none\'">' +
+        '<div onclick="showConnectStoreModal(&apos;youcan&apos;)" style="cursor:pointer;background:rgba(21,29,48,0.6);border:1.5px solid rgba(255,255,255,0.06);border-radius:16px;padding:28px 20px;transition:all 0.3s;text-align:center" onmouseover="this.style.borderColor=&apos;rgba(59,130,246,0.4)&apos;;this.style.transform=&apos;translateY(-4px)&apos;;this.style.boxShadow=&apos;0 12px 40px rgba(59,130,246,0.1)&apos;" onmouseout="this.style.borderColor=&apos;rgba(255,255,255,0.06)&apos;;this.style.transform=&apos;none&apos;;this.style.boxShadow=&apos;none&apos;">' +
           '<div style="width:56px;height:56px;margin:0 auto 16px;border-radius:14px;background:rgba(59,130,246,0.1);display:flex;align-items:center;justify-content:center">' +
             '<i class="fas fa-shopping-bag" style="font-size:24px;color:#60a5fa"></i>' +
           '</div>' +
@@ -5155,30 +5263,30 @@ async function loadSources() {
         '</div>' +
       '</div>' +
 
-      '<!-- SÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©parateur avec Configuration Intelligente -->' +
+      '<!-- Séparateur avec Configuration Intelligente -->' +
       '<div style="border-top:1px solid rgba(255,255,255,0.05);padding-top:24px">' +
         '<div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:12px">' +
           '<div style="height:1px;flex:1;max-width:100px;background:rgba(255,255,255,0.06)"></div>' +
           '<span style="font-size:12px;color:#64748b">ou</span>' +
           '<div style="height:1px;flex:1;max-width:100px;background:rgba(255,255,255,0.06)"></div>' +
         '</div>' +
-        '<button onclick="showIntelligentConfigModal()" style="cursor:pointer;background:linear-gradient(135deg,rgba(99,102,241,0.1),rgba(139,92,246,0.1));border:1.5px solid rgba(99,102,241,0.2);border-radius:12px;padding:16px 28px;color:#818cf8;font-size:14px;font-weight:600;transition:all 0.3s;display:inline-flex;align-items:center;gap:10px" onmouseover="this.style.borderColor=\'rgba(99,102,241,0.5)\';this.style.transform=\'translateY(-2px)\'" onmouseout="this.style.borderColor=\'rgba(99,102,241,0.2)\';this.style.transform=\'none\'">' +
+        '<button onclick="showIntelligentConfigModal()" style="cursor:pointer;background:linear-gradient(135deg,rgba(99,102,241,0.1),rgba(139,92,246,0.1));border:1.5px solid rgba(99,102,241,0.2);border-radius:12px;padding:16px 28px;color:#818cf8;font-size:14px;font-weight:600;transition:all 0.3s;display:inline-flex;align-items:center;gap:10px" onmouseover="this.style.borderColor=&apos;rgba(99,102,241,0.5)&apos;;this.style.transform=&apos;translateY(-2px)&apos;" onmouseout="this.style.borderColor=&apos;rgba(99,102,241,0.2)&apos;;this.style.transform=&apos;none&apos;">' +
           '<i class="fas fa-wand-magic-sparkles"></i> Configuration intelligente' +
-          '<span style="font-size:11px;color:#64748b;font-weight:400">ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â Collez l\'URL, on detecte tout</span>' +
+          '<span style="font-size:11px;color:#64748b;font-weight:400">?? Collez l&apos;URL, on detecte tout</span>' +
         '</button>' +
       '</div>' +
     '</div>'
   } else {
     html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:32px">' +
-      '<div onclick="showConnectStoreModal(\'shopify\')" style="cursor:pointer;background:rgba(21,29,48,0.6);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px;transition:all 0.2s" onmouseover="this.style.borderColor=\'rgba(150,191,72,0.4)\';this.style.background=\'rgba(150,191,72,0.05)\'" onmouseout="this.style.borderColor=\'rgba(255,255,255,0.06)\';this.style.background=\'rgba(21,29,48,0.6)\'">' +
+      '<div onclick="showConnectStoreModal(&apos;shopify&apos;)" style="cursor:pointer;background:rgba(21,29,48,0.6);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px;transition:all 0.2s" onmouseover="this.style.borderColor=&apos;rgba(150,191,72,0.4)&apos;;this.style.background=&apos;rgba(150,191,72,0.05)&apos;" onmouseout="this.style.borderColor=&apos;rgba(255,255,255,0.06)&apos;;this.style.background=&apos;rgba(21,29,48,0.6)&apos;">' +
         '<div style="width:40px;height:40px;border-radius:10px;background:rgba(150,191,72,0.1);display:flex;align-items:center;justify-content:center"><i class="fab fa-shopify text-xl" style="color:#96bf48"></i></div>' +
         '<div><div style="font-size:14px;font-weight:600;color:#fff">Shopify</div><div style="font-size:11px;color:#64748b">Connecter une boutique</div></div>' +
       '</div>' +
-      '<div onclick="showConnectStoreModal(\'woocommerce\')" style="cursor:pointer;background:rgba(21,29,48,0.6);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px;transition:all 0.2s" onmouseover="this.style.borderColor=\'rgba(150,100,200,0.4)\';this.style.background=\'rgba(150,100,200,0.05)\'" onmouseout="this.style.borderColor=\'rgba(255,255,255,0.06)\';this.style.background=\'rgba(21,29,48,0.6)\'">' +
+      '<div onclick="showConnectStoreModal(&apos;woocommerce&apos;)" style="cursor:pointer;background:rgba(21,29,48,0.6);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px;transition:all 0.2s" onmouseover="this.style.borderColor=&apos;rgba(150,100,200,0.4)&apos;;this.style.background=&apos;rgba(150,100,200,0.05)&apos;" onmouseout="this.style.borderColor=&apos;rgba(255,255,255,0.06)&apos;;this.style.background=&apos;rgba(21,29,48,0.6)&apos;">' +
         '<div style="width:40px;height:40px;border-radius:10px;background:rgba(150,100,200,0.1);display:flex;align-items:center;justify-content:center"><i class="fab fa-wordpress text-xl" style="color:#9b5c8f"></i></div>' +
         '<div><div style="font-size:14px;font-weight:600;color:#fff">WooCommerce</div><div style="font-size:11px;color:#64748b">Connecter une boutique</div></div>' +
       '</div>' +
-      '<div onclick="showConnectStoreModal(\'youcan\')" style="cursor:pointer;background:rgba(21,29,48,0.6);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px;transition:all 0.2s" onmouseover="this.style.borderColor=\'rgba(59,130,246,0.4)\';this.style.background=\'rgba(59,130,246,0.05)\'" onmouseout="this.style.borderColor=\'rgba(255,255,255,0.06)\';this.style.background=\'rgba(21,29,48,0.6)\'">' +
+      '<div onclick="showConnectStoreModal(&apos;youcan&apos;)" style="cursor:pointer;background:rgba(21,29,48,0.6);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px;transition:all 0.2s" onmouseover="this.style.borderColor=&apos;rgba(59,130,246,0.4)&apos;;this.style.background=&apos;rgba(59,130,246,0.05)&apos;" onmouseout="this.style.borderColor=&apos;rgba(255,255,255,0.06)&apos;;this.style.background=&apos;rgba(21,29,48,0.6)&apos;">' +
         '<div style="width:40px;height:40px;border-radius:10px;background:rgba(59,130,246,0.1);display:flex;align-items:center;justify-content:center"><i class="fas fa-shopping-bag text-xl" style="color:#60a5fa"></i></div>' +
         '<div><div style="font-size:14px;font-weight:600;color:#fff">YouCan</div><div style="font-size:11px;color:#64748b">Connecter une boutique</div></div>' +
       '</div>' +
@@ -5214,7 +5322,7 @@ async function loadSources() {
             '</div>' +
           '</div>' +
           (isWoo && wooConnected ? '<div class="mb-3"><button onclick="importWooOrders(' + s.id + ')" class="btn btn-success text-xs w-full"><i class="fas fa-download mr-1"></i>Importer commandes</button></div>' : '') +
-          (isWoo && !wooConnected ? '<div class="mb-3"><button onclick="connectWooCommerce(\'' + s.domain + '\')" class="btn text-xs w-full" style="background:linear-gradient(135deg,#10b981,#059669);color:white;border:none"><i class="fas fa-plug mr-1"></i>Connecter AutoHub DZ</button></div>' : '') +
+          (isWoo && !wooConnected ? '<div class="mb-3"><button onclick="connectWooCommerce(&apos;' + s.domain + '&apos;)" class="btn text-xs w-full" style="background:linear-gradient(135deg,#10b981,#059669);color:white;border:none"><i class="fas fa-plug mr-1"></i>Connecter AutoHub DZ</button></div>' : '') +
           '<div class="flex gap-2 mt-4 pt-4 border-t border-white/5 justify-between">' +
             '<span class="text-xs text-gray-500">' + (isWoo ? 'Sync Auto' : 'Sync manuelle') + '</span>' +
             '<button onclick="deleteSource(' + s.id + ')" class="btn btn-danger text-xs px-3 py-1"><i class="fas fa-trash mr-1"></i> Deconnecter</button>' +
@@ -5273,7 +5381,7 @@ function showConnectStoreModal(platform) {
           '</div>' +
           '<div class="modal-v2-footer">' +
             '<button class="btn-v2-cancel" onclick="closeModalAnimated()">Annuler</button>' +
-            '<button class="btn-v2-submit" id="btn-submit-connect" onclick="submitConnectStore(\'' + platform + '\')"><i class="fas fa-plug"></i> Connecter</button>' +
+            '<button class="btn-v2-submit" id="btn-submit-connect" onclick="submitConnectStore(&apos;' + platform + '&apos;)"><i class="fas fa-plug"></i> Connecter</button>' +
           '</div>' +
         '</div>' +
       '</div>' +
@@ -5311,7 +5419,7 @@ function showIntelligentConfigModal() {
         '</div>' +
         '<div class="modal-v2-body">' +
           '<div class="modal-v2-section mb-0">' +
-            '<p class="text-sm text-gray-400 mb-4">Entrez l\'URL de votre boutique. Nous detecterons la plateforme et configurerons l\'integration automatiquement.</p>' +
+            '<p class="text-sm text-gray-400 mb-4">Entrez l&apos;URL de votre boutique. Nous detecterons la plateforme et configurerons l&apos;integration automatiquement.</p>' +
             '<div id="smart-config-content">' +
               '<div class="float-field mb-4">' +
                 '<i class="fas fa-globe field-icon"></i>' +
@@ -5384,6 +5492,7 @@ async function submitIntelligentConfig() {
 async function loadUtilisateurs() {
   try {
     const { data } = await api.get('/admin/users')
+    state.adminUsers = data || []
     const rows = data.map(u => {
       const isSelf = u.id === state.user.id
       const dis = isSelf ? 'disabled' : ''
@@ -5396,7 +5505,34 @@ async function loadUtilisateurs() {
         '<td class="font-medium text-white">' + escapeHtml(u.username) + '</td>' +
         '<td class="text-gray-300 text-sm">' + escapeHtml(u.email || '') + '</td>' +
         '<td class="text-gray-300 text-sm max-w-[140px] truncate">' + escapeHtml(u.store_name || '') + '</td>' +
-        '<td><select ' + dis + ' onchange="adminUpdateUser(' + u.id + ', \\'role\\', this.value)" class="text-xs bg-dark-800 border border-white/10 rounded px-2 py-1">' +
+        '<td><select ' + dis + ' onchange="adminUpdateUser(' + u.id + ', &apos;role&apos;, this.value)" class="text-xs bg-dark-800 border border-white/10 rounded px-2 py-1">' +
+          '<option value="client"' + (r === 'client' ? ' selected' : '') + '>client</option>' +
+          '<option value="employe"' + (r === 'employe' ? ' selected' : '') + '>employe</option>' +
+          '<option value="admin"' + (r === 'admin' ? ' selected' : '') + '>admin</option>' +
+        '</select></td>' +
+        '<td><select ' + dis + ' onchange="adminUpdateUser(' + u.id + ', &apos;subscription&apos;, this.value)" class="text-xs bg-dark-800 border border-white/10 rounded px-2 py-1">' +
+          '<option value="starter"' + (s === 'starter' ? ' selected' : '') + '>starter</option>' +
+          '<option value="pro"' + (s === 'pro' ? ' selected' : '') + '>pro</option>' +
+          '<option value="business"' + (s === 'business' ? ' selected' : '') + '>business</option>' +
+        '</select></td>' +
+        '<td><select ' + dis + ' onchange="adminUpdateUser(' + u.id + ', &apos;active&apos;, this.value)" class="text-xs bg-dark-800 border border-white/10 rounded px-2 py-1">' +
+          '<option value="1"' + (a === 1 ? ' selected' : '') + '>Actif</option>' +
+          '<option value="0"' + (a === 0 ? ' selected' : '') + '>Inactif</option>' +
+        '</select></td>' +
+        '<td class="text-xs text-gray-500">' + (u.last_login ? new Date(u.last_login).toLocaleDateString('fr-FR') : '--') + '</td>' +
+      '</tr>'
+    }).join('')
+
+    document.getElementById('view-utilisateurs').innerHTML = '<div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">' +
+      '<div><h1 class="text-2xl font-bold"><i class="fas fa-users-cog text-indigo-400 mr-2"></i>Gestion des utilisateurs</h1><p class="text-gray-400 text-sm">' + data.length + ' utilisateur(s)</p></div>' +
+    '</div>' +
+    '<div id="admin-payment-section" class="mb-6"></div>' +
+    '<div class="card overflow-x-auto">' +
+      '<table><thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Boutique</th><th>Role</th><th>Plan</th><th>Statut</th><th>Derniere connexion</th></tr></thead>' +
+      '<tbody>' + rows + '</tbody></table>' +
+    '</div>'
+
+    if (typeof loadAdminPaymentRequests === 'function') loadAdminPaymentRequests()
   } catch (e) {
     document.getElementById('view-utilisateurs').innerHTML = '<div class="text-red-400">Impossible de charger les utilisateurs.</div>'
   }
@@ -5420,10 +5556,12 @@ async function adminUpdateUser(id, field, value) {
 // ===================== WILAYAS & COMMUNES BROWSER =====================
 async function loadWilayasPage() {
   if (!state.wilayasFull) {
-async function loadWilayasPage() {
-  if (!state.wilayasFull) {
     const { data } = await api.get('/wilayas-full')
-    state.wilayasFull = data
+    const wilayas = (data.wilayas || []).map(function(w) {
+      w.communes = (data.communesByWilaya && data.communesByWilaya[w.id]) || []
+      return w
+    })
+    state.wilayasFull = wilayas
   }
   const container = document.getElementById('view-wilayaspage')
   if (!container) return
@@ -5660,7 +5798,7 @@ async function loadPricing() {
     const statusClass = r.status === 'approved' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 
                       r.status === 'rejected' ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' : 
                       'bg-amber-500/10 text-amber-400 border-amber-500/20'
-    const statusLabel = r.status === 'approved' ? 'ApprouvÃƒÆ’Ã‚Â©' : r.status === 'rejected' ? 'RefusÃƒÆ’Ã‚Â©' : 'En attente'
+    const statusLabel = r.status === 'approved' ? 'Approuvé' : r.status === 'rejected' ? 'Refusé' : 'En attente'
     rows += '<tr>' +
       '<td class="py-3 px-4 text-xs text-gray-400">' + new Date(r.created_at).toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'}) + '</td>' +
       '<td class="py-3 px-4 font-bold text-white text-xs uppercase">' + r.plan + '</td>' +
@@ -5696,9 +5834,9 @@ async function loadPricing() {
         <div class="text-3xl font-black mb-4">2,900 DA<span class="text-sm text-gray-500 font-medium">/mois</span></div>
         <ul class="text-sm text-gray-400 space-y-3 mb-10 text-left w-full">
           <li><i class="fas fa-check text-indigo-400 mr-2"></i> 1,500 commandes / mois</li>
-          <li><i class="fas fa-check text-indigo-400 mr-2"></i> ÃƒÆ’Ã¢â‚¬Â°tiquettes personnalisÃƒÆ’Ã‚Â©es</li>
-          <li><i class="fas fa-check text-indigo-400 mr-2"></i> Analyse de stock avancÃƒÆ’Ã‚Â©e</li>
-          <li><i class="fas fa-check text-indigo-400 mr-2"></i> Jusqu'ÃƒÆ’Ã‚Â  3 Boutiques</li>
+          <li><i class="fas fa-check text-indigo-400 mr-2"></i> ?tiquettes personnalisées</li>
+          <li><i class="fas fa-check text-indigo-400 mr-2"></i> Analyse de stock avancée</li>
+          <li><i class="fas fa-check text-indigo-400 mr-2"></i> Jusqu'à 3 Boutiques</li>
         </ul>
         <button onclick="showPaymentModal('pro')" class="btn btn-primary w-full py-3 rounded-xl mt-auto shadow-lg shadow-indigo-500/20" \${currentSub === 'pro' ? 'disabled' : ''}>\${currentSub === 'pro' ? 'Plan Actuel' : 'Passer au Plan Pro'}</button>
       </div>
@@ -5708,10 +5846,10 @@ async function loadPricing() {
         <h3 class="text-xl font-bold mb-2">Business</h3>
         <div class="text-3xl font-black mb-4">6,900 DA<span class="text-sm text-gray-500 font-medium">/mois</span></div>
         <ul class="text-sm text-gray-400 space-y-3 mb-10 text-left w-full">
-          <li><i class="fas fa-check text-emerald-400 mr-2"></i> Commandes illimitÃƒÆ’Ã‚Â©es</li>
-          <li><i class="fas fa-check text-emerald-400 mr-2"></i> Multi-utilisateurs (ÃƒÆ’Ã¢â‚¬Â°quipe)</li>
+          <li><i class="fas fa-check text-emerald-400 mr-2"></i> Commandes illimitées</li>
+          <li><i class="fas fa-check text-emerald-400 mr-2"></i> Multi-utilisateurs (?quipe)</li>
           <li><i class="fas fa-check text-emerald-400 mr-2"></i> Support Prioritaire</li>
-          <li><i class="fas fa-check text-emerald-400 mr-2"></i> Boutiques illimitÃƒÆ’Ã‚Â©es</li>
+          <li><i class="fas fa-check text-emerald-400 mr-2"></i> Boutiques illimitées</li>
         </ul>
         <button onclick="showPaymentModal('business')" class="btn btn-outline w-full py-3 rounded-xl mt-auto hover:bg-emerald-500/5" \${currentSub === 'business' ? 'disabled' : ''}>\${currentSub === 'business' ? 'Plan Actuel' : 'Choisir Business'}</button>
       </div>
@@ -5720,8 +5858,8 @@ async function loadPricing() {
       <div class="flex items-center gap-3 mb-6"><i class="fas fa-history text-indigo-400"></i><h2 class="text-xl font-bold">Historique des paiements</h2></div>
       <div class="card overflow-hidden">
         <table class="w-full text-left">
-          <thead><tr class="bg-white/3"><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">Date</th><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">Plan</th><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">Montant</th><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">MÃƒÆ’Ã‚Â©thode</th><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">Statut</th><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">Notes Admin</th></tr></thead>
-          <tbody class="divide-y divide-white/5">\${rows || '<tr><td colspan="6" class="py-10 text-center text-gray-500">Aucun paiement enregistrÃƒÆ’Ã‚Â©</td></tr>'}</tbody>
+          <thead><tr class="bg-white/3"><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">Date</th><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">Plan</th><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">Montant</th><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">Méthode</th><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">Statut</th><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">Notes Admin</th></tr></thead>
+          <tbody class="divide-y divide-white/5">\${rows || '<tr><td colspan="6" class="py-10 text-center text-gray-500">Aucun paiement enregistré</td></tr>'}</tbody>
         </table>
       </div>
     </div>
@@ -5739,13 +5877,13 @@ function showPaymentModal(plan) {
           <button class="modal-v2-close" onclick="closeModalAnimated()"><i class="fas fa-xmark"></i></button>
         </div>
         <div class="modal-v2-body">
-          <p class="text-sm text-gray-400 mb-6 text-center">Effectuez le transfert vers l'une des mÃƒÆ’Ã‚Â©thodes ci-dessous, puis renseignez la rÃƒÆ’Ã‚Â©fÃƒÆ’Ã‚Â©rence de transaction.</p>
+          <p class="text-sm text-gray-400 mb-6 text-center">Effectuez le transfert vers l'une des méthodes ci-dessous, puis renseignez la référence de transaction.</p>
           <div class="space-y-4 mb-6">
              <label class="flex items-start gap-4 p-4 rounded-xl border border-white/5 bg-white/2 hover:bg-white/5 cursor-pointer transition">
                 <input type="radio" name="payment-method" value="baridimob" checked onchange="updatePaymentInstructions('baridimob')" class="mt-1 w-4 h-4 accent-indigo-500">
                 <div class="flex-1">
                   <div class="font-bold text-sm text-white flex items-center justify-between">BaridiMob <span>\${price}</span></div>
-                  <p class="text-xs text-gray-400 mt-1">Virement instantanÃƒÆ’Ã‚Â© vers RIP :</p>
+                  <p class="text-xs text-gray-400 mt-1">Virement instantané vers RIP :</p>
                   <code class="block mt-1 p-2 bg-black/30 rounded text-indigo-300 text-[11px] font-mono select-all">00799999XXXXXXXXXX99</code>
                 </div>
              </label>
@@ -5754,7 +5892,7 @@ function showPaymentModal(plan) {
                 <div class="flex-1">
                   <div class="font-bold text-sm text-white flex items-center justify-between">Vers CCP <span>\${price}</span></div>
                   <p class="text-xs text-gray-400 mt-1">Versement guichet ou virement vers :</p>
-                  <code class="block mt-1 p-2 bg-black/30 rounded text-amber-300 text-[11px] font-mono select-all">XXXXXXXXXX clÃƒÆ’Ã‚Â© XX</code>
+                  <code class="block mt-1 p-2 bg-black/30 rounded text-amber-300 text-[11px] font-mono select-all">XXXXXXXXXX clé XX</code>
                 </div>
              </label>
              <label class="flex items-start gap-4 p-4 rounded-xl border border-white/5 bg-white/2 hover:bg-white/5 cursor-pointer transition">
@@ -5767,25 +5905,25 @@ function showPaymentModal(plan) {
              </label>
           </div>
           <div class="modal-v2-section">
-             <div class="modal-v2-section-title"><i class="fas fa-receipt"></i> Preuve de paiement</div>
+             <div class="modal-v2-section-title"><i class="fas fa-hashtag"></i> Reference de transaction</div>
              <div class="form-grid">
                 <div class="float-field full-width">
                   <i class="fas fa-hashtag field-icon"></i>
-                  <input type="text" id="pay-ref" placeholder=" " required>
-                  <label id="pay-ref-label">RÃƒÆ’Ã‚Â©fÃƒÆ’Ã‚Â©rence de transaction (NÃƒâ€šÃ‚Â° Bordereau / ID)*</label>
-                </div>
-                <div class="float-field full-width">
-                  <i class="fas fa-comment-dots field-icon"></i>
-                  <input type="text" id="pay-notes" placeholder=" ">
-                  <label>Notes ou message (optionnel)</label>
+                  <input type="text" id="pay-ref" placeholder=" " required oninput="updateWhatsAppBtn()">
+                  <label id="pay-ref-label">Reference de transaction (N Bordereau / ID)*</label>
                 </div>
              </div>
           </div>
-          <div class="modal-v2-footer">
-            <button class="btn-v2-cancel" onclick="closeModalAnimated()">Annuler</button>
-            <button class="btn-v2-submit" id="pay-submit-btn" onclick="submitPaymentRequest('\${plan}')">
-              <i class="fas fa-paper-plane"></i> <span id="pay-submit-text">Envoyer ma preuve</span>
+          <div class="flex flex-col items-center gap-3 mt-6 mb-2">
+            <button id="wa-pay-btn" onclick="openWhatsAppPayment('\${plan}')" disabled
+              class="w-full py-3.5 rounded-xl font-bold text-base flex items-center justify-center gap-3 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+              style="background:#25D366;color:white;border:none">
+              <i class="fab fa-whatsapp text-xl"></i> Envoyer via WhatsApp
             </button>
+            <p class="text-xs text-gray-500 text-center"><i class="fas fa-info-circle mr-1"></i>Envoyez votre recu via WhatsApp pour activation</p>
+          </div>
+          <div class="modal-v2-footer" style="margin-top:12px">
+            <button class="btn-v2-cancel" onclick="closeModalAnimated()">Annuler</button>
           </div>
         </div>
       </div>
@@ -5797,8 +5935,25 @@ function updatePaymentInstructions(method) {
   const lbl = document.getElementById('pay-ref-label')
   if (!lbl) return
   if (method === 'redotpay') lbl.innerText = 'Transaction Hash (TXID) *'
-  else if (method === 'baridimob') lbl.innerText = 'RÃƒÆ’Ã‚Â©fÃƒÆ’Ã‚Â©rence de transaction BaridiMob *'
-  else lbl.innerText = 'NÃƒâ€šÃ‚Â° Bordereau ou RÃƒÆ’Ã‚Â©fÃƒÆ’Ã‚Â©rence mandat *'
+  else if (method === 'baridimob') lbl.innerText = 'Reference de transaction BaridiMob *'
+  else lbl.innerText = 'N Bordereau ou Reference mandat *'
+}
+
+function updateWhatsAppBtn() {
+  const ref = (document.getElementById('pay-ref')?.value || '').trim()
+  const btn = document.getElementById('wa-pay-btn')
+  if (btn) btn.disabled = !ref
+}
+
+function openWhatsAppPayment(plan) {
+  const ref = (document.getElementById('pay-ref')?.value || '').trim()
+  if (!ref) { toast('Veuillez entrer la reference de transaction', 'error'); return }
+  const method = document.querySelector('input[name="payment-method"]:checked')?.value || 'baridimob'
+  const methodLabel = method === 'baridimob' ? 'BaridiMob' : method === 'ccp' ? 'CCP' : 'RedotPay (USDT)'
+  const amount = plan === 'pro' ? '2,900 DA' : '6,900 DA'
+  const msg = 'Bonjour, j' + "'" + 'ai effectue le paiement du Plan ' + plan.toUpperCase() + '.\nReference : ' + ref + '\nMethode : ' + methodLabel + '\nMontant : ' + amount
+  const text = encodeURIComponent(msg)
+  window.open('https://wa.me/213552295894?text=' + text, '_blank')
 }
 
 async function submitPaymentRequest(plan) {
@@ -5808,17 +5963,17 @@ async function submitPaymentRequest(plan) {
   const payment_method = document.querySelector('input[name="payment-method"]:checked').value
   const proof_notes = document.getElementById('pay-notes').value.trim()
   
-  if (!proof_reference) { toast('Veuillez entrer la rÃƒÆ’Ã‚Â©fÃƒÆ’Ã‚Â©rence de la transaction', 'error'); return }
+  if (!proof_reference) { toast('Veuillez entrer la référence de la transaction', 'error'); return }
   
   if (btn) btn.disabled = true
   if (btnText) btnText.innerHTML = '<span class="spinner-sm"></span> Envoi...'
   
   try {
     const { data } = await api.post('/payment-request', { plan, payment_method, proof_reference, proof_notes })
-    toast(data.message || 'Demande transmise avec succÃƒÆ’Ã‚Â¨s !')
+    toast(data.message || 'Demande transmise avec succès !')
     closeModalAnimated(); loadPricing()
   } catch (e) {
-    toast(e.response?.data?.error || 'Erreur lors de l\'envoi', 'error')
+    toast(e.response?.data?.error || 'Erreur lors de l&apos;envoi', 'error')
     if (btn) btn.disabled = false
     if (btnText) btnText.innerHTML = 'Envoyer ma preuve'
   }
@@ -5880,7 +6035,7 @@ async function adminReviewPayment(id, status) {
   if (status === 'rejected') {
     admin_notes = prompt('Motif du rejet (optionnel) :') || ''
   } else {
-    if (!confirm('Confirmer l\'activation de l\'abonnement pour cet utilisateur ?')) return
+    if (!confirm('Confirmer l&apos;activation de l&apos;abonnement pour cet utilisateur ?')) return
   }
 
   try {
@@ -5922,11 +6077,120 @@ function rolePill(role) {
   return '<span class="px-2 py-0.5 rounded-full text-[10px] border '+ (colors[role] || 'bg-gray-500/20 text-gray-300 border-gray-500/30') +'">' + role + '</span>'
 }
 
+const _configBuffer = {}
+let _currentWebhookUrl = ''
+
+function copyWebhookUrl() {
+  navigator.clipboard.writeText(_currentWebhookUrl).then(function(){ toast('Copié !', 'success') })
+}
+
+function _updateConfigField(provider, field, value) {
+  if (!_configBuffer[provider]) _configBuffer[provider] = {}
+  _configBuffer[provider][field] = value
+}
+
+async function saveTransporteurConfig(provider) {
+  try {
+    const { data: configs } = await api.get('/config')
+    const existing = configs.find(c => c.provider === provider)
+    const current = existing ? JSON.parse(existing.config_json || '{}') : {}
+    const updated = { ...current, ...(_configBuffer[provider] || {}) }
+    await api.put('/config/' + provider, { config: updated, active: existing?.active ?? 1 })
+    toast('Configuration sauvegardée !', 'success')
+    delete _configBuffer[provider]
+  } catch(e) { toast('Erreur lors de la sauvegarde', 'error') }
+}
+
+async function toggleTransporteurActive(provider, active) {
+  try {
+    const { data: configs } = await api.get('/config')
+    const existing = configs.find(c => c.provider === provider)
+    const current = existing ? JSON.parse(existing.config_json || '{}') : {}
+    await api.put('/config/' + provider, { config: current, active: active ? 1 : 0 })
+    toast(active ? 'Transporteur activé ✅' : 'Transporteur désactivé', 'success')
+  } catch(e) { toast('Erreur', 'error') }
+}
+
 async function loadConfig() {
-  const { data } = await api.get('/user-config')
-  const webhookUrl = window.location.origin + '/api/webhook/' + data.webhook_token
-  document.getElementById('view-integration').innerHTML = '<div class="mb-6"><h1 class="text-2xl font-bold">Integrations</h1></div>' +
-    '<div class="card p-6"><code class="text-indigo-300 text-xs">' + webhookUrl + '</code></div>'
+  const container = document.getElementById('view-integration')
+  container.innerHTML = '<div class="flex items-center justify-center py-20"><div class="spinner"></div></div>'
+  try {
+    const { data: userData } = await api.get('/user-config')
+    const { data: configs } = await api.get('/config')
+    const webhookUrl = window.location.origin + '/api/webhook/' + userData.webhook_token
+    _currentWebhookUrl = webhookUrl
+
+    const transporteurs = [
+      { key: 'yalidine', label: 'Yalidine', icon: 'fa-truck', color: 'emerald',
+        fields: [{ name: 'api_id', label: 'API ID', type: 'text' }, { name: 'api_token', label: 'API Token', type: 'password' }] },
+      { key: 'zr_express', label: 'ZR Express', icon: 'fa-shipping-fast', color: 'blue',
+        fields: [{ name: 'api_key', label: 'API Key', type: 'password' }, { name: 'tenant', label: 'Tenant', type: 'text' }] },
+      { key: 'ecotrack_pdex', label: 'Ecotrack PDEX', icon: 'fa-box', color: 'purple',
+        fields: [{ name: 'token', label: 'Token API', type: 'password' }] },
+      { key: 'dhd', label: 'DHD', icon: 'fa-motorcycle', color: 'orange',
+        fields: [{ name: 'token', label: 'Token', type: 'password' }, { name: 'base_url', label: 'Base URL', type: 'text' }] },
+      { key: 'noest', label: 'NOEST', icon: 'fa-truck-moving', color: 'red',
+        fields: [{ name: 'token', label: 'Token', type: 'password' }, { name: 'base_url', label: 'Base URL', type: 'text' }] },
+    ]
+
+    const configMap = {}
+    configs.forEach(c => { configMap[c.provider] = { ...JSON.parse(c.config_json || '{}'), active: c.active } })
+
+    const cards = transporteurs.map(t => {
+      const cfg = configMap[t.key] || {}
+      const isActive = cfg.active == 1
+      const fieldsHtml = t.fields.map(f => {
+        return '<div class="mb-3">' +
+          '<label class="text-xs text-gray-400 block mb-1">' + f.label + '</label>' +
+          '<input type="' + f.type + '" class="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none transition"' +
+          ' placeholder="' + f.label + '..." value="' + (cfg[f.name] || '') + '"' +
+          ' oninput="_updateConfigField(' + JSON.stringify(t.key) + ', ' + JSON.stringify(f.name) + ', this.value)">' +
+          '</div>'
+      }).join('')
+
+      return '<div class="card p-5 mb-4 border ' + (isActive ? 'border-emerald-500/30' : 'border-white/5') + '">' +
+        '<div class="flex items-center justify-between mb-4">' +
+          '<div class="flex items-center gap-3">' +
+            '<div class="w-10 h-10 rounded-xl bg-' + t.color + '-500/15 flex items-center justify-center">' +
+              '<i class="fas ' + t.icon + ' text-' + t.color + '-400"></i>' +
+            '</div>' +
+            '<div>' +
+              '<h3 class="font-bold text-base">' + t.label + '</h3>' +
+              '<span class="text-xs ' + (isActive ? 'text-emerald-400' : 'text-gray-500') + '">' + (isActive ? '● Actif' : '○ Inactif') + '</span>' +
+            '</div>' +
+          '</div>' +
+          '<label class="flex items-center gap-2 cursor-pointer">' +
+            '<span class="text-xs text-gray-400">' + (isActive ? 'ON' : 'OFF') + '</span>' +
+            '<input type="checkbox" class="w-4 h-4 accent-emerald-500" ' + (isActive ? 'checked' : '') +
+            ' onchange="toggleTransporteurActive(' + JSON.stringify(t.key) + ', this.checked)">' +
+          '</label>' +
+        '</div>' +
+        fieldsHtml +
+        '<button onclick="saveTransporteurConfig(' + JSON.stringify(t.key) + ')" class="btn btn-primary w-full mt-1 text-sm py-2">' +
+          '<i class="fas fa-save mr-2"></i>Sauvegarder' +
+        '</button>' +
+        '</div>'
+    }).join('')
+
+    container.innerHTML =
+      '<div class="mb-6">' +
+        '<h1 class="text-2xl font-bold"><i class="fas fa-plug text-indigo-400 mr-2"></i>Intégrations API</h1>' +
+        '<p class="text-gray-400 text-sm mt-1">Configurez vos transporteurs et copiez l&apos;URL webhook</p>' +
+      '</div>' +
+      '<div class="card p-4 mb-6 border border-indigo-500/20">' +
+        '<div class="flex items-center gap-2 mb-2">' +
+          '<i class="fas fa-link text-indigo-400 text-sm"></i>' +
+          '<span class="text-xs font-bold text-indigo-300 uppercase tracking-wider">URL Webhook</span>' +
+        '</div>' +
+        '<div class="flex items-center gap-2">' +
+          '<code class="text-indigo-300 text-xs break-all flex-1 bg-black/30 p-2 rounded">' + webhookUrl + '</code>' +
+          '<button onclick="copyWebhookUrl()" class="btn btn-secondary text-xs px-3 py-2 shrink-0"><i class="fas fa-copy"></i></button>' +
+        '</div>' +
+      '</div>' +
+      '<div>' + cards + '</div>'
+  } catch(e) {
+    container.innerHTML = '<div class="text-center py-10 text-red-400"><i class="fas fa-exclamation-triangle mb-2 block text-2xl"></i>Erreur de chargement: ' + e.message + '</div>'
+  }
 }
 
 async function loadHistorique() {
@@ -5942,6 +6206,151 @@ function escapeHtml(text) {
   return div.innerHTML
 }
 
+// ===================== POINTS RELAIS (STOP DESKS) =====================
+let _sdFilter = { wilaya: '', transporteur: '' }
+let _sdItems = []
+const _sdTransporteurs = ['ZR Express', 'Yalidine', 'Noest', 'DHD', 'Ecotrack PDEX']
+
+async function loadStopDesks() {
+  const container = document.getElementById('view-stopdesks')
+  if (!container) return
+  container.innerHTML = '<div class="flex items-center justify-center py-20"><div class="spinner"></div></div>'
+  try {
+    const wilayas = state.wilayas || []
+    let url = '/admin/stop-desks'
+    const params = []
+    if (_sdFilter.wilaya) params.push('wilaya_id=' + _sdFilter.wilaya)
+    if (_sdFilter.transporteur) params.push('transporteur=' + encodeURIComponent(_sdFilter.transporteur))
+    if (params.length) url += '?' + params.join('&')
+    const { data } = await api.get(url)
+    const items = Array.isArray(data) ? data : []
+    _sdItems = items
+
+    const wilayaOptions = '<option value="">Toutes les wilayas</option>' +
+      wilayas.map(w => '<option value="' + w.id + '"' + (_sdFilter.wilaya == w.id ? ' selected' : '') + '>' + w.code + ' - ' + w.name + '</option>').join('')
+    const transporteurOptions = '<option value="">Tous les transporteurs</option>' +
+      _sdTransporteurs.map(t => '<option value="' + t + '"' + (_sdFilter.transporteur === t ? ' selected' : '') + '>' + t + '</option>').join('')
+
+    const rows = items.length === 0
+      ? '<tr><td colspan="5" class="text-center text-gray-500 py-8">Aucun point relais trouve</td></tr>'
+      : items.map(sd => '<tr>' +
+          '<td class="text-sm font-medium">' + escapeHtml(sd.name) + '</td>' +
+          '<td class="text-sm text-gray-400">' + escapeHtml(sd.address || '') + '</td>' +
+          '<td><span class="badge badge-blue text-xs">' + escapeHtml(sd.transporteur) + '</span></td>' +
+          '<td class="text-sm text-gray-300">' + (sd.wilaya_id ? String(sd.wilaya_id).padStart(2,'0') + ' - ' + escapeHtml(sd.wilaya_name || '') : '') + '</td>' +
+          '<td class="text-right">' +
+            '<button onclick="editStopDeskById(' + sd.id + ')" class="btn btn-secondary text-xs px-2 py-1 mr-1"><i class="fas fa-edit"></i></button>' +
+            '<button onclick="deleteStopDesk(' + sd.id + ')" class="btn text-xs px-2 py-1 bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/30"><i class="fas fa-trash"></i></button>' +
+          '</td>' +
+        '</tr>').join('')
+
+    container.innerHTML =
+      '<div class="mb-6 flex items-center justify-between flex-wrap gap-3">' +
+        '<div>' +
+          '<h1 class="text-2xl font-bold"><i class="fas fa-map-pin text-indigo-400 mr-2"></i>Points Relais</h1>' +
+          '<p class="text-gray-400 text-sm mt-1">Gérez les agences et points de dépôt par transporteur</p>' +
+        '</div>' +
+        '<button onclick="openAddStopDesk()" class="btn btn-primary"><i class="fas fa-plus mr-2"></i>Ajouter un point</button>' +
+      '</div>' +
+      '<div class="card p-4 mb-4 flex flex-wrap gap-3 items-end">' +
+        '<div class="flex flex-col gap-1">' +
+          '<label class="text-xs text-gray-400">Wilaya</label>' +
+          '<select class="input text-sm" style="min-width:180px" onchange="_sdFilter.wilaya=this.value; loadStopDesks()">' + wilayaOptions + '</select>' +
+        '</div>' +
+        '<div class="flex flex-col gap-1">' +
+          '<label class="text-xs text-gray-400">Transporteur</label>' +
+          '<select class="input text-sm" style="min-width:160px" onchange="_sdFilter.transporteur=this.value; loadStopDesks()">' + transporteurOptions + '</select>' +
+        '</div>' +
+        '<div class="text-xs text-gray-500 self-end pb-1">' + items.length + ' point(s) relais</div>' +
+      '</div>' +
+      '<div class="card overflow-hidden">' +
+        '<div class="overflow-x-auto">' +
+          '<table class="w-full">' +
+            '<thead><tr>' +
+              '<th class="text-left text-xs text-gray-400 uppercase p-3">Nom</th>' +
+              '<th class="text-left text-xs text-gray-400 uppercase p-3">Adresse</th>' +
+              '<th class="text-left text-xs text-gray-400 uppercase p-3">Transporteur</th>' +
+              '<th class="text-left text-xs text-gray-400 uppercase p-3">Wilaya</th>' +
+              '<th class="text-right text-xs text-gray-400 uppercase p-3">Actions</th>' +
+            '</tr></thead>' +
+            '<tbody class="divide-y divide-white/5">' + rows + '</tbody>' +
+          '</table>' +
+        '</div>' +
+      '</div>'
+  } catch(e) {
+    container.innerHTML = '<div class="text-center py-10 text-red-400"><i class="fas fa-exclamation-triangle mb-2 block text-2xl"></i>Erreur: ' + e.message + '</div>'
+  }
+}
+
+function _sdModal(title, sd, onSave) {
+  const wilayas = state.wilayas || []
+  const wilayaOptions = '<option value="" disabled selected>Choisir une wilaya</option>' +
+    wilayas.map(w => '<option value="' + w.id + '"' + (sd && sd.wilaya_id == w.id ? ' selected' : '') + '>' + w.code + ' - ' + w.name + '</option>').join('')
+  const transporteurOptions = _sdTransporteurs.map(t => '<option value="' + t + '"' + (sd && sd.transporteur === t ? ' selected' : '') + '>' + t + '</option>').join('')
+  const modal = document.createElement('div')
+  modal.className = 'modal-overlay'
+  modal.innerHTML =
+    '<div class="modal-box" style="max-width:480px">' +
+      '<div class="modal-header"><h3 class="text-lg font-bold">' + title + '</h3>' +
+        '<button onclick="this.closest(&apos;.modal-overlay&apos;).remove()" class="text-gray-400 hover:text-white text-xl">&times;</button></div>' +
+      '<div class="modal-body space-y-4">' +
+        '<div class="float-field"><input id="sd-name" type="text" class="input" value="' + escapeHtml(sd?.name||'') + '" placeholder=" " required/><label>Nom du point relais *</label></div>' +
+        '<div class="float-field"><input id="sd-address" type="text" class="input" value="' + escapeHtml(sd?.address||'') + '" placeholder=" "/><label>Adresse</label></div>' +
+        '<div class="float-field"><select id="sd-wilaya" class="input" required>' + wilayaOptions + '</select><label>Wilaya *</label><i class="fas fa-chevron-down select-arrow"></i></div>' +
+        '<div class="float-field"><select id="sd-transporteur" class="input" required>' + transporteurOptions + '</select><label>Transporteur *</label><i class="fas fa-chevron-down select-arrow"></i></div>' +
+      '</div>' +
+      '<div class="modal-footer">' +
+        '<button onclick="this.closest(&apos;.modal-overlay&apos;).remove()" class="btn btn-secondary">Annuler</button>' +
+        '<button id="sd-save-btn" class="btn btn-primary">Enregistrer</button>' +
+      '</div>' +
+    '</div>'
+  document.getElementById('modals').appendChild(modal)
+  modal.querySelector('#sd-save-btn').addEventListener('click', async () => {
+    const name = modal.querySelector('#sd-name').value.trim()
+    const address = modal.querySelector('#sd-address').value.trim()
+    const wilaya_id = modal.querySelector('#sd-wilaya').value
+    const transporteur = modal.querySelector('#sd-transporteur').value
+    if (!name || !wilaya_id || !transporteur) { toast('Veuillez remplir tous les champs obligatoires', 'error'); return }
+    await onSave({ name, address, wilaya_id, transporteur })
+    modal.remove()
+  })
+}
+
+function openAddStopDesk() {
+  _sdModal('Ajouter un point relais', null, async (body) => {
+    try {
+      await api.post('/admin/stop-desks', body)
+      toast('Point relais ajouté !', 'success')
+      loadStopDesks()
+    } catch(e) { toast('Erreur: ' + e.message, 'error') }
+  })
+}
+
+function editStopDeskById(id) {
+  const sd = _sdItems.find(s => s.id === id)
+  if (!sd) { toast('Point relais introuvable', 'error'); return }
+  editStopDesk(id, sd.name, sd.wilaya_id, sd.transporteur, sd.address || '')
+}
+
+function editStopDesk(id, name, wilaya_id, transporteur, address) {
+  _sdModal('Modifier le point relais', { id, name, wilaya_id, transporteur, address }, async (body) => {
+    try {
+      await api.put('/admin/stop-desks/' + id, body)
+      toast('Point relais modifié !', 'success')
+      loadStopDesks()
+    } catch(e) { toast('Erreur: ' + e.message, 'error') }
+  })
+}
+
+async function deleteStopDesk(id) {
+  if (!confirm('Supprimer ce point relais ?')) return
+  try {
+    await api.delete('/admin/stop-desks/' + id)
+    toast('Point relais supprimé', 'success')
+    loadStopDesks()
+  } catch(e) { toast('Erreur: ' + e.message, 'error') }
+}
+
 checkAuth().then(ok => {
   if(ok) {
     navigateTo('dashboard')
@@ -5951,4 +6360,6 @@ checkAuth().then(ok => {
 </body>
 </html>`
 }
+
+
 
