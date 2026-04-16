@@ -143,9 +143,9 @@ async function ensurePaymentRequestsTable(db: D1Database) {
 
 function getMonthlyOrderLimit(subscription: string): number {
   const s = (subscription || 'starter').toLowerCase()
-  if (s === 'pro') return 1000
-  if (s === 'business') return 999999
-  return 300
+  if (s === 'pro') return 1500
+  if (s === 'business') return 7000
+  return 500
 }
 
 async function getMonthlyOrderUsage(db: D1Database, userId: number, hasCmdUserId: boolean, hasSuiviUserId: boolean): Promise<number> {
@@ -2231,7 +2231,7 @@ app.post('/api/payment-request', async (c) => {
   await ensurePaymentRequestsTable(c.env.DB)
   const { plan, payment_method, proof_reference, proof_notes } = await c.req.json()
 
-  if (!['starter', 'pro', 'business'].includes(plan)) {
+  if (!['pro', 'business'].includes(plan)) {
     return c.json({ error: 'Plan invalide' }, 400)
   }
   if (!['baridimob', 'ccp', 'redotpay'].includes(payment_method)) {
@@ -2244,15 +2244,12 @@ app.post('/api/payment-request', async (c) => {
   let amount = 0
   let currency = 'DZD'
 
-  if (plan === 'starter') {
-    if (payment_method === 'redotpay') { amount = 8; currency = 'USD' }
-    else { amount = 1500; currency = 'DZD' }
-  } else if (plan === 'pro') {
-    if (payment_method === 'redotpay') { amount = 25; currency = 'USD' }
-    else { amount = 5000; currency = 'DZD' }
+  if (plan === 'pro') {
+    if (payment_method === 'redotpay') { amount = 15; currency = 'USD' }
+    else { amount = 2900; currency = 'DZD' }
   } else if (plan === 'business') {
-    if (payment_method === 'redotpay') { amount = 90; currency = 'USD' }
-    else { amount = 18000; currency = 'DZD' }
+    if (payment_method === 'redotpay') { amount = 35; currency = 'USD' }
+    else { amount = 6900; currency = 'DZD' }
   }
 
   const result = await c.env.DB.prepare(
@@ -5801,7 +5798,7 @@ async function loadPricing() {
     const statusClass = r.status === 'approved' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 
                       r.status === 'rejected' ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' : 
                       'bg-amber-500/10 text-amber-400 border-amber-500/20'
-    const statusLabel = r.status === 'approved' ? 'Approuve' : r.status === 'rejected' ? 'Refuse' : 'En attente'
+    const statusLabel = r.status === 'approved' ? 'Approuvé' : r.status === 'rejected' ? 'Refusé' : 'En attente'
     rows += '<tr>' +
       '<td class="py-3 px-4 text-xs text-gray-400">' + new Date(r.created_at).toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'}) + '</td>' +
       '<td class="py-3 px-4 font-bold text-white text-xs uppercase">' + r.plan + '</td>' +
@@ -5811,315 +5808,67 @@ async function loadPricing() {
       '<td class="py-3 px-4 text-xs text-gray-500">' + (r.admin_notes || '-') + '</td>' +
     '</tr>'
   })
-
-  const planOrder = ['starter', 'pro', 'business']
-  const currentIdx = planOrder.indexOf(currentSub)
-
   container.innerHTML = \`
-    <style>
-      @keyframes pricingFadeUp { from { opacity:0; transform:translateY(30px); } to { opacity:1; transform:translateY(0); } }
-      @keyframes pricingPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(99,102,241,0.3); } 50% { box-shadow: 0 0 0 12px rgba(99,102,241,0); } }
-      @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
-      @keyframes floatBadge { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-3px); } }
-      .pricing-card { animation: pricingFadeUp 0.6s ease-out both; }
-      .pricing-card:nth-child(1) { animation-delay: 0.1s; }
-      .pricing-card:nth-child(2) { animation-delay: 0.25s; }
-      .pricing-card:nth-child(3) { animation-delay: 0.4s; }
-      .pricing-card:hover { transform: translateY(-6px) scale(1.02); }
-      .pricing-card.featured:hover { transform: translateY(-8px) scale(1.05); }
-      .pricing-card { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-      .pricing-cta-whatsapp { 
-        background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-      }
-      .pricing-cta-whatsapp::before {
-        content: '';
-        position: absolute;
-        top: 0; left: -100%; width: 100%; height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
-        animation: shimmer 3s infinite;
-      }
-      .pricing-cta-whatsapp:hover { transform: scale(1.03); box-shadow: 0 8px 30px rgba(37,211,102,0.4); }
-      .pricing-cta-primary {
-        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-      }
-      .pricing-cta-primary::before {
-        content: '';
-        position: absolute;
-        top: 0; left: -100%; width: 100%; height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
-        animation: shimmer 3s infinite;
-      }
-      .pricing-cta-primary:hover { transform: scale(1.03); box-shadow: 0 8px 30px rgba(99,102,241,0.4); }
-      .pricing-cta-gold {
-        background: linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #f59e0b 100%);
-        background-size: 200% 100%;
-        animation: shimmer 4s infinite;
-        transition: all 0.3s ease;
-      }
-      .pricing-cta-gold:hover { transform: scale(1.03); box-shadow: 0 8px 30px rgba(245,158,11,0.4); }
-      .pricing-popular-badge { animation: floatBadge 2s ease-in-out infinite; }
-      .pricing-feature-item { transition: all 0.2s ease; }
-      .pricing-feature-item:hover { transform: translateX(4px); }
-      .pricing-hero-glow {
-        position: absolute; top: -100px; left: 50%; transform: translateX(-50%);
-        width: 500px; height: 300px;
-        background: radial-gradient(ellipse, rgba(99,102,241,0.08) 0%, transparent 70%);
-        pointer-events: none;
-      }
-      .pricing-compare-row:hover { background: rgba(255,255,255,0.03); }
-      .pricing-savings { color: #10b981; font-size: 11px; font-weight: 700; }
-    </style>
-
-    <!-- HERO SECTION -->
-    <div class="relative mb-14 text-center" style="animation: pricingFadeUp 0.4s ease-out both;">
-      <div class="pricing-hero-glow"></div>
-      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-bold uppercase tracking-wider mb-5">
-        <i class="fas fa-crown text-amber-400"></i> Plans & Tarification
-      </div>
-      <h1 class="text-4xl md:text-5xl font-black text-white mb-4 leading-tight">
-        Choisissez le plan<br>
-        <span style="background: linear-gradient(135deg, #6366f1, #a78bfa, #6366f1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-size: 200% auto; animation: shimmer 3s linear infinite;">qui vous convient</span>
-      </h1>
-      <p class="text-gray-400 text-base max-w-xl mx-auto mb-6">Developpez votre activite e-commerce avec les outils les plus puissants du marche algerien. Activation instantanee via WhatsApp.</p>
-      <div class="flex items-center justify-center gap-6 text-xs text-gray-500">
-        <span><i class="fas fa-shield-halved text-indigo-400 mr-1"></i> Paiement securise</span>
-        <span><i class="fas fa-bolt text-amber-400 mr-1"></i> Activation en 5 min</span>
-        <span><i class="fab fa-whatsapp text-emerald-400 mr-1"></i> Support direct</span>
-      </div>
+    <div class="mb-10 text-center">
+      <h1 class="text-3xl font-extrabold text-white mb-2">Tarification & Plans</h1>
+      <p class="text-gray-400">Boostez votre boutique avec nos plans premium</p>
     </div>
-
-    <!-- PRICING CARDS -->
-    <div class="grid md:grid-cols-3 gap-5 max-w-6xl mx-auto mb-14 px-2">
-
-      <!-- STARTER -->
-      <div class="pricing-card card-glass p-7 flex flex-col relative overflow-hidden rounded-2xl \${currentSub === 'starter' ? 'border-indigo-500/30 ring-1 ring-indigo-500/20' : 'border-white/5'}">
-        \${currentSub === 'starter' ? '<div class="bg-indigo-600 text-white text-[10px] font-bold px-3 py-1 rounded-full absolute top-4 right-4 uppercase tracking-wider"><i class="fas fa-check-circle mr-1"></i>Actuel</div>' : ''}
-        <div class="flex items-center gap-3 mb-5">
-          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-500/20 to-slate-600/10 flex items-center justify-center"><i class="fas fa-seedling text-slate-400 text-lg"></i></div>
-          <div>
-            <h3 class="text-lg font-bold text-white">Starter</h3>
-            <p class="text-[11px] text-gray-500">Pour demarrer</p>
-          </div>
-        </div>
-        <div class="mb-6">
-          <div class="flex items-end gap-1">
-            <span class="text-4xl font-black text-white">1,500</span>
-            <span class="text-lg font-bold text-gray-400 mb-1">DA</span>
-            <span class="text-sm text-gray-500 mb-1">/mois</span>
-          </div>
-          <p class="text-[11px] text-gray-500 mt-1">~50 DA / jour</p>
-        </div>
-        <ul class="text-sm text-gray-300 space-y-3 mb-8 flex-1">
-          <li class="pricing-feature-item flex items-start gap-2.5"><i class="fas fa-check-circle text-indigo-400 text-xs mt-0.5"></i><span><strong class="text-white">300</strong> commandes / mois</span></li>
-          <li class="pricing-feature-item flex items-start gap-2.5"><i class="fas fa-check-circle text-indigo-400 text-xs mt-0.5"></i><span>Dashboard complet</span></li>
-          <li class="pricing-feature-item flex items-start gap-2.5"><i class="fas fa-check-circle text-indigo-400 text-xs mt-0.5"></i><span>Suivi des colis</span></li>
-          <li class="pricing-feature-item flex items-start gap-2.5"><i class="fas fa-check-circle text-indigo-400 text-xs mt-0.5"></i><span><strong class="text-white">1</strong> Boutique</span></li>
-          <li class="pricing-feature-item flex items-start gap-2.5"><i class="fas fa-check-circle text-indigo-400 text-xs mt-0.5"></i><span>5 Transporteurs integres</span></li>
+    <div class="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto mb-16">
+      <div class="card-glass p-8 flex flex-col items-center text-center relative overflow-hidden group \${currentSub === 'starter' ? 'border-indigo-500/30 ring-1 ring-indigo-500/20' : ''}">
+        \${currentSub === 'starter' ? '<div class="bg-indigo-600 text-white text-[10px] font-bold px-3 py-1 rounded-full absolute top-4 right-4 uppercase">Actuel</div>' : ''}
+        <div class="w-16 h-16 rounded-2xl bg-gray-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"><i class="fas fa-seedling text-gray-400 text-2xl"></i></div>
+        <h3 class="text-xl font-bold mb-2">Starter</h3>
+        <div class="text-3xl font-black mb-4">0 DA<span class="text-sm text-gray-500 font-medium">/mois</span></div>
+        <ul class="text-sm text-gray-400 space-y-3 mb-10 text-left w-full">
+          <li><i class="fas fa-check text-indigo-400 mr-2"></i> 50 commandes / mois</li>
+          <li><i class="fas fa-check text-indigo-400 mr-2"></i> Dashboard basique</li>
+          <li><i class="fas fa-check text-indigo-400 mr-2"></i> 1 Boutique</li>
         </ul>
-        \${currentSub === 'starter' 
-          ? '<button class="w-full py-3.5 rounded-xl font-bold text-sm text-gray-400 bg-white/5 border border-white/10 cursor-default" disabled><i class="fas fa-check mr-2"></i>Plan actuel</button>'
-          : '<button onclick="openWhatsAppDirect(' + "'" + 'starter' + "'" + ')" class="pricing-cta-whatsapp w-full py-3.5 rounded-xl font-bold text-sm text-white border-0 cursor-pointer flex items-center justify-center gap-2"><i class="fab fa-whatsapp text-lg"></i> Souscrire via WhatsApp</button>'
-        }
+        <button class="btn btn-outline w-full py-3 rounded-xl mt-auto opacity-50 cursor-not-allowed" disabled>Inclus</button>
       </div>
-
-      <!-- PRO (POPULAIRE) -->
-      <div class="pricing-card featured card-glass p-7 flex flex-col relative overflow-hidden rounded-2xl border-indigo-500/40 shadow-2xl shadow-indigo-500/10" style="transform: scale(1.03);">
-        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500"></div>
-        \${currentSub === 'pro' 
-          ? '<div class="bg-indigo-600 text-white text-[10px] font-bold px-3 py-1 rounded-full absolute top-4 right-4 uppercase tracking-wider"><i class="fas fa-check-circle mr-1"></i>Actuel</div>' 
-          : '<div class="pricing-popular-badge absolute top-4 right-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-lg shadow-indigo-500/30"><i class="fas fa-fire mr-1"></i>Populaire</div>'}
-        <div class="flex items-center gap-3 mb-5">
-          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500/30 to-purple-500/20 flex items-center justify-center"><i class="fas fa-rocket text-indigo-400 text-lg"></i></div>
-          <div>
-            <h3 class="text-lg font-bold text-white">Pro</h3>
-            <p class="text-[11px] text-indigo-400 font-semibold">Le plus choisi</p>
-          </div>
-        </div>
-        <div class="mb-6">
-          <div class="flex items-end gap-1">
-            <span class="text-4xl font-black text-white">5,000</span>
-            <span class="text-lg font-bold text-gray-400 mb-1">DA</span>
-            <span class="text-sm text-gray-500 mb-1">/mois</span>
-          </div>
-          <p class="text-[11px] text-gray-500 mt-1">~167 DA / jour <span class="pricing-savings ml-1">Meilleur rapport qualite/prix</span></p>
-        </div>
-        <ul class="text-sm text-gray-300 space-y-3 mb-8 flex-1">
-          <li class="pricing-feature-item flex items-start gap-2.5"><i class="fas fa-check-circle text-indigo-400 text-xs mt-0.5"></i><span><strong class="text-white">1,000</strong> commandes / mois</span></li>
-          <li class="pricing-feature-item flex items-start gap-2.5"><i class="fas fa-check-circle text-indigo-400 text-xs mt-0.5"></i><span>Etiquettes personnalisees</span></li>
-          <li class="pricing-feature-item flex items-start gap-2.5"><i class="fas fa-check-circle text-indigo-400 text-xs mt-0.5"></i><span>Analyse de stock avancee</span></li>
-          <li class="pricing-feature-item flex items-start gap-2.5"><i class="fas fa-check-circle text-indigo-400 text-xs mt-0.5"></i><span>Jusqu'a <strong class="text-white">3 Boutiques</strong></span></li>
-          <li class="pricing-feature-item flex items-start gap-2.5"><i class="fas fa-check-circle text-indigo-400 text-xs mt-0.5"></i><span>WhatsApp auto-confirmation</span></li>
-          <li class="pricing-feature-item flex items-start gap-2.5"><i class="fas fa-check-circle text-indigo-400 text-xs mt-0.5"></i><span>5 Transporteurs integres</span></li>
+      <div class="card-glass p-8 flex flex-col items-center text-center relative overflow-hidden group scale-105 shadow-2xl shadow-indigo-500/10 border-indigo-500/40">
+        \${currentSub === 'pro' ? '<div class="bg-indigo-600 text-white text-[10px] font-bold px-3 py-1 rounded-full absolute top-4 right-4 uppercase">Actuel</div>' : '<div class="bg-indigo-600 text-white text-[10px] font-bold px-3 py-1 rounded-full absolute top-4 right-4 uppercase tracking-wider">Populaire</div>'}
+        <div class="absolute top-0 left-0 w-full h-1 bg-indigo-500"></div>
+        <div class="w-16 h-16 rounded-2xl bg-indigo-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"><i class="fas fa-rocket text-indigo-400 text-2xl"></i></div>
+        <h3 class="text-xl font-bold mb-2">Pro</h3>
+        <div class="text-3xl font-black mb-4">2,900 DA<span class="text-sm text-gray-500 font-medium">/mois</span></div>
+        <ul class="text-sm text-gray-400 space-y-3 mb-10 text-left w-full">
+          <li><i class="fas fa-check text-indigo-400 mr-2"></i> 1,500 commandes / mois</li>
+          <li><i class="fas fa-check text-indigo-400 mr-2"></i> ?tiquettes personnalisées</li>
+          <li><i class="fas fa-check text-indigo-400 mr-2"></i> Analyse de stock avancée</li>
+          <li><i class="fas fa-check text-indigo-400 mr-2"></i> Jusqu'à 3 Boutiques</li>
         </ul>
-        \${currentSub === 'pro'
-          ? '<button class="w-full py-3.5 rounded-xl font-bold text-sm text-gray-400 bg-white/5 border border-white/10 cursor-default" disabled><i class="fas fa-check mr-2"></i>Plan actuel</button>'
-          : '<button onclick="openWhatsAppDirect(' + "'" + 'pro' + "'" + ')" class="pricing-cta-primary w-full py-3.5 rounded-xl font-bold text-sm text-white border-0 cursor-pointer flex items-center justify-center gap-2"><i class="fab fa-whatsapp text-lg"></i> Passer au Pro via WhatsApp</button>'
-        }
+        <button onclick="showPaymentModal('pro')" class="btn btn-primary w-full py-3 rounded-xl mt-auto shadow-lg shadow-indigo-500/20" \${currentSub === 'pro' ? 'disabled' : ''}>\${currentSub === 'pro' ? 'Plan Actuel' : 'Passer au Plan Pro'}</button>
       </div>
-
-      <!-- BUSINESS -->
-      <div class="pricing-card card-glass p-7 flex flex-col relative overflow-hidden rounded-2xl \${currentSub === 'business' ? 'border-amber-500/30 ring-1 ring-amber-500/20' : 'border-white/5'}">
-        \${currentSub === 'business' ? '<div class="bg-amber-600 text-white text-[10px] font-bold px-3 py-1 rounded-full absolute top-4 right-4 uppercase tracking-wider"><i class="fas fa-check-circle mr-1"></i>Actuel</div>' : ''}
-        <div class="flex items-center gap-3 mb-5">
-          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/10 flex items-center justify-center"><i class="fas fa-building text-amber-400 text-lg"></i></div>
-          <div>
-            <h3 class="text-lg font-bold text-white">Business</h3>
-            <p class="text-[11px] text-amber-400 font-semibold">Pour les pros</p>
-          </div>
-        </div>
-        <div class="mb-6">
-          <div class="flex items-end gap-1">
-            <span class="text-4xl font-black text-white">18,000</span>
-            <span class="text-lg font-bold text-gray-400 mb-1">DA</span>
-            <span class="text-sm text-gray-500 mb-1">/mois</span>
-          </div>
-          <p class="text-[11px] text-gray-500 mt-1">~600 DA / jour <span class="pricing-savings ml-1">Sans limites</span></p>
-        </div>
-        <ul class="text-sm text-gray-300 space-y-3 mb-8 flex-1">
-          <li class="pricing-feature-item flex items-start gap-2.5"><i class="fas fa-check-circle text-amber-400 text-xs mt-0.5"></i><span>Commandes <strong class="text-amber-300">illimitees</strong></span></li>
-          <li class="pricing-feature-item flex items-start gap-2.5"><i class="fas fa-check-circle text-amber-400 text-xs mt-0.5"></i><span>Multi-utilisateurs (Equipe)</span></li>
-          <li class="pricing-feature-item flex items-start gap-2.5"><i class="fas fa-check-circle text-amber-400 text-xs mt-0.5"></i><span><strong class="text-white">Support Prioritaire</strong></span></li>
-          <li class="pricing-feature-item flex items-start gap-2.5"><i class="fas fa-check-circle text-amber-400 text-xs mt-0.5"></i><span>Boutiques <strong class="text-amber-300">illimitees</strong></span></li>
-          <li class="pricing-feature-item flex items-start gap-2.5"><i class="fas fa-check-circle text-amber-400 text-xs mt-0.5"></i><span>Etiquettes personnalisees</span></li>
-          <li class="pricing-feature-item flex items-start gap-2.5"><i class="fas fa-check-circle text-amber-400 text-xs mt-0.5"></i><span>Analyse de stock avancee</span></li>
-          <li class="pricing-feature-item flex items-start gap-2.5"><i class="fas fa-check-circle text-amber-400 text-xs mt-0.5"></i><span>WhatsApp auto-confirmation</span></li>
+      <div class="card-glass p-8 flex flex-col items-center text-center relative overflow-hidden group \${currentSub === 'business' ? 'border-emerald-500/30 ring-1 ring-emerald-500/20' : ''}">
+        \${currentSub === 'business' ? '<div class="bg-emerald-600 text-white text-[10px] font-bold px-3 py-1 rounded-full absolute top-4 right-4 uppercase">Actuel</div>' : ''}
+        <div class="w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"><i class="fas fa-building text-emerald-400 text-2xl"></i></div>
+        <h3 class="text-xl font-bold mb-2">Business</h3>
+        <div class="text-3xl font-black mb-4">6,900 DA<span class="text-sm text-gray-500 font-medium">/mois</span></div>
+        <ul class="text-sm text-gray-400 space-y-3 mb-10 text-left w-full">
+          <li><i class="fas fa-check text-emerald-400 mr-2"></i> Commandes illimitées</li>
+          <li><i class="fas fa-check text-emerald-400 mr-2"></i> Multi-utilisateurs (?quipe)</li>
+          <li><i class="fas fa-check text-emerald-400 mr-2"></i> Support Prioritaire</li>
+          <li><i class="fas fa-check text-emerald-400 mr-2"></i> Boutiques illimitées</li>
         </ul>
-        \${currentSub === 'business'
-          ? '<button class="w-full py-3.5 rounded-xl font-bold text-sm text-gray-400 bg-white/5 border border-white/10 cursor-default" disabled><i class="fas fa-check mr-2"></i>Plan actuel</button>'
-          : '<button onclick="openWhatsAppDirect(' + "'" + 'business' + "'" + ')" class="pricing-cta-gold w-full py-3.5 rounded-xl font-bold text-sm text-white border-0 cursor-pointer flex items-center justify-center gap-2"><i class="fab fa-whatsapp text-lg"></i> Passer au Business</button>'
-        }
+        <button onclick="showPaymentModal('business')" class="btn btn-outline w-full py-3 rounded-xl mt-auto hover:bg-emerald-500/5" \${currentSub === 'business' ? 'disabled' : ''}>\${currentSub === 'business' ? 'Plan Actuel' : 'Choisir Business'}</button>
       </div>
     </div>
-
-    <!-- COMPARISON TABLE -->
-    <div class="max-w-5xl mx-auto mb-14 px-2" style="animation: pricingFadeUp 0.6s ease-out 0.5s both;">
-      <div class="text-center mb-8">
-        <h2 class="text-2xl font-bold text-white mb-2">Comparaison detaillee</h2>
-        <p class="text-sm text-gray-500">Trouvez le plan adapte a votre volume de commandes</p>
-      </div>
-      <div class="card-glass rounded-2xl overflow-hidden border border-white/5">
-        <table class="w-full text-left text-sm">
-          <thead>
-            <tr class="bg-white/3 border-b border-white/5">
-              <th class="py-4 px-5 text-[11px] font-bold uppercase text-gray-500 w-1/4">Fonctionnalite</th>
-              <th class="py-4 px-5 text-[11px] font-bold uppercase text-gray-400 text-center w-1/4">Starter</th>
-              <th class="py-4 px-5 text-[11px] font-bold uppercase text-indigo-400 text-center w-1/4 bg-indigo-500/5">Pro</th>
-              <th class="py-4 px-5 text-[11px] font-bold uppercase text-amber-400 text-center w-1/4">Business</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-white/5">
-            <tr class="pricing-compare-row"><td class="py-3 px-5 text-gray-400">Prix mensuel</td><td class="py-3 px-5 text-center text-white font-bold">1,500 DA</td><td class="py-3 px-5 text-center text-white font-bold bg-indigo-500/5">5,000 DA</td><td class="py-3 px-5 text-center text-white font-bold">18,000 DA</td></tr>
-            <tr class="pricing-compare-row"><td class="py-3 px-5 text-gray-400">Commandes / mois</td><td class="py-3 px-5 text-center text-white">300</td><td class="py-3 px-5 text-center text-white bg-indigo-500/5">1,000</td><td class="py-3 px-5 text-center text-amber-300 font-bold">Illimite</td></tr>
-            <tr class="pricing-compare-row"><td class="py-3 px-5 text-gray-400">Cout / commande</td><td class="py-3 px-5 text-center text-white">5 DA</td><td class="py-3 px-5 text-center text-emerald-400 font-bold bg-indigo-500/5">5 DA</td><td class="py-3 px-5 text-center text-emerald-400 font-bold">~0 DA</td></tr>
-            <tr class="pricing-compare-row"><td class="py-3 px-5 text-gray-400">Boutiques</td><td class="py-3 px-5 text-center text-white">1</td><td class="py-3 px-5 text-center text-white bg-indigo-500/5">3</td><td class="py-3 px-5 text-center text-amber-300 font-bold">Illimite</td></tr>
-            <tr class="pricing-compare-row"><td class="py-3 px-5 text-gray-400">Etiquettes personnalisees</td><td class="py-3 px-5 text-center"><i class="fas fa-times text-gray-600"></i></td><td class="py-3 px-5 text-center bg-indigo-500/5"><i class="fas fa-check text-indigo-400"></i></td><td class="py-3 px-5 text-center"><i class="fas fa-check text-amber-400"></i></td></tr>
-            <tr class="pricing-compare-row"><td class="py-3 px-5 text-gray-400">Analyse de stock</td><td class="py-3 px-5 text-center"><i class="fas fa-times text-gray-600"></i></td><td class="py-3 px-5 text-center bg-indigo-500/5"><i class="fas fa-check text-indigo-400"></i></td><td class="py-3 px-5 text-center"><i class="fas fa-check text-amber-400"></i></td></tr>
-            <tr class="pricing-compare-row"><td class="py-3 px-5 text-gray-400">Multi-utilisateurs</td><td class="py-3 px-5 text-center"><i class="fas fa-times text-gray-600"></i></td><td class="py-3 px-5 text-center bg-indigo-500/5"><i class="fas fa-times text-gray-600"></i></td><td class="py-3 px-5 text-center"><i class="fas fa-check text-amber-400"></i></td></tr>
-            <tr class="pricing-compare-row"><td class="py-3 px-5 text-gray-400">Support prioritaire</td><td class="py-3 px-5 text-center"><i class="fas fa-times text-gray-600"></i></td><td class="py-3 px-5 text-center bg-indigo-500/5"><i class="fas fa-times text-gray-600"></i></td><td class="py-3 px-5 text-center"><i class="fas fa-check text-amber-400"></i></td></tr>
-            <tr class="pricing-compare-row"><td class="py-3 px-5 text-gray-400">WhatsApp auto</td><td class="py-3 px-5 text-center"><i class="fas fa-times text-gray-600"></i></td><td class="py-3 px-5 text-center bg-indigo-500/5"><i class="fas fa-check text-indigo-400"></i></td><td class="py-3 px-5 text-center"><i class="fas fa-check text-amber-400"></i></td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- WHATSAPP CTA BANNER -->
-    <div class="max-w-4xl mx-auto mb-14 px-2" style="animation: pricingFadeUp 0.6s ease-out 0.6s both;">
-      <div class="rounded-2xl p-6 md:p-8 relative overflow-hidden" style="background: linear-gradient(135deg, rgba(37,211,102,0.1) 0%, rgba(18,140,126,0.08) 100%); border: 1px solid rgba(37,211,102,0.2);">
-        <div class="absolute top-0 right-0 w-40 h-40 rounded-full" style="background: radial-gradient(circle, rgba(37,211,102,0.1) 0%, transparent 70%); transform: translate(30%, -30%);"></div>
-        <div class="flex flex-col md:flex-row items-center gap-6 relative z-10">
-          <div class="flex-shrink-0 w-16 h-16 rounded-2xl bg-emerald-500/20 flex items-center justify-center">
-            <i class="fab fa-whatsapp text-emerald-400 text-3xl"></i>
-          </div>
-          <div class="flex-1 text-center md:text-left">
-            <h3 class="text-xl font-bold text-white mb-1">Besoin d'aide pour choisir ?</h3>
-            <p class="text-sm text-gray-400">Contactez-nous directement sur WhatsApp. Reponse garantie en moins de 5 minutes. Notre equipe vous guide dans le choix du plan ideal.</p>
-          </div>
-          <a href="https://wa.me/213552295894?text=Bonjour%2C%20je%20souhaite%20en%20savoir%20plus%20sur%20vos%20plans%20AutoHub%20DZ.%20Pouvez-vous%20m%27aider%20%3F" target="_blank" rel="noopener"
-            class="pricing-cta-whatsapp flex-shrink-0 px-8 py-3.5 rounded-xl font-bold text-sm text-white flex items-center gap-2 border-0 cursor-pointer no-underline">
-            <i class="fab fa-whatsapp text-lg"></i> Discuter maintenant
-          </a>
-        </div>
-      </div>
-    </div>
-
-    <!-- FAQ -->
-    <div class="max-w-3xl mx-auto mb-14 px-2" style="animation: pricingFadeUp 0.6s ease-out 0.7s both;">
-      <div class="text-center mb-8">
-        <h2 class="text-2xl font-bold text-white mb-2">Questions frequentes</h2>
-      </div>
-      <div class="space-y-3">
-        <div class="card-glass rounded-xl p-5 border border-white/5 cursor-pointer" onclick="this.querySelector('.faq-answer').classList.toggle('hidden');this.querySelector('.faq-icon').classList.toggle('rotate-180')">
-          <div class="flex items-center justify-between">
-            <h4 class="font-bold text-white text-sm">Comment activer mon plan ?</h4>
-            <i class="faq-icon fas fa-chevron-down text-gray-500 text-xs transition-transform"></i>
-          </div>
-          <p class="faq-answer hidden text-sm text-gray-400 mt-3 leading-relaxed">Cliquez sur le bouton WhatsApp du plan choisi. Vous serez redirige directement vers notre equipe. Effectuez le paiement via BaridiMob, CCP ou RedotPay, et votre plan sera active en moins de 5 minutes.</p>
-        </div>
-        <div class="card-glass rounded-xl p-5 border border-white/5 cursor-pointer" onclick="this.querySelector('.faq-answer').classList.toggle('hidden');this.querySelector('.faq-icon').classList.toggle('rotate-180')">
-          <div class="flex items-center justify-between">
-            <h4 class="font-bold text-white text-sm">Puis-je changer de plan en cours de mois ?</h4>
-            <i class="faq-icon fas fa-chevron-down text-gray-500 text-xs transition-transform"></i>
-          </div>
-          <p class="faq-answer hidden text-sm text-gray-400 mt-3 leading-relaxed">Oui ! Vous pouvez upgrader a tout moment. Le nouveau plan prend effet immediatement. Contactez-nous sur WhatsApp pour un changement rapide.</p>
-        </div>
-        <div class="card-glass rounded-xl p-5 border border-white/5 cursor-pointer" onclick="this.querySelector('.faq-answer').classList.toggle('hidden');this.querySelector('.faq-icon').classList.toggle('rotate-180')">
-          <div class="flex items-center justify-between">
-            <h4 class="font-bold text-white text-sm">Quels moyens de paiement acceptez-vous ?</h4>
-            <i class="faq-icon fas fa-chevron-down text-gray-500 text-xs transition-transform"></i>
-          </div>
-          <p class="faq-answer hidden text-sm text-gray-400 mt-3 leading-relaxed">Nous acceptons BaridiMob (virement instantane), CCP (versement guichet ou virement), et RedotPay (USDT) pour les paiements internationaux.</p>
-        </div>
-        <div class="card-glass rounded-xl p-5 border border-white/5 cursor-pointer" onclick="this.querySelector('.faq-answer').classList.toggle('hidden');this.querySelector('.faq-icon').classList.toggle('rotate-180')">
-          <div class="flex items-center justify-between">
-            <h4 class="font-bold text-white text-sm">Que se passe-t-il si je depasse ma limite ?</h4>
-            <i class="faq-icon fas fa-chevron-down text-gray-500 text-xs transition-transform"></i>
-          </div>
-          <p class="faq-answer hidden text-sm text-gray-400 mt-3 leading-relaxed">Vous recevrez une notification avant d'atteindre votre limite. Nous vous proposerons alors de passer au plan superieur pour continuer sans interruption. Aucune commande ne sera perdue.</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- HISTORIQUE DES PAIEMENTS -->
-    <div class="max-w-4xl mx-auto px-2" style="animation: pricingFadeUp 0.6s ease-out 0.8s both;">
-      <div class="flex items-center gap-3 mb-6"><i class="fas fa-history text-indigo-400"></i><h2 class="text-xl font-bold text-white">Historique des paiements</h2></div>
-      <div class="card-glass rounded-2xl overflow-hidden border border-white/5">
+    <div class="max-w-4xl mx-auto">
+      <div class="flex items-center gap-3 mb-6"><i class="fas fa-history text-indigo-400"></i><h2 class="text-xl font-bold">Historique des paiements</h2></div>
+      <div class="card overflow-hidden">
         <table class="w-full text-left">
-          <thead><tr class="bg-white/3"><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">Date</th><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">Plan</th><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">Montant</th><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">Methode</th><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">Statut</th><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">Notes Admin</th></tr></thead>
-          <tbody class="divide-y divide-white/5">\${rows || '<tr><td colspan="6" class="py-10 text-center text-gray-500"><i class="fas fa-receipt text-2xl mb-2 block opacity-20"></i>Aucun paiement enregistre</td></tr>'}</tbody>
+          <thead><tr class="bg-white/3"><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">Date</th><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">Plan</th><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">Montant</th><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">Méthode</th><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">Statut</th><th class="py-4 px-4 text-[10px] font-bold uppercase text-gray-500">Notes Admin</th></tr></thead>
+          <tbody class="divide-y divide-white/5">\${rows || '<tr><td colspan="6" class="py-10 text-center text-gray-500">Aucun paiement enregistré</td></tr>'}</tbody>
         </table>
       </div>
     </div>
   \`
 }
 
-function openWhatsAppDirect(plan) {
-  const prices = { starter: '1,500 DA', pro: '5,000 DA', business: '18,000 DA' }
-  const limits = { starter: '300 commandes/mois', pro: '1,000 commandes/mois', business: 'Commandes illimitees' }
-  const price = prices[plan] || '5,000 DA'
-  const limit = limits[plan] || ''
-  const userName = state.user?.prenom || state.user?.nom || state.user?.username || ''
-  const storeName = state.user?.store_name || ''
-  const msg = 'Bonjour AutoHub DZ !' +
-    '\n\nJe souhaite souscrire au Plan *' + plan.toUpperCase() + '* (' + price + '/mois).' +
-    '\n' + limit +
-    (userName ? '\n\nNom : ' + userName : '') +
-    (storeName ? '\nBoutique : ' + storeName : '') +
-    '\n\nMerci de m' + "'" + 'indiquer les modalites de paiement.'
-  const text = encodeURIComponent(msg)
-  window.open('https://wa.me/213552295894?text=' + text, '_blank')
-}
-
 function showPaymentModal(plan) {
-  const prices = { starter: '1,500 DA', pro: '5,000 DA', business: '18,000 DA' }
-  const usdPrices = { starter: '8 USD', pro: '25 USD', business: '90 USD' }
-  const price = prices[plan] || '5,000 DA'
-  const usdPrice = usdPrices[plan] || '25 USD'
+  const price = plan === 'pro' ? '2,900 DA' : '6,900 DA'
+  const usdPrice = plan === 'pro' ? '15 USD' : '35 USD'
   document.getElementById('modals').innerHTML = \`
     <div class="modal-overlay-v2" onclick="closeModalV2(event)">
       <div class="modal-v2" onclick="event.stopPropagation()" style="max-width:550px">
@@ -6128,13 +5877,13 @@ function showPaymentModal(plan) {
           <button class="modal-v2-close" onclick="closeModalAnimated()"><i class="fas fa-xmark"></i></button>
         </div>
         <div class="modal-v2-body">
-          <p class="text-sm text-gray-400 mb-6 text-center">Effectuez le transfert vers l'une des methodes ci-dessous, puis renseignez la reference de transaction.</p>
+          <p class="text-sm text-gray-400 mb-6 text-center">Effectuez le transfert vers l'une des méthodes ci-dessous, puis renseignez la référence de transaction.</p>
           <div class="space-y-4 mb-6">
              <label class="flex items-start gap-4 p-4 rounded-xl border border-white/5 bg-white/2 hover:bg-white/5 cursor-pointer transition">
                 <input type="radio" name="payment-method" value="baridimob" checked onchange="updatePaymentInstructions('baridimob')" class="mt-1 w-4 h-4 accent-indigo-500">
                 <div class="flex-1">
                   <div class="font-bold text-sm text-white flex items-center justify-between">BaridiMob <span>\${price}</span></div>
-                  <p class="text-xs text-gray-400 mt-1">Virement instantane vers RIP :</p>
+                  <p class="text-xs text-gray-400 mt-1">Virement instantané vers RIP :</p>
                   <code class="block mt-1 p-2 bg-black/30 rounded text-indigo-300 text-[11px] font-mono select-all">00799999XXXXXXXXXX99</code>
                 </div>
              </label>
@@ -6143,7 +5892,7 @@ function showPaymentModal(plan) {
                 <div class="flex-1">
                   <div class="font-bold text-sm text-white flex items-center justify-between">Vers CCP <span>\${price}</span></div>
                   <p class="text-xs text-gray-400 mt-1">Versement guichet ou virement vers :</p>
-                  <code class="block mt-1 p-2 bg-black/30 rounded text-amber-300 text-[11px] font-mono select-all">XXXXXXXXXX cle XX</code>
+                  <code class="block mt-1 p-2 bg-black/30 rounded text-amber-300 text-[11px] font-mono select-all">XXXXXXXXXX clé XX</code>
                 </div>
              </label>
              <label class="flex items-start gap-4 p-4 rounded-xl border border-white/5 bg-white/2 hover:bg-white/5 cursor-pointer transition">
@@ -6201,8 +5950,7 @@ function openWhatsAppPayment(plan) {
   if (!ref) { toast('Veuillez entrer la reference de transaction', 'error'); return }
   const method = document.querySelector('input[name="payment-method"]:checked')?.value || 'baridimob'
   const methodLabel = method === 'baridimob' ? 'BaridiMob' : method === 'ccp' ? 'CCP' : 'RedotPay (USDT)'
-  const amounts = { starter: '1,500 DA', pro: '5,000 DA', business: '18,000 DA' }
-  const amount = amounts[plan] || '5,000 DA'
+  const amount = plan === 'pro' ? '2,900 DA' : '6,900 DA'
   const msg = 'Bonjour, j' + "'" + 'ai effectue le paiement du Plan ' + plan.toUpperCase() + '.\nReference : ' + ref + '\nMethode : ' + methodLabel + '\nMontant : ' + amount
   const text = encodeURIComponent(msg)
   window.open('https://wa.me/213552295894?text=' + text, '_blank')
