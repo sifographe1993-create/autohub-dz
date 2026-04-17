@@ -9,638 +9,352 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
 <script>
-tailwind.config={theme:{extend:{fontFamily:{sans:['Inter','sans-serif']},colors:{dark:{900:'#0A0A0B',800:'#101013',700:'#17171C',600:'#1F1F26'},accent:{primary:'#6366f1',secondary:'#818cf8',blue:'#3b82f6'}}}}}
+tailwind.config={theme:{extend:{fontFamily:{sans:['Inter','sans-serif']},colors:{dark:{900:'#080c1a',800:'#0B1120',700:'#151D30',600:'#1F2B40'},accent:{primary:'#6366f1',secondary:'#818cf8',blue:'#3b82f6'}}}}}
 </script>
 <style>
-/* =========================================================
-   AutoHub DZ — Visual Redesign (Vercel / Linear inspired)
-   Palette: deep black + neutral grays + indigo→violet accent
-   ========================================================= */
-
-:root{
-  /* Surfaces */
-  --bg-app:         #0A0A0B;      /* page background (near-black) */
-  --bg-surface-1:   #101013;      /* sidebar / top bars */
-  --bg-surface-2:   #141418;      /* card base */
-  --bg-surface-3:   #1A1A20;      /* elevated (modals, hover) */
-  --bg-input:       #0E0E11;      /* form fields */
-  /* Borders / separators */
-  --border-subtle:  rgba(255,255,255,0.06);
-  --border-soft:    rgba(255,255,255,0.09);
-  --border-strong:  rgba(255,255,255,0.14);
-  /* Text */
-  --text-primary:   #FAFAFA;
-  --text-secondary: #A1A1AA;
-  --text-muted:     #71717A;
-  --text-faint:     #52525B;
-  /* Accent */
-  --accent:         #6366F1;
-  --accent-hover:   #7C7FF5;
-  --accent-soft:    rgba(99,102,241,0.10);
-  --accent-ring:    rgba(99,102,241,0.35);
-  /* Feedback */
-  --success:        #22C55E;
-  --success-soft:   rgba(34,197,94,0.12);
-  --danger:         #EF4444;
-  --danger-soft:    rgba(239,68,68,0.12);
-  --warning:        #F59E0B;
-  --warning-soft:   rgba(245,158,11,0.12);
-  /* Shadows */
-  --shadow-sm:      0 1px 2px rgba(0,0,0,0.4);
-  --shadow-md:      0 4px 12px rgba(0,0,0,0.35), 0 1px 2px rgba(0,0,0,0.4);
-  --shadow-lg:      0 12px 32px rgba(0,0,0,0.45), 0 2px 6px rgba(0,0,0,0.3);
-  --shadow-glow:    0 0 0 1px rgba(99,102,241,0.4), 0 8px 24px rgba(99,102,241,0.2);
-  /* Radii */
-  --r-sm: 6px; --r-md: 8px; --r-lg: 10px; --r-xl: 14px;
-}
-
-*{box-sizing:border-box}
-html,body{margin:0;padding:0}
-body{
-  font-family:'Inter',system-ui,-apple-system,sans-serif;
-  background:var(--bg-app);
-  color:var(--text-primary);
-  font-size:14px;
-  font-feature-settings:'cv11','ss01','ss03';
-  -webkit-font-smoothing:antialiased;
-  -moz-osx-font-smoothing:grayscale;
-  letter-spacing:-0.005em;
-}
-
-/* Subtle grid texture on the app background */
-body::before{
-  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
-  background:
-    radial-gradient(1200px 600px at 85% -10%, rgba(99,102,241,0.06), transparent 60%),
-    radial-gradient(900px 500px at -10% 110%, rgba(139,92,246,0.04), transparent 60%);
-}
-
-/* Custom scrollbars */
-*::-webkit-scrollbar{width:10px;height:10px}
-*::-webkit-scrollbar-track{background:transparent}
-*::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);border-radius:10px;border:2px solid transparent;background-clip:content-box}
-*::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.18);background-clip:content-box}
-
-/* Selection */
-::selection{background:var(--accent-soft);color:#E0E7FF}
-
-h1,h2,h3,h4{letter-spacing:-0.02em}
-
-/* ==========================
-   LAYOUT — Sidebar & Main
-   ========================== */
-.sidebar{
-  width:248px;
-  background:var(--bg-surface-1);
-  border-right:1px solid var(--border-subtle);
-  min-height:100vh;
-  position:fixed;left:0;top:0;z-index:40;
-  display:flex;flex-direction:column;
-  overflow-y:auto;
-}
-.main-content{
-  margin-left:248px;
-  padding:28px 32px;
-  min-height:100vh;
-  position:relative;z-index:1;
-}
-
-/* Sidebar nav items */
-.nav-item{
-  position:relative;
-  display:flex;align-items:center;gap:11px;
-  padding:9px 14px;
-  border-radius:var(--r-md);
-  margin:1px 10px;
-  font-size:13.5px;
-  font-weight:500;
-  cursor:pointer;
-  transition:background .15s ease, color .15s ease, transform .15s ease;
-  color:var(--text-secondary);
-  text-align:left;
-  line-height:1.2;
-}
-.nav-item i{
-  width:18px;font-size:14px;color:var(--text-muted);
-  transition:color .15s ease;
-}
-.nav-item:hover{
-  background:rgba(255,255,255,0.04);
-  color:var(--text-primary);
-}
-.nav-item:hover i{color:var(--text-secondary)}
-.nav-item.active{
-  background:var(--accent-soft);
-  color:#E0E7FF;
-}
-.nav-item.active i{color:var(--accent-hover)}
-.nav-item.active::before{
-  content:'';
-  position:absolute;left:-10px;top:50%;transform:translateY(-50%);
-  width:3px;height:18px;border-radius:0 3px 3px 0;
-  background:linear-gradient(180deg,var(--accent),#8B5CF6);
-}
-.nav-item:active{transform:scale(0.985)}
-
-/* Sidebar sections label (optional helper for future) */
-.nav-section{
-  font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;
-  color:var(--text-faint);padding:14px 22px 6px;
-}
-
-/* ==========================
-   CARDS
-   ========================== */
-.card{
-  background:var(--bg-surface-2);
-  border:1px solid var(--border-subtle);
-  border-radius:var(--r-xl);
-  box-shadow:var(--shadow-sm);
-  transition:border-color .2s ease, box-shadow .2s ease;
-}
-.card:hover{border-color:var(--border-soft)}
-
-.card-glass{
-  background:linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0) 60%), var(--bg-surface-2);
-  border:1px solid var(--border-subtle);
-  border-radius:var(--r-xl);
-  box-shadow:var(--shadow-sm);
-  backdrop-filter:blur(8px);
-}
-
-.stat-card{
-  position:relative;
-  background:
-    linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0) 60%),
-    var(--bg-surface-2);
-  border:1px solid var(--border-subtle);
-  border-radius:var(--r-xl);
-  padding:20px 22px;
-  box-shadow:var(--shadow-sm);
-  overflow:hidden;
-  transition:transform .2s ease, border-color .2s ease, box-shadow .2s ease;
-}
-.stat-card::after{
-  content:'';position:absolute;top:0;left:0;right:0;height:1px;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.08),transparent);
-}
-.stat-card:hover{
-  border-color:var(--border-soft);
-  box-shadow:var(--shadow-md);
-  transform:translateY(-1px);
-}
-
-/* ==========================
-   BUTTONS
-   ========================== */
-.btn{
-  display:inline-flex;align-items:center;justify-content:center;gap:6px;
-  padding:8px 14px;
-  border-radius:var(--r-md);
-  font-size:13px;font-weight:500;
-  cursor:pointer;
-  transition:background .15s ease, color .15s ease, border-color .15s ease, transform .1s ease, box-shadow .15s ease;
-  border:1px solid transparent;
-  line-height:1.2;
-  white-space:nowrap;
-  user-select:none;
-}
-.btn:active{transform:translateY(1px)}
-.btn:disabled{opacity:.55;cursor:not-allowed}
-.btn:focus-visible{outline:none;box-shadow:0 0 0 2px var(--bg-app),0 0 0 4px var(--accent-ring)}
-
-.btn-primary{
-  background:var(--accent);color:#fff;
-  box-shadow:0 1px 0 rgba(255,255,255,0.08) inset, 0 1px 2px rgba(0,0,0,0.4);
-}
-.btn-primary:hover{background:var(--accent-hover);box-shadow:0 1px 0 rgba(255,255,255,0.1) inset,0 4px 12px rgba(99,102,241,0.35)}
-
-.btn-secondary{
-  background:rgba(255,255,255,0.05);color:var(--text-primary);border-color:var(--border-soft);
-}
-.btn-secondary:hover{background:rgba(255,255,255,0.09);border-color:var(--border-strong)}
-
-.btn-outline{
-  background:transparent;color:var(--text-secondary);
-  border-color:var(--border-soft);
-}
-.btn-outline:hover{border-color:var(--accent-ring);color:var(--text-primary);background:rgba(255,255,255,0.02)}
-
-.btn-danger{
-  background:var(--danger-soft);color:#FCA5A5;border-color:rgba(239,68,68,0.25);
-}
-.btn-danger:hover{background:rgba(239,68,68,0.2);color:#FECACA;border-color:rgba(239,68,68,0.4)}
-
-.btn-success{
-  background:var(--success-soft);color:#86EFAC;border-color:rgba(34,197,94,0.25);
-}
-.btn-success:hover{background:rgba(34,197,94,0.2);color:#BBF7D0;border-color:rgba(34,197,94,0.4)}
-
-.btn-warning{
-  background:var(--warning-soft);color:#FCD34D;border-color:rgba(245,158,11,0.25);
-}
-.btn-warning:hover{background:rgba(245,158,11,0.2);color:#FDE68A;border-color:rgba(245,158,11,0.4)}
-
-.btn-whatsapp{
-  background:rgba(37,211,102,0.12);color:#4ADE80;border-color:rgba(37,211,102,0.28);
-}
-.btn-whatsapp:hover{background:rgba(37,211,102,0.22);color:#86EFAC;border-color:rgba(37,211,102,0.5)}
-
-/* ==========================
-   FORMS
-   ========================== */
-input,select,textarea{
-  background:var(--bg-input);
-  border:1px solid var(--border-soft);
-  color:var(--text-primary);
-  padding:8px 12px;
-  border-radius:var(--r-md);
-  font-size:13px;
-  width:100%;
-  font-family:inherit;
-  transition:border-color .15s ease, box-shadow .15s ease, background .15s ease;
-}
-input::placeholder,textarea::placeholder{color:var(--text-muted)}
-input:hover,select:hover,textarea:hover{border-color:var(--border-strong)}
-input:focus,select:focus,textarea:focus{
-  outline:none;
-  border-color:var(--accent);
-  box-shadow:0 0 0 3px var(--accent-soft);
-  background:var(--bg-surface-2);
-}
-select option{background:#17171C;color:var(--text-primary)}
-
-/* ==========================
-   TABLES
-   ========================== */
-table{width:100%;border-collapse:separate;border-spacing:0}
-thead tr{background:rgba(255,255,255,0.015)}
-th{
-  text-align:left;padding:11px 14px;
-  font-size:11px;font-weight:600;
-  text-transform:uppercase;letter-spacing:.06em;
-  color:var(--text-muted);
-  border-bottom:1px solid var(--border-subtle);
-  white-space:nowrap;
-}
-td{
-  padding:12px 14px;
-  font-size:13px;
-  color:var(--text-primary);
-  border-bottom:1px solid var(--border-subtle);
-}
-tbody tr{transition:background .12s ease}
-tbody tr:hover{background:rgba(255,255,255,0.025)}
-tbody tr:last-child td{border-bottom:none}
-
-/* ==========================
-   TOGGLE SWITCH
-   ========================== */
-.toggle-switch{position:relative;width:40px;height:22px;display:inline-block;flex-shrink:0}
-.toggle-switch input{opacity:0;width:0;height:0}
-.toggle-switch .slider{
-  position:absolute;cursor:pointer;inset:0;
-  background:rgba(255,255,255,0.08);
-  border:1px solid var(--border-soft);
-  transition:.25s ease;border-radius:22px;
-}
-.toggle-switch .slider:before{
-  content:'';position:absolute;height:16px;width:16px;left:2px;bottom:2px;
-  background:#A1A1AA;transition:.25s cubic-bezier(0.4,0,0.2,1);
-  border-radius:50%;
-  box-shadow:0 1px 2px rgba(0,0,0,0.5);
-}
-.toggle-switch input:checked + .slider{background:var(--accent);border-color:var(--accent)}
-.toggle-switch input:checked + .slider:before{transform:translateX(18px);background:#fff}
-
-/* ==========================
-   PERMISSIONS / SETTINGS ROW
-   ========================== */
-.permission-row{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:12px 14px;
-  border-radius:var(--r-lg);
-  background:var(--bg-surface-2);
-  border:1px solid var(--border-subtle);
-  margin-bottom:8px;
-  transition:background .15s ease, border-color .15s ease;
-}
-.permission-row:hover{background:var(--bg-surface-3);border-color:var(--border-soft)}
-
-/* ==========================
-   STATUS / VERIFY / PLATFORM BADGES
-   ========================== */
-.badge-status{
-  padding:3px 9px;
-  border-radius:999px;
-  font-size:11px;font-weight:600;
-  display:inline-flex;align-items:center;gap:4px;
-  white-space:nowrap;
-  border:1px solid var(--border-subtle);
-  background:rgba(255,255,255,0.04);
-  color:var(--text-secondary);
-  letter-spacing:.01em;
-}
-.badge-blue{
-  background:rgba(59,130,246,0.1);color:#93C5FD;border-color:rgba(59,130,246,0.28);
-}
-
-.verify-badge{
-  display:inline-flex;align-items:center;gap:4px;
-  padding:2px 8px;border-radius:999px;
-  font-size:11px;font-weight:600;
-  border:1px solid var(--border-subtle);
-}
-.verify-delivered{background:rgba(34,197,94,0.1);color:#86EFAC;border-color:rgba(34,197,94,0.25)}
-.verify-returned{background:rgba(239,68,68,0.1);color:#FCA5A5;border-color:rgba(239,68,68,0.25)}
-
-.platform-badge{
-  display:inline-flex;align-items:center;gap:5px;
-  padding:3px 9px;border-radius:var(--r-sm);
-  font-size:11px;font-weight:600;
-  border:1px solid var(--border-subtle);
-}
-.platform-shopify{background:rgba(150,191,72,0.1);color:#A7D167;border-color:rgba(150,191,72,0.3)}
-.platform-woocommerce{background:rgba(150,100,200,0.1);color:#C084FC;border-color:rgba(150,100,200,0.3)}
-.platform-youcan{background:rgba(59,130,246,0.1);color:#93C5FD;border-color:rgba(59,130,246,0.3)}
-
-/* ==========================
-   MODAL (legacy)
-   ========================== */
-.modal-overlay{
-  position:fixed;inset:0;background:rgba(0,0,0,0.72);
-  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
-  z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;
-  animation:modalOverlayIn .2s ease-out;
-}
-.modal{
-  background:var(--bg-surface-3);
-  border:1px solid var(--border-soft);
-  border-radius:16px;padding:24px;
-  max-width:600px;width:100%;max-height:90vh;overflow-y:auto;
-  box-shadow:var(--shadow-lg);
-  animation:modalSlideUp .3s cubic-bezier(0.16,1,0.3,1);
-}
-
-/* ==========================
-   TOAST
-   ========================== */
-.toast{
-  position:fixed;top:20px;right:20px;z-index:200;
-  padding:12px 16px;
-  border-radius:var(--r-lg);
-  font-size:13px;font-weight:500;
-  background:var(--bg-surface-3);
-  border:1px solid var(--border-soft);
-  color:var(--text-primary);
-  box-shadow:var(--shadow-lg);
-  animation:slideIn .25s cubic-bezier(0.16,1,0.3,1);
-  display:flex;align-items:center;gap:8px;
-  max-width:360px;
-}
-@keyframes slideIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
-
-/* ==========================
-   USER BADGE (sidebar)
-   ========================== */
-.user-badge{
-  background:var(--bg-surface-2);
-  border:1px solid var(--border-subtle);
-  border-radius:var(--r-lg);
-  padding:10px 12px;
-  display:flex;align-items:center;gap:10px;
-  transition:border-color .15s ease, background .15s ease;
-}
-.user-badge:hover{border-color:var(--border-soft);background:var(--bg-surface-3)}
-
-/* ==========================
-   LOADING
-   ========================== */
-.loading-overlay{
-  position:fixed;inset:0;background:rgba(10,10,11,0.92);
-  backdrop-filter:blur(4px);
-  z-index:1000;display:flex;align-items:center;justify-content:center;
-  flex-direction:column;gap:16px;
-}
-.spinner-lg{
-  border:2.5px solid rgba(99,102,241,0.18);
-  border-top-color:var(--accent);
-  border-radius:50%;width:36px;height:36px;
-  animation:spin .7s linear infinite;
-}
+body{font-family:'Inter',sans-serif;background:#080c1a;color:#fff;margin:0}
+.sidebar{width:250px;background:#0B1120;border-right:1px solid rgba(255,255,255,0.05);min-height:100vh;position:fixed;left:0;top:0;z-index:40;display:flex;flex-direction:column}
+.main-content{margin-left:250px;padding:24px;min-height:100vh}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;border-radius:8px;margin:2px 12px;font-size:14px;cursor:pointer;transition:all 0.2s;color:#94A3B8}
+.nav-item:hover,.nav-item.active{background:rgba(99,102,241,0.1);color:#818cf8}
+.card{background:rgba(21,29,48,0.6);border:1px solid rgba(255,255,255,0.06);border-radius:12px;backdrop-filter:blur(12px)}
+.stat-card{background:linear-gradient(135deg,rgba(21,29,48,0.8),rgba(31,43,64,0.4));border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:20px}
+.btn{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;transition:all 0.2s;border:none}
+.btn-primary{background:#6366f1;color:#fff}.btn-primary:hover{background:#818cf8}
+.btn-danger{background:rgba(239,68,68,0.15);color:#EF4444;border:1px solid rgba(239,68,68,0.2)}.btn-danger:hover{background:rgba(239,68,68,0.25)}
+.btn-success{background:rgba(34,197,94,0.12);color:#22c55e;border:1px solid rgba(34,197,94,0.2)}.btn-success:hover{background:rgba(34,197,94,0.2)}
+.btn-outline{background:transparent;color:#94A3B8;border:1px solid rgba(255,255,255,0.1)}.btn-outline:hover{border-color:#6366f1;color:#818cf8}
+.btn-warning{background:rgba(245,158,11,0.15);color:#F59E0B;border:1px solid rgba(245,158,11,0.2)}.btn-warning:hover{background:rgba(245,158,11,0.25)}
+.btn-whatsapp{background:rgba(37,211,102,0.15);color:#25d366;border:1px solid rgba(37,211,102,0.3)}.btn-whatsapp:hover{background:rgba(37,211,102,0.3)}
+input,select,textarea{background:rgba(17,24,39,0.8);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:8px 12px;border-radius:8px;font-size:13px;width:100%}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#6366f1}
+select option{background:#111827;color:#fff}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#64748B;border-bottom:1px solid rgba(255,255,255,0.06);white-space:nowrap}
+td{padding:10px 12px;font-size:13px;border-bottom:1px solid rgba(255,255,255,0.03)}
+tr:hover{background:rgba(22,163,74,0.03)}
+.toggle-switch { position:relative; width:44px; height:24px; display:inline-block; }
+.toggle-switch input { opacity:0; width:0; height:0; }
+.toggle-switch .slider { position:absolute; cursor:pointer; inset:0; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.15); transition:0.3s; border-radius:24px; }
+.toggle-switch .slider:before { content:''; position:absolute; height:18px; width:18px; left:2px; bottom:2px; background:#64748b; transition:0.3s; border-radius:50%; }
+.toggle-switch input:checked + .slider { background:rgba(99,102,241,0.3); border-color:rgba(99,102,241,0.5); }
+.toggle-switch input:checked + .slider:before { transform:translateX(20px); background:#818cf8; }
+.permission-row { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border-radius:10px; background:rgba(15,23,42,0.4); border:1px solid rgba(255,255,255,0.05); margin-bottom:8px; transition:all 0.2s; }
+.permission-row:hover { background:rgba(15,23,42,0.6); border-color:rgba(99,102,241,0.15); }
+.badge-status{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;display:inline-block;white-space:nowrap}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100;display:flex;align-items:center;justify-content:center}
+.modal{background:#111827;border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:24px;max-width:600px;width:90%;max-height:90vh;overflow-y:auto}
+.toast{position:fixed;top:20px;right:20px;z-index:200;padding:12px 20px;border-radius:10px;font-size:13px;animation:slideIn 0.3s}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+.user-badge{background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);border-radius:8px;padding:8px 12px;display:flex;align-items:center;gap:8px}
+.loading-overlay{position:fixed;inset:0;background:rgba(8,12,26,0.9);z-index:1000;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px}
+.spinner-lg{border:3px solid rgba(99,102,241,0.2);border-top:3px solid #6366f1;border-radius:50%;width:40px;height:40px;animation:spin 0.8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+/* Verification badges */
+.verify-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700}
+.verify-delivered{background:rgba(34,197,94,0.15);color:#4ade80;border:1px solid rgba(34,197,94,0.3)}
+.verify-returned{background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3)}
+/* Platform badges */
+.platform-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600}
+.platform-shopify{background:rgba(150,191,72,0.12);color:#96bf48;border:1px solid rgba(150,191,72,0.3)}
+.platform-woocommerce{background:rgba(150,100,200,0.12);color:#9b5c8f;border:1px solid rgba(150,100,200,0.3)}
+.platform-youcan{background:rgba(59,130,246,0.12);color:#60a5fa;border:1px solid rgba(59,130,246,0.3)}
+/* Logo SVG styles */
+.logo-hub{display:inline-flex;align-items:center;gap:8px}
+.logo-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#6366f1,#818cf8);box-shadow:0 4px 12px rgba(99,102,241,0.3)}
+@media(max-width:768px){.sidebar{transform:translateX(-100%);transition:0.3s}.sidebar.open{transform:translateX(0)}.main-content{margin-left:0}}
 
-/* ==========================
-   LOGO
-   ========================== */
-.logo-hub{display:inline-flex;align-items:center;gap:10px}
-.logo-icon{
-  width:32px;height:32px;border-radius:var(--r-md);
-  display:flex;align-items:center;justify-content:center;
-  background:linear-gradient(135deg,#6366F1 0%,#8B5CF6 100%);
-  box-shadow:0 2px 8px rgba(99,102,241,0.35), 0 0 0 1px rgba(255,255,255,0.1) inset;
-}
-
-/* ==========================
-   RESPONSIVE
-   ========================== */
-@media(max-width:768px){
-  .sidebar{
-    transform:translateX(-100%);
-    transition:transform .3s cubic-bezier(0.16,1,0.3,1);
-    box-shadow:var(--shadow-lg);
-  }
-  .sidebar.open{transform:translateX(0)}
-  .main-content{margin-left:0;padding:16px}
-  /* Backdrop when sidebar open on mobile — driven by .sidebar.open only */
-  .sidebar.open ~ .sidebar-backdrop,
-  .sidebar.open + .sidebar-backdrop{display:block}
-  .sidebar-backdrop{
-    display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);
-    z-index:35;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);
-    animation:modalOverlayIn .2s ease-out;
-  }
-}
-@media(min-width:769px){.sidebar-backdrop{display:none !important}}
-
-/* =========================================================
-   MODAL V2 — Modern, harmonised with SaaS palette
-   ========================================================= */
+/* ========== MODAL REFONTE V2 ========== */
 @keyframes modalOverlayIn { from{opacity:0} to{opacity:1} }
-@keyframes modalSlideUp   { from{opacity:0;transform:translateY(16px) scale(0.98)} to{opacity:1;transform:translateY(0) scale(1)} }
-@keyframes modalSlideOut  { from{opacity:1;transform:translateY(0) scale(1)} to{opacity:0;transform:translateY(12px) scale(0.98)} }
-@keyframes fieldFadeIn    { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+@keyframes modalSlideUp { from{opacity:0;transform:translateY(40px) scale(0.97)} to{opacity:1;transform:translateY(0) scale(1)} }
+@keyframes modalSlideOut { from{opacity:1;transform:translateY(0) scale(1)} to{opacity:0;transform:translateY(20px) scale(0.97)} }
+@keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+@keyframes fieldFadeIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+@keyframes pulseGlow { 0%,100%{box-shadow:0 0 0 0 rgba(99,102,241,0.3)} 50%{box-shadow:0 0 20px 4px rgba(99,102,241,0.15)} }
+@keyframes checkPop { 0%{transform:scale(0)} 50%{transform:scale(1.2)} 100%{transform:scale(1)} }
 
-.modal-overlay-v2{
-  position:fixed;inset:0;
-  background:rgba(0,0,0,0.65);
-  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
-  z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;
-  animation:modalOverlayIn .2s ease-out;
+.modal-overlay-v2 {
+  position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);z-index:100;
+  display:flex;align-items:center;justify-content:center;padding:20px;
+  animation:modalOverlayIn 0.3s ease-out;
 }
-.modal-v2{
-  background:var(--bg-surface-3);
-  border:1px solid var(--border-soft);
-  border-radius:16px;
-  padding:0;max-width:680px;width:100%;max-height:90vh;overflow:hidden;
-  box-shadow:var(--shadow-lg);
-  animation:modalSlideUp .28s cubic-bezier(0.16,1,0.3,1);
-  display:flex;flex-direction:column;
+.modal-v2 {
+  background:linear-gradient(145deg,#111827 0%,#0f172a 100%);
+  border:1px solid rgba(99,102,241,0.15);
+  border-radius:20px;padding:0;max-width:680px;width:100%;max-height:90vh;overflow:hidden;
+  box-shadow:0 25px 80px rgba(0,0,0,0.5),0 0 40px rgba(99,102,241,0.08);
+  animation:modalSlideUp 0.4s cubic-bezier(0.16,1,0.3,1);
 }
-.modal-v2.closing{animation:modalSlideOut .2s ease-in forwards}
+.modal-v2.closing { animation:modalSlideOut 0.25s ease-in forwards; }
+.modal-v2-header {
+  padding:24px 28px 16px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid rgba(255,255,255,0.05);
+  background:linear-gradient(135deg,rgba(99,102,241,0.08),rgba(139,92,246,0.05));
+}
+.modal-v2-header h2 {
+  font-size:18px;font-weight:700;color:#fff;display:flex;align-items:center;gap:10px;
+}
+.modal-v2-header .header-icon {
+  width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#6366f1,#8b5cf6);font-size:16px;color:#fff;
+  animation:pulseGlow 3s ease-in-out infinite;
+}
+.modal-v2-close {
+  width:32px;height:32px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);
+  background:rgba(255,255,255,0.03);color:#64748b;font-size:14px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all 0.25s;
+}
+.modal-v2-close:hover { background:rgba(239,68,68,0.15);color:#f87171;border-color:rgba(239,68,68,0.3);transform:rotate(90deg); }
+.modal-v2-body { padding:20px 28px 28px;overflow-y:auto;max-height:calc(90vh - 140px); }
+.modal-v2-section {
+  margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.04);
+}
+.modal-v2-section:last-child { border-bottom:none;margin-bottom:0; }
+.modal-v2-section-title {
+  font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;
+  color:#6366f1;margin-bottom:14px;display:flex;align-items:center;gap:8px;
+}
+.modal-v2-section-title i { font-size:12px;opacity:0.7; }
+.form-grid { display:grid;grid-template-columns:1fr 1fr;gap:14px; }
+.form-grid .full-width { grid-column:1/-1; }
 
-.modal-v2-header{
-  padding:20px 24px;
-  display:flex;align-items:center;justify-content:space-between;
-  border-bottom:1px solid var(--border-subtle);
-  background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+/* Floating label input */
+.float-field {
+  position:relative;border-radius:12px;
+  background:rgba(15,23,42,0.6);border:1.5px solid rgba(255,255,255,0.08);
+  transition:all 0.3s cubic-bezier(0.4,0,0.2,1);overflow:hidden;
 }
-.modal-v2-header h2{
-  font-size:16px;font-weight:600;color:var(--text-primary);
-  display:flex;align-items:center;gap:10px;margin:0;
-  letter-spacing:-0.01em;
+.float-field::before {
+  content:'';position:absolute;bottom:0;left:50%;width:0;height:2px;
+  background:linear-gradient(90deg,#6366f1,#8b5cf6);transition:all 0.4s cubic-bezier(0.4,0,0.2,1);
+  transform:translateX(-50%);border-radius:2px;
 }
-.modal-v2-header .header-icon{
-  width:32px;height:32px;border-radius:var(--r-md);
-  display:flex;align-items:center;justify-content:center;
-  background:linear-gradient(135deg,#6366F1 0%,#8B5CF6 100%);
-  font-size:14px;color:#fff;
-  box-shadow:0 2px 8px rgba(99,102,241,0.3), inset 0 1px 0 rgba(255,255,255,0.15);
+.float-field:focus-within { border-color:rgba(99,102,241,0.4);background:rgba(15,23,42,0.9);box-shadow:0 4px 20px rgba(99,102,241,0.08); }
+.float-field:focus-within::before { width:100%; }
+.float-field .field-icon {
+  position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:14px;
+  color:#475569;transition:color 0.3s;pointer-events:none;z-index:2;
 }
-.modal-v2-close{
-  width:30px;height:30px;border-radius:var(--r-md);
-  border:1px solid var(--border-subtle);
-  background:transparent;color:var(--text-muted);font-size:13px;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-  transition:background .15s ease, color .15s ease, border-color .15s ease;
+.float-field:focus-within .field-icon { color:#818cf8; }
+.float-field input, .float-field select, .float-field textarea {
+  width:100%;padding:18px 14px 8px 40px;background:transparent !important;
+  border:none !important;color:#e2e8f0;font-size:13.5px;outline:none !important;
+  box-shadow:none !important;font-family:'Inter',sans-serif;
 }
-.modal-v2-close:hover{
-  background:var(--danger-soft);color:#FCA5A5;border-color:rgba(239,68,68,0.3);
+.float-field select { padding-right:32px;cursor:pointer;appearance:none;-webkit-appearance:none; }
+.float-field select option { background:#1e293b;color:#e2e8f0;padding:8px; }
+.float-field textarea { min-height:50px;resize:vertical; }
+.float-field label {
+  position:absolute;left:40px;top:50%;transform:translateY(-50%);
+  font-size:13px;color:#64748b;pointer-events:none;
+  transition:all 0.25s cubic-bezier(0.4,0,0.2,1);
 }
-
-.modal-v2-body{
-  padding:22px 24px;overflow-y:auto;
-  flex:1 1 auto;
-}
-.modal-v2-body::-webkit-scrollbar{width:6px}
-.modal-v2-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:10px}
-.modal-v2-body::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.2)}
-
-.modal-v2-section{
-  margin-bottom:18px;padding-bottom:14px;
-  border-bottom:1px solid var(--border-subtle);
-}
-.modal-v2-section:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
-.modal-v2-section-title{
-  font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.09em;
-  color:var(--text-muted);margin-bottom:12px;
-  display:flex;align-items:center;gap:8px;
-}
-.modal-v2-section-title i{font-size:11px;color:var(--accent-hover)}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.form-grid .full-width{grid-column:1/-1}
-@media(max-width:520px){.form-grid{grid-template-columns:1fr}}
-
-/* Floating label field */
-.float-field{
-  position:relative;border-radius:var(--r-lg);
-  background:var(--bg-input);
-  border:1px solid var(--border-soft);
-  transition:border-color .15s ease, background .15s ease, box-shadow .15s ease;
-  overflow:hidden;
-}
-.float-field:hover{border-color:var(--border-strong)}
-.float-field:focus-within{
-  border-color:var(--accent);
-  background:var(--bg-surface-2);
-  box-shadow:0 0 0 3px var(--accent-soft);
-}
-.float-field .field-icon{
-  position:absolute;left:13px;top:50%;transform:translateY(-50%);
-  font-size:13px;color:var(--text-muted);
-  transition:color .15s ease;pointer-events:none;z-index:2;
-}
-.float-field:focus-within .field-icon{color:var(--accent-hover)}
-.float-field input, .float-field select, .float-field textarea{
-  width:100%;padding:18px 14px 8px 38px;
-  background:transparent !important;
-  border:none !important;
-  color:var(--text-primary);
-  font-size:13px;
-  outline:none !important;box-shadow:none !important;
-  font-family:inherit;
-}
-.float-field select{padding-right:30px;cursor:pointer;appearance:none;-webkit-appearance:none}
-.float-field select option{background:var(--bg-surface-3);color:var(--text-primary);padding:8px}
-.float-field textarea{min-height:60px;resize:vertical;padding-top:22px}
-.float-field label{
-  position:absolute;left:38px;top:50%;transform:translateY(-50%);
-  font-size:12.5px;color:var(--text-muted);pointer-events:none;
-  transition:top .18s ease, font-size .18s ease, color .18s ease;
-}
-.float-field textarea ~ label{top:18px;transform:none}
+.float-field textarea ~ label { top:24px; }
 .float-field input:focus ~ label, .float-field input:not(:placeholder-shown) ~ label,
 .float-field select:focus ~ label, .float-field select:valid ~ label,
-.float-field textarea:focus ~ label, .float-field textarea:not(:placeholder-shown) ~ label{
-  top:6px;font-size:10px;color:var(--accent-hover);font-weight:600;letter-spacing:.04em;
-  text-transform:uppercase;transform:none;
+.float-field textarea:focus ~ label, .float-field textarea:not(:placeholder-shown) ~ label {
+  top:8px;font-size:10px;color:#818cf8;font-weight:600;letter-spacing:0.3px;
+  transform:translateY(0);
 }
-.float-field .select-arrow{
+.float-field .select-arrow {
   position:absolute;right:12px;top:50%;transform:translateY(-50%);
-  color:var(--text-muted);font-size:10px;pointer-events:none;
-  transition:transform .2s ease, color .15s ease;
+  color:#475569;font-size:10px;pointer-events:none;transition:all 0.3s;
 }
-.float-field:focus-within .select-arrow{color:var(--accent-hover);transform:translateY(-50%) rotate(180deg)}
+.float-field:focus-within .select-arrow { color:#818cf8;transform:translateY(-50%) rotate(180deg); }
 
 /* Animated field entrance */
-.form-grid .float-field{animation:fieldFadeIn .3s ease-out backwards}
-.form-grid .float-field:nth-child(1){animation-delay:.03s}
-.form-grid .float-field:nth-child(2){animation-delay:.06s}
-.form-grid .float-field:nth-child(3){animation-delay:.09s}
-.form-grid .float-field:nth-child(4){animation-delay:.12s}
-.form-grid .float-field:nth-child(5){animation-delay:.15s}
-.form-grid .float-field:nth-child(6){animation-delay:.18s}
+.form-grid .float-field { animation:fieldFadeIn 0.35s ease-out backwards; }
+.form-grid .float-field:nth-child(1) { animation-delay:0.05s; }
+.form-grid .float-field:nth-child(2) { animation-delay:0.1s; }
+.form-grid .float-field:nth-child(3) { animation-delay:0.15s; }
+.form-grid .float-field:nth-child(4) { animation-delay:0.2s; }
+.form-grid .float-field:nth-child(5) { animation-delay:0.25s; }
+.form-grid .float-field:nth-child(6) { animation-delay:0.3s; }
 
-/* Footer buttons V2 */
-.modal-v2-footer{
-  display:flex;justify-content:flex-end;gap:10px;
-  padding:16px 24px;
-  border-top:1px solid var(--border-subtle);
-  background:rgba(255,255,255,0.015);
+/* Buttons V2 */
+.modal-v2-footer {
+  display:flex;justify-content:flex-end;gap:10px;padding-top:20px;
+  border-top:1px solid rgba(255,255,255,0.05);margin-top:8px;
 }
-.btn-v2-cancel{
-  padding:9px 18px;border-radius:var(--r-md);
-  font-size:13px;font-weight:500;
-  background:transparent;color:var(--text-secondary);
-  border:1px solid var(--border-soft);
-  cursor:pointer;transition:background .15s ease, color .15s ease, border-color .15s ease;
+.btn-v2-cancel {
+  padding:10px 22px;border-radius:10px;font-size:13px;font-weight:500;
+  background:rgba(255,255,255,0.04);color:#94a3b8;border:1px solid rgba(255,255,255,0.08);
+  cursor:pointer;transition:all 0.25s;
 }
-.btn-v2-cancel:hover{background:rgba(255,255,255,0.05);color:var(--text-primary);border-color:var(--border-strong)}
-.btn-v2-submit{
-  padding:9px 22px;border-radius:var(--r-md);
-  font-size:13px;font-weight:600;
-  background:var(--accent);color:#fff;border:none;
-  cursor:pointer;
-  transition:background .15s ease, box-shadow .15s ease, transform .1s ease;
-  display:inline-flex;align-items:center;gap:8px;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,0.12), 0 1px 2px rgba(0,0,0,0.4);
+.btn-v2-cancel:hover { background:rgba(255,255,255,0.08);color:#e2e8f0;transform:translateY(-1px); }
+.btn-v2-submit {
+  padding:10px 28px;border-radius:10px;font-size:13px;font-weight:600;
+  background:linear-gradient(135deg,#6366f1,#7c3aed);color:#fff;border:none;
+  cursor:pointer;transition:all 0.3s;display:flex;align-items:center;gap:8px;
+  box-shadow:0 4px 15px rgba(99,102,241,0.25);position:relative;overflow:hidden;
 }
-.btn-v2-submit:hover{background:var(--accent-hover);box-shadow:inset 0 1px 0 rgba(255,255,255,0.15), 0 4px 14px rgba(99,102,241,0.4)}
-.btn-v2-submit:active{transform:translateY(1px)}
-.btn-v2-submit:disabled{opacity:.55;cursor:not-allowed}
-.btn-v2-submit .spinner-sm{
-  width:14px;height:14px;border:2px solid rgba(255,255,255,0.35);
-  border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;
+.btn-v2-submit::before {
+  content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent);
+  transition:left 0.5s;
+}
+.btn-v2-submit:hover { transform:translateY(-2px);box-shadow:0 8px 25px rgba(99,102,241,0.35); }
+.btn-v2-submit:hover::before { left:100%; }
+.btn-v2-submit:active { transform:translateY(0); }
+.btn-v2-submit:disabled { opacity:0.6;cursor:not-allowed;transform:none; }
+.btn-v2-submit .spinner-sm {
+  width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);
+  border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;
 }
 
-/* =========================================================
-   UTILITY / OVERRIDES for Tailwind dark-* classes used in JS
-   ========================================================= */
-.bg-dark-900{background-color:var(--bg-app) !important}
-.bg-dark-800{background-color:var(--bg-surface-1) !important}
-.bg-dark-700{background-color:var(--bg-surface-2) !important}
-.bg-dark-600{background-color:var(--bg-surface-3) !important}
-.bg-dark-900\/90{background-color:rgba(10,10,11,0.9) !important}
+/* Scrollbar inside modal */
+.modal-v2-body::-webkit-scrollbar { width:5px; }
+.modal-v2-body::-webkit-scrollbar-track { background:transparent; }
+.modal-v2-body::-webkit-scrollbar-thumb { background:rgba(99,102,241,0.2);border-radius:10px; }
+.modal-v2-body::-webkit-scrollbar-thumb:hover { background:rgba(99,102,241,0.4); }
+
+.toggle-switch { position:relative; width:44px; height:24px; }
+.toggle-switch input { opacity:0; width:0; height:0; }
+.toggle-switch .slider { position:absolute; cursor:pointer; inset:0; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.15); transition:0.3s; border-radius:24px; }
+.toggle-switch .slider:before { content:''; position:absolute; height:18px; width:18px; left:2px; bottom:2px; background:#64748b; transition:0.3s; border-radius:50%; }
+.toggle-switch input:checked + .slider { background:rgba(99,102,241,0.3); border-color:rgba(99,102,241,0.5); }
+.toggle-switch input:checked + .slider:before { transform:translateX(20px); background:#818cf8; }
+.permission-row { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border-radius:10px; background:rgba(15,23,42,0.4); border:1px solid rgba(255,255,255,0.05); margin-bottom:8px; transition:all 0.2s; }
+.permission-row:hover { background:rgba(15,23,42,0.6); border-color:rgba(99,102,241,0.15); }
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * OPTIMISATIONS UI/UX — Patches intégrés
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+/* 1. Boutons — État loading uniforme */
+.btn[data-loading="1"],
+.btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  pointer-events: none;
+  position: relative;
+}
+.spinner-sm {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+.btn:active:not(:disabled) { transform: scale(0.97); }
+
+/* 2. Tableaux — Meilleure hiérarchie visuelle */
+table tbody tr { transition: background 0.15s ease; }
+table tbody tr:hover { background: rgba(99, 102, 241, 0.05) !important; }
+table tbody tr:has(input[type="checkbox"]:checked) {
+  background: rgba(99, 102, 241, 0.08) !important;
+  box-shadow: inset 3px 0 0 #6366f1;
+}
+.card table thead th {
+  position: sticky;
+  top: 0;
+  background: #0B1120;
+  z-index: 5;
+}
+table tbody tr:nth-child(even) { background: rgba(255, 255, 255, 0.012); }
+
+/* 3. Empty states & skeleton loaders */
+.empty-state {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 60px 20px; text-align: center; color: #64748b;
+}
+.empty-state i { font-size: 48px; margin-bottom: 16px; opacity: 0.4; }
+.empty-state h3 { font-size: 16px; font-weight: 600; color: #94a3b8; margin-bottom: 8px; }
+.empty-state p { font-size: 13px; max-width: 320px; line-height: 1.5; }
+
+.skeleton {
+  background: linear-gradient(90deg,
+    rgba(255,255,255,0.04) 0%,
+    rgba(255,255,255,0.08) 50%,
+    rgba(255,255,255,0.04) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  border-radius: 6px;
+  height: 14px;
+}
+.skeleton-row { display: flex; gap: 12px; padding: 12px; }
+.skeleton-row .skeleton { flex: 1; }
+
+/* 4. Toasts — Variants visuels distincts */
+.toast {
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #e2e8f0;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 500;
+}
+.toast::before {
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  font-size: 14px;
+}
+.toast.success { border-left: 3px solid #22c55e; }
+.toast.success::before { content: "\f058"; color: #22c55e; }
+.toast.error { border-left: 3px solid #ef4444; }
+.toast.error::before { content: "\f057"; color: #ef4444; }
+.toast.info { border-left: 3px solid #3b82f6; }
+.toast.info::before { content: "\f05a"; color: #3b82f6; }
+
+/* 5. Formulaires — Validation visuelle */
+.float-field.has-error { border-color: rgba(239, 68, 68, 0.5) !important; }
+.float-field.has-error::after {
+  content: attr(data-error);
+  display: block;
+  position: absolute;
+  bottom: -18px;
+  left: 14px;
+  font-size: 11px;
+  color: #f87171;
+}
+
+/* 6. Badges */
+.badge-status { font-variant-numeric: tabular-nums; letter-spacing: 0.2px; }
+.badge-blue {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* 7. Accessibilité */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #818cf8;
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Scrollbar cohérente */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
+::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.3); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(99,102,241,0.5); }
+
+/* 8. Responsive */
+@media (max-width: 768px) {
+  .main-content { padding: 16px; }
+  .stat-card { padding: 16px; }
+  table th, table td { padding: 8px 10px; font-size: 12px; }
+}
 
 </style>
 </head>
@@ -654,11 +368,10 @@ tbody tr:last-child td{border-bottom:none}
 
 <!-- SIDEBAR -->
 <aside class="sidebar" id="sidebar">
-  <!-- Brand -->
-  <div class="px-5 py-4 border-b border-white/5">
+  <div class="p-5 border-b border-white/5">
     <div class="logo-hub">
       <div class="logo-icon">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M12 2L3 7V17L12 22L21 17V7L12 2Z" stroke="white" stroke-width="2" stroke-linejoin="round"/>
           <circle cx="12" cy="12" r="3" fill="white"/>
           <line x1="12" y1="2" x2="12" y2="9" stroke="white" stroke-width="1.5"/>
@@ -670,71 +383,54 @@ tbody tr:last-child td{border-bottom:none}
         </svg>
       </div>
       <div>
-        <div class="font-semibold text-[15px] tracking-tight leading-none">Auto<span class="text-indigo-400">Hub</span> DZ</div>
-        <div class="text-[10.5px] text-zinc-500 flex items-center gap-1.5 mt-1.5">
-          <span class="inline-block w-1.5 h-1.5 bg-emerald-400 rounded-full" style="box-shadow:0 0 6px rgba(52,211,153,0.6)"></span>
-          <span>En ligne</span>
+        <span class="font-bold text-base">Auto<span class="text-indigo-400">Hub</span> DZ</span>
+        <div class="text-[10px] text-gray-500 flex items-center gap-1">
+          <span class="inline-block w-1.5 h-1.5 bg-indigo-500 rounded-full"></span> En ligne
         </div>
       </div>
     </div>
   </div>
-
-  <!-- Navigation -->
-  <nav class="py-3 flex-1 overflow-y-auto">
-    <div class="nav-section">Principal</div>
-    <div id="nav-item-dashboard" class="nav-item active" onclick="navigateTo('dashboard')"><i class="fas fa-chart-pie"></i> Tableau de bord</div>
-    <div id="nav-item-commandes" class="nav-item" onclick="navigateTo('commandes')"><i class="fas fa-clipboard-list"></i> Commandes</div>
-    <div id="nav-item-suivi" class="nav-item" onclick="navigateTo('suivi')"><i class="fas fa-truck"></i> Suivi</div>
-    <div id="nav-item-stock" class="nav-item" onclick="navigateTo('stock')"><i class="fas fa-boxes-stacked"></i> Stock</div>
-
-    <div class="nav-section">Logistique</div>
-    <div id="nav-item-wilayaspage" class="nav-item" onclick="navigateTo('wilayaspage')"><i class="fas fa-map-marked-alt"></i> Wilayas & Communes</div>
-    <div id="nav-item-stopdesks" class="nav-item" onclick="navigateTo('stopdesks')"><i class="fas fa-map-pin"></i> Points Relais</div>
-
-    <div class="nav-section">Configuration</div>
-    <div id="nav-item-boutique" class="nav-item" onclick="navigateTo('boutique')"><i class="fas fa-store"></i> Boutique</div>
-    <div id="nav-item-integration" class="nav-item" onclick="navigateTo('integration')"><i class="fas fa-plug-circle-bolt"></i> Integration API</div>
-    <div id="nav-item-historique" class="nav-item" onclick="navigateTo('historique')"><i class="fas fa-clock-rotate-left"></i> Historique</div>
-    <div id="nav-item-equipe" class="nav-item" onclick="navigateTo('equipe')"><i class="fas fa-user-shield"></i> Equipe</div>
-    <div id="nav-item-utilisateurs" class="nav-item hidden" onclick="navigateTo('utilisateurs')"><i class="fas fa-users-cog"></i> Utilisateurs</div>
-
-    <div class="nav-section">Compte</div>
-    <div id="nav-item-pricing" class="nav-item" onclick="navigateTo('pricing')"><i class="fas fa-tags"></i> Tarification</div>
-    <div id="nav-item-guide" class="nav-item" onclick="navigateTo('guide')"><i class="fas fa-book-open"></i> Guide</div>
-  </nav>
-
-  <!-- Footer with user + logout -->
-  <div class="px-3 pt-3 pb-4 border-t border-white/5">
-    <div class="user-badge">
-      <div class="w-8 h-8 rounded-md flex items-center justify-center text-white text-xs font-semibold flex-shrink-0" style="background:linear-gradient(135deg,#6366F1,#8B5CF6)">
-        <i class="fas fa-user"></i>
-      </div>
-      <div class="min-w-0 flex-1">
-        <div class="text-[13px] font-medium text-zinc-100 truncate" id="sidebar-user">Admin</div>
-        <div class="text-[10.5px] text-zinc-500 truncate" id="sidebar-store"></div>
+  <nav class="py-4 flex-1">
+    <div id="nav-item-dashboard" class="nav-item active" onclick="navigateTo('dashboard')"><i class="fas fa-chart-pie w-5"></i> Tableau de bord</div>
+    <div id="nav-item-commandes" class="nav-item" onclick="navigateTo('commandes')"><i class="fas fa-clipboard-list w-5"></i> Commandes</div>
+    <div id="nav-item-suivi" class="nav-item" onclick="navigateTo('suivi')"><i class="fas fa-truck w-5"></i> Suivi</div>
+    <div id="nav-item-stock" class="nav-item" onclick="navigateTo('stock')"><i class="fas fa-boxes-stacked w-5"></i> Stock</div>
+    <div id="nav-item-wilayaspage" class="nav-item" onclick="navigateTo('wilayaspage')"><i class="fas fa-map-marked-alt w-5"></i> Wilayas & Communes</div>
+    <div id="nav-item-stopdesks" class="nav-item" onclick="navigateTo('stopdesks')"><i class="fas fa-map-pin w-5"></i> Points Relais</div>
+    <div id="nav-item-boutique" class="nav-item" onclick="navigateTo('boutique')"><i class="fas fa-store w-5"></i> Boutique</div>
+    <div id="nav-item-integration" class="nav-item" onclick="navigateTo('integration')"><i class="fas fa-plug-circle-bolt w-5"></i> Integration API</div>
+    <div id="nav-item-historique" class="nav-item" onclick="navigateTo('historique')"><i class="fas fa-clock-rotate-left w-5"></i> Historique</div>
+    <div id="nav-item-equipe" class="nav-item" onclick="navigateTo('equipe')"><i class="fas fa-user-shield w-5"></i> Equipe</div>
+    <div id="nav-item-utilisateurs" class="nav-item hidden" onclick="navigateTo('utilisateurs')"><i class="fas fa-users-cog w-5"></i> Utilisateurs</div>
+    <div id="nav-item-pricing" class="nav-item" onclick="navigateTo('pricing')"><i class="fas fa-tags w-5"></i> Tarification</div>
+    <div id="nav-item-guide" class="nav-item" onclick="navigateTo('guide')"><i class="fas fa-book-open w-5"></i> Guide</div>
+    <div class="px-4 mt-3 mb-2">
+      <div class="user-badge">
+        <i class="fas fa-user-circle text-indigo-400 text-lg"></i>
+        <div>
+          <div class="text-xs font-medium" id="sidebar-user">Admin</div>
+          <div class="text-[10px] text-gray-500" id="sidebar-store"></div>
+        </div>
       </div>
     </div>
-    <button onclick="logout()" class="nav-item w-full mt-2" style="color:#FCA5A5;margin-left:0;margin-right:0">
-      <i class="fas fa-sign-out-alt"></i> Déconnexion
+    <button onclick="logout()" class="nav-item text-red-400 w-full hover:bg-red-500/10 mt-3">
+      <i class="fas fa-sign-out-alt w-5"></i> Deconnexion
     </button>
+  </nav>
+  <div class="p-4 border-t border-white/5" style="padding-bottom:18px">
   </div>
 </aside>
-<div class="sidebar-backdrop" onclick="document.getElementById('sidebar').classList.remove('open')"></div>
 
 <!-- MOBILE HEADER -->
-<div class="md:hidden fixed top-0 w-full z-30 flex items-center justify-between px-4 h-14 border-b" style="background:rgba(10,10,11,0.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-color:var(--border-subtle)">
-  <button onclick="document.getElementById('sidebar').classList.toggle('open')" class="w-9 h-9 rounded-md flex items-center justify-center text-zinc-300 hover:bg-white/5 transition">
-    <i class="fas fa-bars"></i>
-  </button>
+<div class="md:hidden fixed top-0 w-full bg-dark-900/90 backdrop-blur z-30 flex items-center justify-between px-4 h-14 border-b border-white/5">
+  <button onclick="document.getElementById('sidebar').classList.toggle('open')" class="text-gray-400"><i class="fas fa-bars text-xl"></i></button>
   <div class="logo-hub">
-    <div class="logo-icon" style="width:26px;height:26px">
+    <div class="logo-icon" style="width:28px;height:28px">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2L3 7V17L12 22L21 17V7L12 2Z" stroke="white" stroke-width="2.5" stroke-linejoin="round"/><circle cx="12" cy="12" r="2.5" fill="white"/></svg>
     </div>
-    <span class="font-semibold text-[13px] tracking-tight">Auto<span class="text-indigo-400">Hub</span> DZ</span>
+    <span class="font-bold text-sm">Auto<span class="text-indigo-400">Hub</span> DZ</span>
   </div>
-  <button onclick="logout()" class="w-9 h-9 rounded-md flex items-center justify-center text-red-400 hover:bg-red-500/10 transition">
-    <i class="fas fa-sign-out-alt"></i>
-  </button>
+  <button onclick="logout()" class="text-red-400"><i class="fas fa-sign-out-alt"></i></button>
 </div>
 
 <!-- MAIN CONTENT -->
@@ -769,6 +465,231 @@ let autoWhatsAppEnabled = localStorage.getItem('auto_whatsapp_confirm') === '1'
 const api = axios.create({ baseURL: '/api' })
 const platformIcons = { shopify:'fab fa-shopify', woocommerce:'fab fa-wordpress', youcan:'fas fa-shopping-bag' }
 const platformColors = { shopify:'platform-shopify', woocommerce:'platform-woocommerce', youcan:'platform-youcan' }
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * HELPERS CENTRAUX — Sécurité, API, UI
+ * Tous les patches d'optimisation commencent ici.
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+// --- 1. Échappement HTML (anti-XSS) ---
+const escapeHtml = (() => {
+  const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }
+  return (str) => String(str ?? '').replace(/[&<>"']/g, c => map[c])
+})()
+
+// --- 2. Traduction d'erreurs axios en messages lisibles ---
+function humanizeApiError(err, fallback = 'Une erreur est survenue') {
+  if (!err || !err.response) {
+    console.warn('[API][network]', err)
+    return 'Connexion perdue. Vérifiez votre réseau.'
+  }
+  const { status, data } = err.response
+  const serverMsg = data?.error || data?.message
+  console.warn('[API][' + status + ']', serverMsg || err)
+  switch (status) {
+    case 400: return serverMsg || 'Données invalides'
+    case 401: return 'Session expirée. Veuillez vous reconnecter.'
+    case 403: return 'Accès refusé'
+    case 404: return 'Ressource introuvable'
+    case 409: return serverMsg || 'Conflit : cette ressource existe déjà'
+    case 422: return serverMsg || 'Données incomplètes ou invalides'
+    case 429: return 'Trop de requêtes, réessayez dans un instant'
+    case 500:
+    case 502:
+    case 503: return 'Le serveur rencontre un problème. Réessayez dans un instant.'
+    default:  return serverMsg || fallback
+  }
+}
+
+// --- 3. Wrapper API : gère spinner bouton + toast d'erreur automatique ---
+async function safeApiCall(fn, opts = {}) {
+  const { button, successMsg, errorFallback, onSuccess } = opts
+  const originalHtml = button?.innerHTML
+  if (button) {
+    button.disabled = true
+    button.setAttribute('data-loading', '1')
+    button.innerHTML = '<span class="spinner-sm"></span> <span>Chargement...</span>'
+  }
+  try {
+    const result = await fn()
+    if (successMsg) toast(successMsg, 'success')
+    if (onSuccess) onSuccess(result)
+    return result
+  } catch (err) {
+    toast(humanizeApiError(err, errorFallback), 'error')
+    throw err
+  } finally {
+    if (button) {
+      button.disabled = false
+      button.removeAttribute('data-loading')
+      button.innerHTML = originalHtml
+    }
+  }
+}
+
+// --- 4. Intercepteur axios global (session expirée 401) ---
+api.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    if (err.response?.status === 401 && state.user) {
+      toast('Votre session a expiré', 'error')
+      setTimeout(() => { window.location.href = '/login' }, 1200)
+    }
+    return Promise.reject(err)
+  }
+)
+
+// --- 5. Debounce générique ---
+function debounce(fn, delay = 250) {
+  let t
+  return function (...args) {
+    clearTimeout(t)
+    t = setTimeout(() => fn.apply(this, args), delay)
+  }
+}
+
+// --- 6. Confirm custom (remplace window.confirm) ---
+function confirmDialog({ title = 'Confirmation', message = '', confirmText = 'Confirmer', danger = false } = {}) {
+  return new Promise((resolve) => {
+    const overlay = document.createElement('div')
+    overlay.className = 'modal-overlay-v2'
+    overlay.innerHTML =
+      '<div class="modal-v2" style="max-width:420px">' +
+        '<div class="modal-v2-header">' +
+          '<h2><span class="header-icon"><i class="fas fa-' + (danger ? 'exclamation-triangle' : 'question') + '"></i></span>' + escapeHtml(title) + '</h2>' +
+        '</div>' +
+        '<div class="modal-v2-body">' +
+          '<p style="color:#cbd5e1;font-size:14px;line-height:1.55">' + escapeHtml(message) + '</p>' +
+          '<div class="modal-v2-footer">' +
+            '<button class="btn-v2-cancel" data-act="cancel">Annuler</button>' +
+            '<button class="btn-v2-submit" data-act="ok" style="' + (danger ? 'background:linear-gradient(135deg,#ef4444,#b91c1c);box-shadow:0 4px 15px rgba(239,68,68,0.25)' : '') + '">' + escapeHtml(confirmText) + '</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>'
+    document.body.appendChild(overlay)
+    const cleanup = (val) => { overlay.remove(); resolve(val) }
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) cleanup(false)
+      if (e.target.dataset?.act === 'cancel') cleanup(false)
+      if (e.target.dataset?.act === 'ok') cleanup(true)
+    })
+    const escHandler = (ev) => {
+      if (ev.key === 'Escape') { cleanup(false); document.removeEventListener('keydown', escHandler) }
+    }
+    document.addEventListener('keydown', escHandler)
+  })
+}
+
+// --- 7. Prompt custom avec limite de caractères ---
+function promptDialog({ title = 'Saisie', placeholder = '', maxLength = 255 } = {}) {
+  return new Promise((resolve) => {
+    const overlay = document.createElement('div')
+    overlay.className = 'modal-overlay-v2'
+    overlay.innerHTML =
+      '<div class="modal-v2" style="max-width:440px">' +
+        '<div class="modal-v2-header"><h2><span class="header-icon"><i class="fas fa-pen"></i></span>' + escapeHtml(title) + '</h2></div>' +
+        '<div class="modal-v2-body">' +
+          '<div class="float-field">' +
+            '<textarea id="prompt-val" maxlength="' + maxLength + '" placeholder=" " rows="3"></textarea>' +
+            '<label>' + escapeHtml(placeholder) + '</label>' +
+          '</div>' +
+          '<div class="text-xs text-gray-500 mt-2"><span id="prompt-count">0</span>/' + maxLength + '</div>' +
+          '<div class="modal-v2-footer">' +
+            '<button class="btn-v2-cancel" data-act="cancel">Annuler</button>' +
+            '<button class="btn-v2-submit" data-act="ok">Valider</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>'
+    document.body.appendChild(overlay)
+    const ta = overlay.querySelector('#prompt-val')
+    const count = overlay.querySelector('#prompt-count')
+    ta.addEventListener('input', () => { count.textContent = ta.value.length })
+    setTimeout(() => ta.focus(), 50)
+    const cleanup = (v) => { overlay.remove(); resolve(v) }
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay || e.target.dataset?.act === 'cancel') cleanup(null)
+      if (e.target.dataset?.act === 'ok') cleanup(ta.value.trim())
+    })
+  })
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * VALIDATION CÔTÉ CLIENT — Couche de sécurité avant POST /admin/*
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+const Validators = {
+  // Téléphone algérien : 10 chiffres commençant par 05/06/07
+  phoneDZ(tel) {
+    const clean = String(tel || '').replace(/[\s\-\.']/g, '')
+    if (!/^0[567]\d{8}$/.test(clean)) return 'Numéro algérien invalide (ex: 0551234567)'
+    return null
+  },
+  required(val, opts = {}) {
+    const label = opts.label || 'Ce champ'
+    if (val === null || val === undefined || String(val).trim() === '') return label + ' est requis'
+    return null
+  },
+  string(val, opts = {}) {
+    const { min = 1, max = 255, label = 'Ce champ' } = opts
+    const s = String(val ?? '').trim()
+    if (s.length < min) return label + ' doit contenir au moins ' + min + ' caractère(s)'
+    if (s.length > max) return label + ' ne peut dépasser ' + max + ' caractères'
+    return null
+  },
+  positiveNumber(val, opts = {}) {
+    const label = opts.label || 'Valeur'
+    const n = Number(val)
+    if (!Number.isFinite(n) || n < 0) return label + ' doit être un nombre positif'
+    return null
+  },
+  integer(val, opts = {}) {
+    const label = opts.label || 'Valeur'
+    const n = Number(val)
+    if (!Number.isInteger(n)) return label + ' doit être un entier'
+    return null
+  },
+  oneOf(val, opts = {}) {
+    const { allowed = [], label = 'Valeur' } = opts
+    if (!allowed.includes(val)) return label + ' doit être parmi : ' + allowed.join(', ')
+    return null
+  },
+  email(val) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(val || ''))) return 'Email invalide'
+    return null
+  }
+}
+
+/**
+ * Valide un objet selon un schéma. Retourne null si OK, sinon { field, message }.
+ * Exemple : validate(payload, { nom: [['string', { min:2, max:100, label:'Nom' }]] })
+ */
+function validate(obj, schema) {
+  for (const field in schema) {
+    const rules = schema[field]
+    for (const rule of rules) {
+      const [name, opts] = Array.isArray(rule) ? rule : [rule, {}]
+      const validator = Validators[name]
+      if (!validator) continue
+      const err = validator(obj[field], opts || {})
+      if (err) return { field, message: err }
+    }
+  }
+  return null
+}
+
+// --- Cache intelligent : skip les numéros déjà vérifiés ---
+async function loadPhoneVerification(phones) {
+  const normalized = [...new Set((phones || []).map(p => (p || '').replace(/[\s\-\.']/g, '')).filter(Boolean))]
+  const missing = normalized.filter(p => !state.phoneCache[p])
+  if (missing.length === 0) return
+  try {
+    const { data } = await api.get('/phone-verify-batch?phones=' + missing.join(','))
+    Object.assign(state.phoneCache, data || {})
+  } catch (e) {
+    console.warn('[phone-verify]', humanizeApiError(e))
+  }
+}
+
 
 function normalizeStatus(status) {
   return (status || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
@@ -878,10 +799,12 @@ async function logout() {
 // ===================== TOAST =====================
 function toast(msg, type='success') {
   const d = document.createElement('div')
-  d.className = 'toast ' + (type==='error'?'bg-red-500/90 text-white':'bg-indigo-600/90 text-white')
-  d.innerHTML = '<i class="fas fa-'+(type==='error'?'exclamation-circle':'check-circle')+' mr-2"></i>'+msg
+  // Classe CSS dédiée (success/error/info) — icône gérée par ::before en CSS
+  const validType = ['success', 'error', 'info'].includes(type) ? type : 'info'
+  d.className = 'toast ' + validType
+  d.textContent = String(msg || '')
   document.getElementById('toasts').appendChild(d)
-  setTimeout(()=>d.remove(), 3000)
+  setTimeout(() => d.remove(), 3000)
 }
 
 // ===================== NAVIGATION =====================
@@ -1113,16 +1036,7 @@ function toggleAutoWhatsApp() {
   loadCommandes()
 }
 
-// Load phone verification data in batch
-async function loadPhoneVerification(phones) {
-  const uniquePhones = [...new Set(phones.map(p => (p||'').replace(/[\\s\\-\\.\\']/g, '')).filter(Boolean))]
-  if (uniquePhones.length === 0) return
-  try {
-    const { data } = await api.get('/phone-verify-batch?phones=' + uniquePhones.join(','))
-    Object.assign(state.phoneCache, data)
-    uniquePhones.forEach(p => { if (!state.phoneCache[p]) state.phoneCache[p] = { delivered: 0, returned: 0 } })
-  } catch(e) { console.error('Phone verify error', e) }
-}
+// loadPhoneVerification : version optimisée avec cache intelligent déjà définie plus haut dans HELPERS.
 
 async function ensureAdminUsersLoaded() {
   if (state.user?.role !== 'admin') return
@@ -1227,76 +1141,99 @@ async function loadDashboard() {
 }
 
 async function loadCommandes() {
-  await ensureAdminUsersLoaded()
-  const qs = state.user?.role === 'admin' && state.adminFilters.commandesUserId ? ('?user_id=' + encodeURIComponent(state.adminFilters.commandesUserId)) : ''
-  const { data } = await api.get('/commandes' + qs)
-  state.commandes = data
-  const availableIds = new Set(data.map(c => c.id))
-  selectedCommandeIds = selectedCommandeIds.filter(id => availableIds.has(id))
-  if (state.wilayas.length === 0) { const w = await api.get('/wilayas'); state.wilayas = w.data }
-  
-  const phones = data.map(c => (c.telephone || ''))
-  await loadPhoneVerification(phones)
-  
-  const confirmedCount = data.filter(c => isConfirmedStatus(c.statut)).length
-  const selectedCount = selectedCommandeIds.length
-  const selectedSet = new Set(selectedCommandeIds)
-  const selectedConfirmedCount = data.filter(c => selectedSet.has(c.id) && isConfirmedStatus(c.statut)).length
-  const allSelected = data.length > 0 && selectedCount === data.length
   const v = document.getElementById('view-commandes')
-  
-  const rows = data.map(c => '<tr>' +
-    '<td><input type="checkbox" class="w-4 h-4 accent-indigo-500 cursor-pointer" onchange="toggleCommandeSelection(' + c.id + ', this.checked)" ' + (selectedSet.has(c.id) ? 'checked' : '') + ' aria-label="Selectionner la commande ' + (c.nom || c.id) + '"></td>' +
-    '<td class="font-medium text-white">' + (c.nom || '') + '</td>' +
-    '<td class="text-gray-300"><div class="flex items-center gap-1"><i class="fab fa-whatsapp text-green-500 text-xs"></i> ' + (c.telephone || '') + '</div></td>' +
-    '<td>' + verifyBadge(c.telephone) + '</td>' +
-    '<td class="max-w-[130px] truncate text-gray-300">' + (c.produit || '') + '</td>' +
-    '<td class="text-emerald-400 font-medium">' + Number(c.prix || 0).toLocaleString() + ' DA</td>' +
-    '<td class="text-gray-300">' + (c.commune || '') + '</td>' +
-    '<td class="text-gray-300">' + (c.wilaya || '') + '</td>' +
-    '<td><span class="text-xs text-gray-400">' + (c.livraison || '') + '</span></td>' +
-    '<td>' + statusBadge(c.statut) + '</td>' +
-    '<td>' + (c.source ? '<span class="platform-badge ' + platformColors[c.source] + '"><i class="' + (platformIcons[c.source] || 'fas fa-globe') + '" style="font-size:10px"></i> ' + c.source + '</span>' : '<span class="badge-status bg-indigo-500/20 text-indigo-300" style="font-size:10px"><i class="fas fa-store" style="font-size:9px;margin-right:3px"></i>Boutique</span>') + '</td>' +
-    '<td>' + getApiIntegrationBadge(c) + '</td>' +
-    '<td class="text-sm text-gray-300">' + (c.transporteur || '--') + '</td>' +
-    '<td>' +
-      '<div class="flex gap-1">' +
-        '<button onclick="editCommande(' + c.id + ')" class="btn btn-outline text-xs py-1 px-2" title="Modifier"><i class="fas fa-pen"></i></button>' +
-        '<button onclick="sendWhatsApp(' + c.id + ')" class="btn btn-whatsapp text-xs py-1 px-2" title="Envoyer sur WhatsApp"><i class="fab fa-whatsapp"></i></button>' +
-        '<button onclick="envoyerCommande(' + c.id + ')" class="btn btn-success text-xs py-1 px-2" title="Envoyer" ' + (!isConfirmedStatus(c.statut) ? 'disabled style="opacity:0.3"' : '') + '><i class="fas fa-paper-plane"></i></button>' +
-        '<button onclick="deleteCommande(' + c.id + ')" class="btn btn-danger text-xs py-1 px-2" title="Supprimer"><i class="fas fa-trash"></i></button>' +
-      '</div>' +
-    '</td>' +
-  '</tr>').join('')
+  if (!v) return
+  try {
+    await ensureAdminUsersLoaded()
+    const qs = state.user?.role === 'admin' && state.adminFilters.commandesUserId
+      ? ('?user_id=' + encodeURIComponent(state.adminFilters.commandesUserId))
+      : ''
+    const { data } = await api.get('/commandes' + qs)
+    state.commandes = data
+    const availableIds = new Set(data.map(c => c.id))
+    selectedCommandeIds = selectedCommandeIds.filter(id => availableIds.has(id))
+    if (state.wilayas.length === 0) {
+      try { const w = await api.get('/wilayas'); state.wilayas = w.data } catch (e) { console.warn('[wilayas]', humanizeApiError(e)) }
+    }
 
-  v.innerHTML = '<div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">' +
-      '<div><h1 class="text-2xl font-bold">Commandes</h1><p class="text-gray-400 text-sm">' + data.length + ' commande(s)</p></div>' +
-      '<div class="flex gap-2 flex-wrap">' +
-        (state.user?.role === 'admin' ? ('<select onchange="setAdminFilterCommandes(this.value)" class="bg-dark-800 border border-white/10 rounded px-3 py-2 text-sm"><option value="">Tous les clients</option>' + state.adminUsers.map(u => '<option value="' + u.id + '"' + (String(state.adminFilters.commandesUserId) === String(u.id) ? ' selected' : '') + '>' + (u.store_name || u.email || u.username) + '</option>').join('') + '</select>') : '') +
-        '<button onclick="showCommandeModal()" class="btn btn-primary"><i class="fas fa-plus mr-1"></i> Nouvelle</button>' +
-        '<button onclick="toggleAutoWhatsApp()" class="btn ' + (state.subscription === 'starter' ? 'opacity-40 grayscale cursor-not-allowed' : (autoWhatsAppEnabled ? 'btn-success' : 'btn-outline')) + '">' +
-          '<i class="' + (state.subscription === 'starter' ? 'fas fa-lock' : 'fab fa-whatsapp') + ' mr-1"></i> Auto WhatsApp: ' + (state.subscription === 'starter' ? 'PRO' : (autoWhatsAppEnabled ? 'ON' : 'OFF')) +
-        '</button>' +
-        '<button onclick="envoyerTous()" class="btn btn-success ' + (confirmedCount === 0 ? 'opacity-40 cursor-not-allowed' : '') + '" ' + (confirmedCount === 0 ? 'disabled' : '') + '>' +
-          '<i class="fas fa-paper-plane mr-1"></i> Envoyer les commandes Confirmees (' + confirmedCount + ')' +
-        '</button>' +
-        '<button onclick="envoyerSelection()" class="btn btn-success ' + (selectedConfirmedCount === 0 ? 'opacity-40 cursor-not-allowed' : '') + '" ' + (selectedConfirmedCount === 0 ? 'disabled' : '') + '>' +
-          '<i class="fas fa-share mr-1"></i> Envoyer selection (' + selectedConfirmedCount + ')' +
-        '</button>' +
-        '<button onclick="deleteSelection()" class="btn btn-danger ' + (selectedCount === 0 ? 'opacity-40 cursor-not-allowed' : '') + '" ' + (selectedCount === 0 ? 'disabled' : '') + '>' +
-          '<i class="fas fa-trash mr-1"></i> Supprimer selection (' + selectedCount + ')' +
-        '</button>' +
+    const phones = data.map(c => (c.telephone || ''))
+    await loadPhoneVerification(phones)
+  
+    const confirmedCount = data.filter(c => isConfirmedStatus(c.statut)).length
+    const selectedCount = selectedCommandeIds.length
+    const selectedSet = new Set(selectedCommandeIds)
+    const selectedConfirmedCount = data.filter(c => selectedSet.has(c.id) && isConfirmedStatus(c.statut)).length
+    const allSelected = data.length > 0 && selectedCount === data.length
+
+    // XSS FIX : escapeHtml systématique sur toutes les données utilisateur
+  const rows = data.map(c => {
+    const safeSource = platformColors[c.source] ? escapeHtml(c.source) : ''
+    const sourceIcon = platformIcons[c.source] || 'fas fa-globe'
+    return '<tr data-commande-id="' + c.id + '">' +
+      '<td><input type="checkbox" class="w-4 h-4 accent-indigo-500 cursor-pointer" onchange="toggleCommandeSelection(' + c.id + ', this.checked)" ' + (selectedSet.has(c.id) ? 'checked' : '') + ' aria-label="Sélectionner la commande ' + escapeHtml(c.nom || c.id) + '"></td>' +
+      '<td class="font-medium text-white">' + escapeHtml(c.nom || '') + '</td>' +
+      '<td class="text-gray-300"><div class="flex items-center gap-1"><i class="fab fa-whatsapp text-green-500 text-xs"></i> ' + escapeHtml(c.telephone || '') + '</div></td>' +
+      '<td>' + verifyBadge(c.telephone) + '</td>' +
+      '<td class="max-w-[130px] truncate text-gray-300" title="' + escapeHtml(c.produit || '') + '">' + escapeHtml(c.produit || '') + '</td>' +
+      '<td class="text-emerald-400 font-medium">' + Number(c.prix || 0).toLocaleString('fr-FR') + ' DA</td>' +
+      '<td class="text-gray-300">' + escapeHtml(c.commune || '') + '</td>' +
+      '<td class="text-gray-300">' + escapeHtml(c.wilaya || '') + '</td>' +
+      '<td><span class="text-xs text-gray-400">' + escapeHtml(c.livraison || '') + '</span></td>' +
+      '<td>' + statusBadge(c.statut) + '</td>' +
+      '<td>' + (safeSource
+          ? '<span class="platform-badge ' + platformColors[c.source] + '"><i class="' + sourceIcon + '" style="font-size:10px"></i> ' + safeSource + '</span>'
+          : '<span class="badge-status bg-indigo-500/20 text-indigo-300" style="font-size:10px"><i class="fas fa-store" style="font-size:9px;margin-right:3px"></i>Boutique</span>'
+        ) + '</td>' +
+      '<td>' + getApiIntegrationBadge(c) + '</td>' +
+      '<td class="text-sm text-gray-300">' + escapeHtml(c.transporteur || '--') + '</td>' +
+      '<td>' +
+        '<div class="flex gap-1">' +
+          '<button onclick="editCommande(' + c.id + ')" class="btn btn-outline text-xs py-1 px-2" title="Modifier"><i class="fas fa-pen"></i></button>' +
+          '<button onclick="sendWhatsApp(' + c.id + ')" class="btn btn-whatsapp text-xs py-1 px-2" title="Envoyer sur WhatsApp"><i class="fab fa-whatsapp"></i></button>' +
+          '<button onclick="envoyerCommande(' + c.id + ')" class="btn btn-success text-xs py-1 px-2" title="Envoyer" ' + (!isConfirmedStatus(c.statut) ? 'disabled style="opacity:0.3"' : '') + '><i class="fas fa-paper-plane"></i></button>' +
+          '<button onclick="deleteCommande(' + c.id + ')" class="btn btn-danger text-xs py-1 px-2" title="Supprimer"><i class="fas fa-trash"></i></button>' +
+        '</div>' +
+      '</td>' +
+    '</tr>'
+  }).join('')
+
+    v.innerHTML = '<div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">' +
+        '<div><h1 class="text-2xl font-bold">Commandes</h1><p class="text-gray-400 text-sm">' + data.length + ' commande(s)</p></div>' +
+        '<div class="flex gap-2 flex-wrap">' +
+          (state.user?.role === 'admin' ? ('<select onchange="setAdminFilterCommandes(this.value)" class="bg-dark-800 border border-white/10 rounded px-3 py-2 text-sm"><option value="">Tous les clients</option>' + state.adminUsers.map(u => '<option value="' + u.id + '"' + (String(state.adminFilters.commandesUserId) === String(u.id) ? ' selected' : '') + '>' + escapeHtml(u.store_name || u.email || u.username) + '</option>').join('') + '</select>') : '') +
+          '<button onclick="showCommandeModal()" class="btn btn-primary"><i class="fas fa-plus mr-1"></i> Nouvelle</button>' +
+          '<button onclick="toggleAutoWhatsApp()" class="btn ' + (state.subscription === 'starter' ? 'opacity-40 grayscale cursor-not-allowed' : (autoWhatsAppEnabled ? 'btn-success' : 'btn-outline')) + '">' +
+            '<i class="' + (state.subscription === 'starter' ? 'fas fa-lock' : 'fab fa-whatsapp') + ' mr-1"></i> Auto WhatsApp : ' + (state.subscription === 'starter' ? 'PRO' : (autoWhatsAppEnabled ? 'ON' : 'OFF')) +
+          '</button>' +
+          '<button onclick="envoyerTous()" class="btn btn-success ' + (confirmedCount === 0 ? 'opacity-40 cursor-not-allowed' : '') + '" ' + (confirmedCount === 0 ? 'disabled' : '') + '>' +
+            '<i class="fas fa-paper-plane mr-1"></i> Envoyer les confirmées (' + confirmedCount + ')' +
+          '</button>' +
+          '<button data-action="envoyer-selection" onclick="envoyerSelection()" class="btn btn-success ' + (selectedConfirmedCount === 0 ? 'opacity-40 cursor-not-allowed' : '') + '" ' + (selectedConfirmedCount === 0 ? 'disabled' : '') + '>' +
+            '<i class="fas fa-share mr-1"></i> Envoyer sélection (' + selectedConfirmedCount + ')' +
+          '</button>' +
+          '<button data-action="supprimer-selection" onclick="deleteSelection()" class="btn btn-danger ' + (selectedCount === 0 ? 'opacity-40 cursor-not-allowed' : '') + '" ' + (selectedCount === 0 ? 'disabled' : '') + '>' +
+            '<i class="fas fa-trash mr-1"></i> Supprimer sélection (' + selectedCount + ')' +
+          '</button>' +
+        '</div>' +
       '</div>' +
-    '</div>' +
-    '<div class="card overflow-x-auto">' +
-      '<table>' +
-        '<thead><tr>' +
-          '<th><input type="checkbox" class="w-4 h-4 accent-indigo-500 cursor-pointer" onchange="toggleAllCommandesSelection(this.checked)" ' + (allSelected ? 'checked' : '') + ' aria-label="Selectionner toutes les commandes"></th><th>Nom</th><th>Tel</th><th>Verifier</th><th>Produit</th><th>Prix</th><th>Commune</th><th>Wilaya</th><th>Livraison</th><th>Statut</th><th>Boutique</th><th>Integration API</th><th>Transporteur</th><th>Actions</th>' +
-        '</tr></thead>' +
-        '<tbody>' + rows + '</tbody>' +
-      '</table>' +
-      (data.length === 0 ? '<div class="text-center py-12 text-gray-500"><i class="fas fa-inbox text-4xl mb-3 block"></i><p>Aucune commande</p></div>' : '') +
+      '<div class="card overflow-x-auto">' +
+        (data.length === 0
+          ? '<div class="empty-state"><i class="fas fa-inbox"></i><h3>Aucune commande</h3><p>Commencez par créer votre première commande ou connectez votre boutique.</p></div>'
+          : '<table>' +
+              '<thead><tr>' +
+                '<th><input type="checkbox" class="w-4 h-4 accent-indigo-500 cursor-pointer" onchange="toggleAllCommandesSelection(this.checked)" ' + (allSelected ? 'checked' : '') + ' aria-label="Sélectionner toutes les commandes"></th><th>Nom</th><th>Tél</th><th>Vérifier</th><th>Produit</th><th>Prix</th><th>Commune</th><th>Wilaya</th><th>Livraison</th><th>Statut</th><th>Boutique</th><th>Intégration API</th><th>Transporteur</th><th>Actions</th>' +
+              '</tr></thead>' +
+              '<tbody>' + rows + '</tbody>' +
+            '</table>'
+        ) +
+      '</div>'
+  } catch (e) {
+    v.innerHTML = '<div class="text-center py-10 text-red-400">' +
+      '<i class="fas fa-exclamation-triangle text-2xl mb-2 block"></i>' +
+      '<div class="text-sm">' + escapeHtml(humanizeApiError(e, 'Chargement des commandes impossible')) + '</div>' +
+      '<button onclick="loadCommandes()" class="btn btn-outline mt-4 text-xs"><i class="fas fa-rotate mr-1"></i> Réessayer</button>' +
     '</div>'
+  }
 }
 
 function setAdminFilterCommandes(userId) {
@@ -1521,52 +1458,61 @@ async function loadCommunesForModal(wilayaName, selectedCommune) {
 async function submitCommande(editId) {
   const btn = document.getElementById('cmd-submit-btn')
   const btnText = document.getElementById('cmd-submit-text')
-  const nom = document.getElementById('cmd-nom').value.trim()
-  const telephone = document.getElementById('cmd-telephone').value.trim()
-  const produit = document.getElementById('cmd-produit').value.trim()
-  const wilaya = document.getElementById('cmd-wilaya').value
-  const commune = document.getElementById('cmd-commune').value
+  const getVal = (id) => (document.getElementById(id)?.value || '').trim()
 
-  if (!nom || !telephone || !produit || !wilaya || !commune) {
-    toast('Veuillez remplir tous les champs obligatoires', 'error')
+  const payload = {
+    nom: getVal('cmd-nom'),
+    telephone: getVal('cmd-telephone'),
+    produit: getVal('cmd-produit'),
+    wilaya: getVal('cmd-wilaya'),
+    commune: getVal('cmd-commune'),
+    adresse: getVal('cmd-adresse'),
+    livraison: getVal('cmd-livraison'),
+    statut: getVal('cmd-statut'),
+    transporteur: getVal('cmd-transporteur'),
+    notes: getVal('cmd-notes'),
+    prix: Number(document.getElementById('cmd-prix')?.value) || 0
+  }
+
+  // ---- Validation stricte côté client ----
+  const err = validate(payload, {
+    nom:       [['string', { min: 2, max: 100, label: 'Nom' }]],
+    telephone: ['phoneDZ'],
+    produit:   [['string', { min: 1, max: 200, label: 'Produit' }]],
+    wilaya:    [['required', { label: 'Wilaya' }]],
+    commune:   [['required', { label: 'Commune' }]],
+    prix:      [['positiveNumber', { label: 'Prix' }]],
+    livraison: [['oneOf', { allowed: ['A domicile', 'Stop Desk'], label: 'Livraison' }]]
+  })
+  if (err) {
+    toast(err.message, 'error')
+    document.getElementById('cmd-' + err.field.replace('_', '-'))?.focus()
     return
   }
 
-  btn.disabled = true
-  btnText.innerHTML = '<span class="spinner-sm"></span> Enregistrement...'
+  // Sanitation : limiter la taille des notes
+  payload.notes = payload.notes.slice(0, 1000)
 
-  const payload = {
-    nom,
-    prix: Number(document.getElementById('cmd-prix').value) || 0,
-    telephone,
-    produit,
-    wilaya,
-    commune,
-    adresse: document.getElementById('cmd-adresse').value.trim(),
-    livraison: document.getElementById('cmd-livraison').value,
-    statut: document.getElementById('cmd-statut').value,
-    transporteur: document.getElementById('cmd-transporteur').value,
-    notes: document.getElementById('cmd-notes').value.trim()
-  }
+  if (btn) btn.disabled = true
+  if (btnText) btnText.innerHTML = '<span class="spinner-sm"></span> Enregistrement...'
 
   try {
     if (editId) {
-      await api.put('/commandes/' + editId, payload)
-      toast('Commande modifiee avec succes !')
+      await api.put('/commandes/' + Number(editId), payload)
+      toast('Commande modifiée avec succès', 'success')
     } else {
       await api.post('/commandes', payload)
-      toast('Commande creee avec succes !')
-      if (typeof autoWhatsAppEnabled !== 'undefined' && autoWhatsAppEnabled && payload.telephone) {
-        if(typeof sendWhatsAppMessage === 'function') sendWhatsAppMessage(payload)
+      toast('Commande créée avec succès', 'success')
+      if (autoWhatsAppEnabled && payload.telephone && typeof sendWhatsAppMessage === 'function') {
+        sendWhatsAppMessage(payload)
       }
     }
     closeModalAnimated()
     setTimeout(() => loadCommandes(), 300)
-  } catch(e) {
-    const msg = e.response?.data?.error || 'Erreur lors de la sauvegarde'
-    toast(msg, 'error')
-    btn.disabled = false
-    btnText.innerHTML = (editId ? 'Enregistrer' : 'Creer la commande')
+  } catch (e) {
+    toast(humanizeApiError(e, 'Erreur lors de la sauvegarde'), 'error')
+    if (btn) btn.disabled = false
+    if (btnText) btnText.innerHTML = (editId ? 'Enregistrer' : 'Créer la commande')
   }
 }
 
@@ -1576,10 +1522,21 @@ async function editCommande(id) {
 }
 
 async function deleteCommande(id) {
-  if(!confirm('Supprimer cette commande ?')) return
-  await api.delete('/commandes/'+id)
-  selectedCommandeIds = selectedCommandeIds.filter(x => x !== id)
-  toast('Commande supprimee'); loadCommandes()
+  const ok = await confirmDialog({
+    title: 'Supprimer cette commande ?',
+    message: 'Cette action est irréversible.',
+    confirmText: 'Supprimer',
+    danger: true
+  })
+  if (!ok) return
+  try {
+    await api.delete('/commandes/' + Number(id))
+    selectedCommandeIds = selectedCommandeIds.filter(x => x !== id)
+    toast('Commande supprimée', 'success')
+    loadCommandes()
+  } catch (e) {
+    toast(humanizeApiError(e, 'Suppression impossible'), 'error')
+  }
 }
 
 function afficherResultatsEnvoi(details) {
@@ -1600,56 +1557,105 @@ function afficherResultatsEnvoi(details) {
 }
 
 async function envoyerCommande(id) {
-  if(!confirm('Envoyer cette commande au transporteur ?')) return
+  const ok = await confirmDialog({
+    title: 'Envoyer au transporteur ?',
+    message: 'La commande sera transmise immédiatement.',
+    confirmText: 'Envoyer'
+  })
+  if (!ok) return
   try {
-    const { data } = await api.post('/envoyer/'+id)
+    const { data } = await api.post('/envoyer/' + Number(id))
     const cmd = state.commandes.find(c => c.id === id)
     afficherResultatsEnvoi({ sent: [{ id, nom: cmd?.nom, tracking: data.tracking }], errors: [] })
     loadCommandes()
-  } catch(err) {
-    const msg = err.response?.data?.error || 'Erreur envoi'
-    toast(msg, 'error')
+  } catch (err) {
+    toast(humanizeApiError(err, 'Erreur envoi'), 'error')
   }
 }
 
 async function envoyerTous() {
   const count = state.commandes.filter(c => isConfirmedStatus(c.statut)).length
-  if(!confirm('Envoyer toutes les ' + count + ' commandes Confirmees aux transporteurs ?')) return
+  if (count === 0) { toast('Aucune commande confirmée à envoyer', 'info'); return }
+  const ok = await confirmDialog({
+    title: 'Envoyer toutes les commandes ?',
+    message: count + ' commande(s) confirmée(s) seront transmises aux transporteurs.',
+    confirmText: 'Tout envoyer'
+  })
+  if (!ok) return
   try {
     const { data } = await api.post('/envoyer-tous')
     afficherResultatsEnvoi(data.details)
     loadCommandes()
-  } catch(err) { toast('Erreur envoi en masse', 'error') }
+  } catch (err) {
+    toast(humanizeApiError(err, 'Erreur envoi en masse'), 'error')
+  }
 }
 
+/**
+ * OPTIMISATION : mise à jour ciblée du DOM au lieu d'un re-render complet.
+ * On ne reconstruit plus tout le tableau à chaque clic sur une checkbox.
+ */
 function toggleCommandeSelection(id, checked) {
   if (checked) {
     if (!selectedCommandeIds.includes(id)) selectedCommandeIds.push(id)
   } else {
     selectedCommandeIds = selectedCommandeIds.filter(x => x !== id)
   }
-  loadCommandes()
+  updateCommandesSelectionUI()
 }
 
 function toggleAllCommandesSelection(checked) {
-  if (checked) selectedCommandeIds = state.commandes.map(c => c.id)
-  else selectedCommandeIds = []
-  loadCommandes()
+  selectedCommandeIds = checked ? state.commandes.map(c => c.id) : []
+  // Synchronise les checkboxes visibles sans re-render
+  document.querySelectorAll('#view-commandes tbody input[type="checkbox"]').forEach(cb => {
+    cb.checked = checked
+  })
+  updateCommandesSelectionUI()
+}
+
+/** Met à jour uniquement les compteurs et l'état des boutons de sélection. */
+function updateCommandesSelectionUI() {
+  const data = state.commandes || []
+  const selectedSet = new Set(selectedCommandeIds)
+  const selectedCount = selectedCommandeIds.length
+  const selectedConfirmedCount = data.filter(c => selectedSet.has(c.id) && isConfirmedStatus(c.statut)).length
+
+  const btnEnvoyerSel = document.querySelector('[data-action="envoyer-selection"]')
+  const btnSuppSel    = document.querySelector('[data-action="supprimer-selection"]')
+  if (btnEnvoyerSel) {
+    btnEnvoyerSel.disabled = selectedConfirmedCount === 0
+    btnEnvoyerSel.classList.toggle('opacity-40', selectedConfirmedCount === 0)
+    btnEnvoyerSel.classList.toggle('cursor-not-allowed', selectedConfirmedCount === 0)
+    btnEnvoyerSel.innerHTML = '<i class="fas fa-share mr-1"></i> Envoyer sélection (' + selectedConfirmedCount + ')'
+  }
+  if (btnSuppSel) {
+    btnSuppSel.disabled = selectedCount === 0
+    btnSuppSel.classList.toggle('opacity-40', selectedCount === 0)
+    btnSuppSel.classList.toggle('cursor-not-allowed', selectedCount === 0)
+    btnSuppSel.innerHTML = '<i class="fas fa-trash mr-1"></i> Supprimer sélection (' + selectedCount + ')'
+  }
+  const checkAll = document.querySelector('#view-commandes thead input[type="checkbox"]')
+  if (checkAll) checkAll.checked = data.length > 0 && selectedCount === data.length
 }
 
 async function deleteSelection() {
   if (selectedCommandeIds.length === 0) return
-  if (!confirm('Supprimer ' + selectedCommandeIds.length + ' commande(s) selectionnee(s) ?')) return
-  let ok = 0
-  let errors = 0
-  for (const id of selectedCommandeIds) {
-    try {
-      await api.delete('/commandes/' + id)
-      ok++
-    } catch (e) { errors++ }
-  }
+  const ok = await confirmDialog({
+    title: 'Supprimer la sélection ?',
+    message: selectedCommandeIds.length + ' commande(s) seront supprimées définitivement.',
+    confirmText: 'Supprimer',
+    danger: true
+  })
+  if (!ok) return
+
+  let success = 0, errors = 0
+  const idsToDelete = [...selectedCommandeIds]
+  // Suppression en parallèle (bien plus rapide que séquentiel)
+  const results = await Promise.allSettled(idsToDelete.map(id => api.delete('/commandes/' + Number(id))))
+  results.forEach(r => r.status === 'fulfilled' ? success++ : errors++)
+
   selectedCommandeIds = []
-  toast(ok + ' supprimee(s), ' + errors + ' erreur(s)', errors > 0 ? 'error' : 'success')
+  toast(success + ' supprimée(s)' + (errors ? ', ' + errors + ' erreur(s)' : ''), errors > 0 ? 'error' : 'success')
   loadCommandes()
 }
 
@@ -1732,52 +1738,67 @@ document.addEventListener('keydown', (e) => {
 
 // ===================== SUIVI (with Verification column) =====================
 async function loadSuivi() {
-  await ensureAdminUsersLoaded()
-  const qs = state.user?.role === 'admin' && state.adminFilters.suiviUserId ? ('?user_id=' + encodeURIComponent(state.adminFilters.suiviUserId)) : ''
-  const { data } = await api.get('/suivi' + qs)
-  state.suivi = data
-  
-  const phones = data.map(s => s.telephone)
-  await loadPhoneVerification(phones)
-  
-  const rows = data.map(s => '<tr>' +
-    '<td class="font-medium text-white">' + (s.nom || '') + '</td>' +
-    '<td class="text-gray-300"><div class="flex items-center gap-1"><i class="fab fa-whatsapp text-green-500 text-xs"></i> ' + (s.telephone || '') + '</div></td>' +
-    '<td>' + verifyBadge(s.telephone) + '</td>' +
-    '<td class="max-w-[120px] truncate text-gray-300">' + (s.produit || '') + '</td>' +
-    '<td class="text-emerald-400 font-medium">' + Number(s.prix || 0).toLocaleString() + ' DA</td>' +
-    '<td class="text-gray-300">' + (s.commune || '') + '</td>' +
-    '<td class="text-gray-300">' + (s.wilaya || '') + '</td>' +
-    '<td class="hover:bg-white/5 cursor-pointer transition-colors" onclick="showHistoriqueColis(&apos;' + (s.tracking || '') + '&apos;, &apos;' + (s.transporteur || '') + '&apos;)" title="Voir historique">' + statusBadge(s.statut) + '</td>' +
-    '<td class="font-mono text-xs text-green-300">' + (s.tracking || '') + '</td>' +
-    '<td class="text-sm text-gray-300">' + (s.transporteur || '') + '</td>' +
-    '<td><div class="flex gap-1"><button onclick="returnOrder(' + s.id + ')" class="btn btn-danger text-[10px] py-1 px-2" title="Marquer comme Retour"><i class="fas fa-rotate-left"></i> Retour</button></div></td>' +
-    '</tr>').join('')
+  const container = document.getElementById('view-suivi')
+  if (!container) return
+  try {
+    await ensureAdminUsersLoaded()
+    const qs = state.user?.role === 'admin' && state.adminFilters.suiviUserId
+      ? ('?user_id=' + encodeURIComponent(state.adminFilters.suiviUserId)) : ''
+    const { data } = await api.get('/suivi' + qs)
+    state.suivi = data
 
-  const syncLabel = suiviLastSyncAt
-    ? new Intl.DateTimeFormat('fr-DZ', { timeZone: 'Africa/Algiers', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(suiviLastSyncAt)
-    : 'Jamais'
-  document.getElementById('view-suivi').innerHTML = '<div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">' +
-    '<div><h1 class="text-2xl font-bold">Suivi des colis</h1><p class="text-gray-400 text-sm">' + data.length + ' colis</p></div>' +
-    (state.user?.role === 'admin' ? ('<select onchange="setAdminFilterSuivi(this.value)" class="bg-dark-800 border border-white/10 rounded px-3 py-2 text-sm"><option value="">Tous les clients</option>' + state.adminUsers.map(u => '<option value="' + u.id + '"' + (String(state.adminFilters.suiviUserId) === String(u.id) ? ' selected' : '') + '>' + (u.store_name || u.email || u.username) + '</option>').join('') + '</select>') : '') +
-    '<div class="text-xs text-gray-400"><i class="fas fa-clock mr-1"></i>Derniere synchronisation: ' + syncLabel + '</div>' +
-    '<button onclick="actualiserStatuts()" class="btn btn-primary"><i class="fas fa-sync mr-1"></i> Actualiser statuts</button>' +
-    '</div>' +
-    '<div class="card overflow-x-auto">' +
-    '<table><thead><tr><th>Nom</th><th>Tel</th><th>Verifier</th><th>Produit</th><th>Prix</th><th>Commune</th><th>Wilaya</th><th>Statut</th><th>Tracking</th><th>Transporteur</th><th>Actions</th></tr></thead>' +
-    '<tbody>' + rows + '</tbody></table>' +
-    (data.length === 0 ? '<div class="text-center py-12 text-gray-500"><i class="fas fa-truck text-4xl mb-3 block"></i><p>Aucun colis en suivi</p></div>' : '') +
+    const phones = data.map(s => s.telephone)
+    await loadPhoneVerification(phones)
+
+    // XSS FIX + encodage sécurisé du tracking/transporteur dans l'attribut onclick
+    const rows = data.map(s => {
+      const safeTracking = String(s.tracking || '').replace(/'/g, '')
+      const safeTransporteur = String(s.transporteur || '').replace(/'/g, '')
+      return '<tr>' +
+        '<td class="font-medium text-white">' + escapeHtml(s.nom || '') + '</td>' +
+        '<td class="text-gray-300"><div class="flex items-center gap-1"><i class="fab fa-whatsapp text-green-500 text-xs"></i> ' + escapeHtml(s.telephone || '') + '</div></td>' +
+        '<td>' + verifyBadge(s.telephone) + '</td>' +
+        '<td class="max-w-[120px] truncate text-gray-300" title="' + escapeHtml(s.produit || '') + '">' + escapeHtml(s.produit || '') + '</td>' +
+        '<td class="text-emerald-400 font-medium">' + Number(s.prix || 0).toLocaleString('fr-FR') + ' DA</td>' +
+        '<td class="text-gray-300">' + escapeHtml(s.commune || '') + '</td>' +
+        '<td class="text-gray-300">' + escapeHtml(s.wilaya || '') + '</td>' +
+        '<td class="hover:bg-white/5 cursor-pointer transition-colors" onclick="showHistoriqueColis(&apos;' + escapeHtml(safeTracking) + '&apos;, &apos;' + escapeHtml(safeTransporteur) + '&apos;)" title="Voir historique">' + statusBadge(s.statut) + '</td>' +
+        '<td class="font-mono text-xs text-green-300">' + escapeHtml(s.tracking || '') + '</td>' +
+        '<td class="text-sm text-gray-300">' + escapeHtml(s.transporteur || '') + '</td>' +
+        '<td><div class="flex gap-1"><button onclick="returnOrder(' + s.id + ')" class="btn btn-danger text-[10px] py-1 px-2" title="Marquer comme Retour"><i class="fas fa-rotate-left"></i> Retour</button></div></td>' +
+      '</tr>'
+    }).join('')
+
+    const syncLabel = suiviLastSyncAt
+      ? new Intl.DateTimeFormat('fr-DZ', { timeZone: 'Africa/Algiers', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(suiviLastSyncAt)
+      : 'Jamais'
+
+    container.innerHTML = '<div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">' +
+      '<div><h1 class="text-2xl font-bold">Suivi des colis</h1><p class="text-gray-400 text-sm">' + data.length + ' colis</p></div>' +
+      (state.user?.role === 'admin' ? ('<select onchange="setAdminFilterSuivi(this.value)" class="bg-dark-800 border border-white/10 rounded px-3 py-2 text-sm"><option value="">Tous les clients</option>' + state.adminUsers.map(u => '<option value="' + u.id + '"' + (String(state.adminFilters.suiviUserId) === String(u.id) ? ' selected' : '') + '>' + escapeHtml(u.store_name || u.email || u.username) + '</option>').join('') + '</select>') : '') +
+      '<div class="text-xs text-gray-400"><i class="fas fa-clock mr-1"></i>Dernière synchro : ' + escapeHtml(syncLabel) + '</div>' +
+      '<button onclick="actualiserStatuts()" class="btn btn-primary"><i class="fas fa-sync mr-1"></i> Actualiser statuts</button>' +
+      '</div>' +
+      '<div class="card overflow-x-auto">' +
+      (data.length === 0
+        ? '<div class="empty-state"><i class="fas fa-truck"></i><h3>Aucun colis en suivi</h3><p>Les colis expédiés apparaîtront ici.</p></div>'
+        : '<table><thead><tr><th>Nom</th><th>Tél</th><th>Vérifier</th><th>Produit</th><th>Prix</th><th>Commune</th><th>Wilaya</th><th>Statut</th><th>Tracking</th><th>Transporteur</th><th>Actions</th></tr></thead>' +
+          '<tbody>' + rows + '</tbody></table>'
+      ) +
+      '</div>'
+
+    if (suiviAutoRefreshTimer) clearInterval(suiviAutoRefreshTimer)
+    suiviAutoRefreshTimer = setInterval(() => {
+      if (state.currentView !== 'suivi') return
+      actualiserStatuts(true)
+    }, SUIVI_AUTO_REFRESH_MS)
+  } catch (e) {
+    container.innerHTML = '<div class="text-center py-10 text-red-400">' +
+      '<i class="fas fa-exclamation-triangle text-2xl mb-2 block"></i>' +
+      '<div class="text-sm">' + escapeHtml(humanizeApiError(e, 'Chargement du suivi impossible')) + '</div>' +
+      '<button onclick="loadSuivi()" class="btn btn-outline mt-4 text-xs"><i class="fas fa-rotate mr-1"></i> Réessayer</button>' +
     '</div>'
-  if (suiviAutoRefreshTimer) clearInterval(suiviAutoRefreshTimer)
-  suiviAutoRefreshTimer = setInterval(async () => {
-    if (state.currentView !== 'suivi' || suiviRefreshInFlight) return
-    suiviRefreshInFlight = true
-    try {
-      await actualiserStatuts(true)
-    } finally {
-      suiviRefreshInFlight = false
-    }
-  }, SUIVI_AUTO_REFRESH_MS)
+  }
 }
 
 function setAdminFilterSuivi(userId) {
@@ -1794,15 +1815,22 @@ async function returnOrder(id) {
 }
 
 async function actualiserStatuts(silent = false) {
+  // Protection contre les doubles appels (race condition fix)
+  if (suiviRefreshInFlight) return
+  suiviRefreshInFlight = true
   try {
     const { data } = await api.post('/actualiser-statuts')
     suiviLastSyncAt = new Date()
     if (!silent || Number(data.updated || 0) > 0 || Number(data.errors || 0) > 0) {
-      toast(data.updated+' mis a jour, '+data.errors+' erreur(s)')
+      const updated = Number(data.updated || 0)
+      const errors = Number(data.errors || 0)
+      toast(updated + ' mis à jour' + (errors ? ', ' + errors + ' erreur(s)' : ''), errors > 0 ? 'error' : 'success')
     }
     loadSuivi()
-  } catch(err) {
-    if (!silent) toast('Erreur actualisation', 'error')
+  } catch (err) {
+    if (!silent) toast(humanizeApiError(err, 'Erreur actualisation'), 'error')
+  } finally {
+    suiviRefreshInFlight = false
   }
 }
 
@@ -1853,10 +1881,24 @@ async function showHistoriqueColis(tracking, transporteur) {
 
 // ===================== STOCK =====================
 async function loadStock() {
-  const [{ data }, { data: auditData }] = await Promise.all([
-    api.get('/stock'),
-    api.get('/stock/audit').catch(() => ({ data: null }))
-  ])
+  const container = document.getElementById('view-stock')
+  if (!container) return
+  let data, auditData
+  try {
+    const [r1, r2] = await Promise.all([
+      api.get('/stock'),
+      api.get('/stock/audit').catch(() => ({ data: null }))
+    ])
+    data = r1.data
+    auditData = r2.data
+  } catch (e) {
+    container.innerHTML = '<div class="text-center py-10 text-red-400">' +
+      '<i class="fas fa-exclamation-triangle text-2xl mb-2 block"></i>' +
+      '<div class="text-sm">' + escapeHtml(humanizeApiError(e, 'Chargement du stock impossible')) + '</div>' +
+      '<button onclick="loadStock()" class="btn btn-outline mt-4 text-xs"><i class="fas fa-rotate mr-1"></i> Réessayer</button>' +
+    '</div>'
+    return
+  }
   state.stock = data
   state.stockAudit = auditData
   const itemRows = (data || []).map((s) => {
@@ -1864,9 +1906,9 @@ async function loadStock() {
     const safety = Number(s.safety_stock || 0)
     const rowClass = available <= 0 ? 'text-red-300' : (available <= safety ? 'text-orange-300' : 'text-emerald-300')
     return '<tr>' +
-      '<td class="font-mono text-xs text-indigo-200">' + (s.sku || '') + '</td>' +
-      '<td class="text-gray-200">' + (s.nom || '') + '</td>' +
-      '<td class="text-gray-400">' + ((s.categorie || 'Non classe') + (s.sous_categorie ? (' / ' + s.sous_categorie) : '')) + '</td>' +
+      '<td class="font-mono text-xs text-indigo-200">' + escapeHtml(s.sku || '') + '</td>' +
+      '<td class="text-gray-200">' + escapeHtml(s.nom || '') + '</td>' +
+      '<td class="text-gray-400">' + escapeHtml((s.categorie || 'Non classé') + (s.sous_categorie ? (' / ' + s.sous_categorie) : '')) + '</td>' +
       '<td class="' + rowClass + ' font-semibold">' + available + '</td>' +
       '<td class="text-gray-300">' + Number(s.stock_on_hand || 0) + '</td>' +
       '<td class="text-gray-400">' + Number(s.stock_reserved || 0) + '</td>' +
@@ -1878,13 +1920,13 @@ async function loadStock() {
 
   const summary = state.stockAudit?.summary || { total_skus: 0, obsolete_count: 0, slow_count: 0, reorder_count: 0, duplicate_count: 0 }
   const obsoleteRows = (state.stockAudit?.obsolete || []).map((i) =>
-    '<tr><td class="text-gray-200">' + (i.nom || '') + '</td><td class="font-mono text-xs text-gray-300">' + (i.sku || '') + '</td><td class="text-red-300">' + Number(i.on_hand || 0) + '</td></tr>'
+    '<tr><td class="text-gray-200">' + escapeHtml(i.nom || '') + '</td><td class="font-mono text-xs text-gray-300">' + escapeHtml(i.sku || '') + '</td><td class="text-red-300">' + Number(i.on_hand || 0) + '</td></tr>'
   ).join('')
   const reorderRows = (state.stockAudit?.reorder || []).map((i) =>
-    '<tr><td class="text-gray-200">' + (i.nom || '') + '</td><td class="text-orange-300">' + Number(i.available || 0) + '</td><td class="text-emerald-300">' + Number(i.suggested_qty || 0) + '</td></tr>'
+    '<tr><td class="text-gray-200">' + escapeHtml(i.nom || '') + '</td><td class="text-orange-300">' + Number(i.available || 0) + '</td><td class="text-emerald-300">' + Number(i.suggested_qty || 0) + '</td></tr>'
   ).join('')
 
-  document.getElementById('view-stock').innerHTML = '<div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-3"><div><h1 class="text-2xl font-bold">Gestion du stock</h1><p class="text-gray-400 text-sm">Inventaire avance par SKU (ancien stock par tailles supprime)</p></div><div class="flex gap-2"><button onclick="showStockEntryModal()" class="btn btn-outline text-xs"><i class="fas fa-plus mr-1"></i>Entree stock</button><button onclick="showAddSkuModal()" class="btn btn-primary text-xs"><i class="fas fa-box-open mr-1"></i>Ajouter SKU</button></div></div>' +
+  container.innerHTML = '<div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-3"><div><h1 class="text-2xl font-bold">Gestion du stock</h1><p class="text-gray-400 text-sm">Inventaire avancé par SKU</p></div><div class="flex gap-2"><button onclick="showStockEntryModal()" class="btn btn-outline text-xs"><i class="fas fa-plus mr-1"></i>Entrée stock</button><button onclick="showAddSkuModal()" class="btn btn-primary text-xs"><i class="fas fa-box-open mr-1"></i>Ajouter SKU</button></div></div>' +
     '<div class="grid md:grid-cols-5 gap-3 mb-6">' +
       '<div class="card p-4"><div class="text-[11px] text-gray-400">SKU actifs</div><div class="text-2xl font-bold text-indigo-300">' + Number(summary.total_skus || 0) + '</div></div>' +
       '<div class="card p-4"><div class="text-[11px] text-gray-400">Obsoletes</div><div class="text-2xl font-bold text-red-300">' + Number(summary.obsolete_count || 0) + '</div></div>' +
@@ -2017,40 +2059,65 @@ async function saveStockEntry(e) {
 }
 
 async function loadEquipe() {
-  const { data } = await api.get('/team-members')
-  state.equipe = data || []
-  const rows = state.equipe.map(m => {
-    const perms = (() => { try { return JSON.parse(m.permissions_json || '[]') } catch(e) { return [] } })()
-    return '<tr>' +
-      '<td class="font-medium text-white">' + (m.nom || '') + '</td>' +
-      '<td class="text-gray-300">' + (m.email || '--') + '</td>' +
-      '<td class="text-gray-300">' + (m.telephone || '--') + '</td>' +
-      '<td>' + rolePill(m.role) + '</td>' +
-      '<td class="text-gray-300 text-xs">' + (perms.length ? perms.join(', ') : '--') + '</td>' +
-      '<td>' + accessPill(m.can_access_platform, m.active) + '</td>' +
-      '<td><div class="flex gap-1">' +
-        '<button onclick="showTeamMemberModal(state.equipe.find(x => x.id === "+ m.id +")" class="btn btn-outline text-xs py-1 px-2"><i class="fas fa-pen"></i></button>' +
-        '<button onclick="toggleTeamMemberAccess(' + m.id + ', ' + (m.can_access_platform ? 0 : 1) + ')" class="btn btn-warning text-xs py-1 px-2"><i class="fas fa-key"></i></button>' +
-        '<button onclick="toggleTeamMemberActive(' + m.id + ', ' + (m.active ? 0 : 1) + ')" class="btn btn-success text-xs py-1 px-2"><i class="fas fa-power-off"></i></button>' +
-        '<button onclick="deleteTeamMember(' + m.id + ')" class="btn btn-danger text-xs py-1 px-2"><i class="fas fa-trash"></i></button>' +
-      '</div></td>' +
-    '</tr>'
-  }).join('')
-  if (!state.wilayasFull) {
-    const { data } = await api.get('/wilayas-full')
-    const wilayas = (data.wilayas || []).map(function(w) {
-      w.communes = (data.communesByWilaya && data.communesByWilaya[w.id]) || []
-      return w
-    })
-    state.wilayasFull = wilayas
+  const container = document.getElementById('view-equipe')
+  if (!container) return
+  try {
+    const { data } = await api.get('/team-members')
+    state.equipe = data || []
+    const rows = state.equipe.map(m => {
+      let perms = []
+      try { perms = JSON.parse(m.permissions_json || '[]') } catch (e) { perms = [] }
+      return '<tr>' +
+        // XSS FIX : escapeHtml sur toutes les données utilisateur
+        '<td class="font-medium text-white">' + escapeHtml(m.nom || '') + '</td>' +
+        '<td class="text-gray-300">' + escapeHtml(m.email || '--') + '</td>' +
+        '<td class="text-gray-300">' + escapeHtml(m.telephone || '--') + '</td>' +
+        '<td>' + rolePill(m.role) + '</td>' +
+        '<td class="text-gray-300 text-xs">' + (perms.length ? escapeHtml(perms.join(', ')) : '--') + '</td>' +
+        '<td>' + accessPill(m.can_access_platform, m.active) + '</td>' +
+        '<td><div class="flex gap-1">' +
+          // BUG FIX : la ligne originale avait une parenthèse .find() manquante.
+          // On passe simplement l'ID, et editTeamMember() fait le find() en toute sécurité.
+          '<button onclick="editTeamMember(' + m.id + ')" class="btn btn-outline text-xs py-1 px-2" title="Modifier"><i class="fas fa-pen"></i></button>' +
+          '<button onclick="toggleTeamMemberAccess(' + m.id + ', ' + (m.can_access_platform ? 0 : 1) + ')" class="btn btn-warning text-xs py-1 px-2" title="Accès plateforme"><i class="fas fa-key"></i></button>' +
+          '<button onclick="toggleTeamMemberActive(' + m.id + ', ' + (m.active ? 0 : 1) + ')" class="btn btn-success text-xs py-1 px-2" title="Activer/Désactiver"><i class="fas fa-power-off"></i></button>' +
+          '<button onclick="deleteTeamMember(' + m.id + ')" class="btn btn-danger text-xs py-1 px-2" title="Supprimer"><i class="fas fa-trash"></i></button>' +
+        '</div></td>' +
+      '</tr>'
+    }).join('')
+
+    if (!state.wilayasFull) {
+      try {
+        const { data: wd } = await api.get('/wilayas-full')
+        const wilayas = (wd.wilayas || []).map(function (w) {
+          w.communes = (wd.communesByWilaya && wd.communesByWilaya[w.id]) || []
+          return w
+        })
+        state.wilayasFull = wilayas
+      } catch (e) { console.warn('[wilayas-full]', humanizeApiError(e)) }
+    }
+
+    container.innerHTML =
+      '<div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">' +
+        '<div><h1 class="text-2xl font-bold"><i class="fas fa-user-shield text-indigo-400 mr-2"></i>Équipe</h1><p class="text-gray-400 text-sm">Gestion confirmateurs/livreurs et accès plateforme</p></div>' +
+        '<button onclick="showTeamMemberModal()" class="btn btn-primary"><i class="fas fa-user-plus mr-1"></i> Ajouter membre</button>' +
+      '</div>' +
+      '<div class="card overflow-x-auto">' +
+        (state.equipe.length === 0
+          ? '<div class="empty-state"><i class="fas fa-users"></i><h3>Aucun membre</h3><p>Ajoutez votre premier membre d\'équipe pour déléguer la gestion.</p></div>'
+          : '<table><thead><tr><th>Nom</th><th>Email</th><th>Téléphone</th><th>Rôle</th><th>Permissions</th><th>Accès</th><th>Actions</th></tr></thead><tbody>' + rows + '</tbody></table>'
+        ) +
+      '</div>'
+  } catch (e) {
+    container.innerHTML = '<div class="text-center py-10 text-red-400"><i class="fas fa-exclamation-triangle text-2xl mb-2 block"></i><div class="text-sm">' + escapeHtml(humanizeApiError(e, 'Chargement équipe impossible')) + '</div></div>'
   }
-  document.getElementById('view-equipe').innerHTML = '<div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">' +
-    '<div><h1 class="text-2xl font-bold"><i class="fas fa-user-shield text-indigo-400 mr-2"></i>Equipe</h1><p class="text-gray-400 text-sm">Gestion confirmateurs/livreurs et acces plateforme</p></div>' +
-    '<button onclick="showTeamMemberModal()" class="btn btn-primary"><i class="fas fa-user-plus mr-1"></i> Ajouter membre</button>' +
-    '</div>' +
-    '<div class="card overflow-x-auto"><table><thead><tr><th>Nom</th><th>Email</th><th>Telephone</th><th>Role</th><th>Permissions</th><th>Acces</th><th>Actions</th></tr></thead><tbody>' + rows + '</tbody></table>' +
-    (state.equipe.length === 0 ? '<div class="text-center py-12 text-gray-500"><i class="fas fa-users text-4xl mb-3 block"></i><p>Aucun membre d equipe</p></div>' : '') +
-    '</div>'
+}
+
+/** Helper dédié : évite le bug d'échappement dans l'attribut onclick */
+function editTeamMember(id) {
+  const member = state.equipe.find(x => x.id === id)
+  if (!member) return toast('Membre introuvable', 'error')
+  showTeamMemberModal(member)
 }
 
 
@@ -2519,22 +2586,36 @@ async function loadUtilisateurs() {
 
     if (typeof loadAdminPaymentRequests === 'function') loadAdminPaymentRequests()
   } catch (e) {
-    document.getElementById('view-utilisateurs').innerHTML = '<div class="text-red-400">Impossible de charger les utilisateurs.</div>'
+    document.getElementById('view-utilisateurs').innerHTML =
+      '<div class="text-center py-10 text-red-400">' +
+        '<i class="fas fa-exclamation-triangle text-2xl mb-2 block"></i>' +
+        '<div class="text-sm">' + escapeHtml(humanizeApiError(e, 'Impossible de charger les utilisateurs')) + '</div>' +
+        '<button onclick="loadUtilisateurs()" class="btn btn-outline mt-4 text-xs"><i class="fas fa-rotate mr-1"></i> Réessayer</button>' +
+      '</div>'
   }
 }
 
 async function adminUpdateUser(id, field, value) {
+  // Whitelist stricte des champs et valeurs autorisés côté client
+  const ALLOWED = {
+    role: ['client', 'employe', 'admin'],
+    subscription: ['starter', 'pro', 'business'],
+    active: ['0', '1', 0, 1]
+  }
+  if (!ALLOWED[field]) return toast('Champ non autorisé', 'error')
+  if (!ALLOWED[field].map(String).includes(String(value))) {
+    return toast('Valeur invalide pour ' + field, 'error')
+  }
+
+  const body = field === 'active' ? { active: Number(value) } : { [field]: value }
+
   try {
-    const body = {}
-    if (field === 'role') body.role = value
-    else if (field === 'active') body.active = Number(value)
-    else if (field === 'subscription') body.subscription = value
-    
-    await api.put('/admin/users/' + id, body)
-    toast('Utilisateur mis a jour')
+    await api.put('/admin/users/' + Number(id), body)
+    toast('Utilisateur mis à jour', 'success')
     await loadUtilisateurs()
   } catch (e) {
-    await loadUtilisateurs()
+    toast(humanizeApiError(e, 'Mise à jour impossible'), 'error')
+    await loadUtilisateurs() // reset affichage
   }
 }
 
@@ -3049,19 +3130,35 @@ async function loadAdminPaymentRequests() {
 }
 
 async function adminReviewPayment(id, status) {
+  // Whitelist du statut
+  if (!['approved', 'rejected'].includes(status)) return toast('Statut invalide', 'error')
+
   let admin_notes = ''
   if (status === 'rejected') {
-    admin_notes = prompt('Motif du rejet (optionnel) :') || ''
+    admin_notes = await promptDialog({
+      title: 'Motif du rejet',
+      placeholder: 'Expliquez brièvement la raison (optionnel)',
+      maxLength: 500
+    })
+    if (admin_notes === null) return // Annulé
   } else {
-    if (!confirm('Confirmer l&apos;activation de l&apos;abonnement pour cet utilisateur ?')) return
+    const ok = await confirmDialog({
+      title: "Activer l'abonnement ?",
+      message: "L'utilisateur bénéficiera immédiatement de son plan.",
+      confirmText: 'Activer'
+    })
+    if (!ok) return
   }
 
   try {
-    await api.put('/admin/payment-requests/' + id, { status, admin_notes })
-    toast(status === 'approved' ? 'Abonnement active avec succes !' : 'Paiement rejete')
+    await api.put('/admin/payment-requests/' + Number(id), {
+      status,
+      admin_notes: String(admin_notes || '').slice(0, 500)
+    })
+    toast(status === 'approved' ? 'Abonnement activé avec succès' : 'Paiement rejeté', 'success')
     loadUtilisateurs()
   } catch (e) {
-    toast('Erreur lors de la validation', 'error')
+    toast(humanizeApiError(e, 'Erreur lors de la validation'), 'error')
   }
 }
 
@@ -3217,50 +3314,72 @@ async function loadHistorique() {
   document.getElementById('view-historique').innerHTML = '<div class="card"><table><tbody>' + rows + '</tbody></table></div>'
 }
 
-function escapeHtml(text) {
-  if(!text) return ''
-  const div = document.createElement('div')
-  div.textContent = text
-  return div.innerHTML
-}
+// escapeHtml : version optimisée (regex) déjà définie plus haut dans HELPERS.
 
-// ===================== POINTS RELAIS (STOP DESKS) =====================
-let _sdFilter = { wilaya: '', transporteur: '' }
-let _sdItems = []
-const _sdTransporteurs = ['ZR Express', 'Yalidine', 'Noest', 'DHD', 'Ecotrack PDEX']
+// ═══════════════════════════════════════════════════════════════════════
+// POINTS RELAIS (STOP DESKS) — Module encapsulé
+// Fini les globales éparpillées (_sdItems, _sdFilter, _sdModal, ...).
+// Tout est regroupé dans l'objet StopDesks.
+// ═══════════════════════════════════════════════════════════════════════
+const StopDesks = {
+  filter: { wilaya: '', transporteur: '' },
+  items: [],
+  transporteurs: ['ZR Express', 'Yalidine', 'Noest', 'DHD', 'Ecotrack PDEX'],
 
-async function loadStopDesks() {
-  const container = document.getElementById('view-stopdesks')
-  if (!container) return
-  container.innerHTML = '<div class="flex items-center justify-center py-20"><div class="spinner"></div></div>'
-  try {
+  async load() {
+    const container = document.getElementById('view-stopdesks')
+    if (!container) return
+    container.innerHTML = '<div class="flex items-center justify-center py-20"><div class="spinner-lg"></div></div>'
+
+    try {
+      const params = new URLSearchParams()
+      if (this.filter.wilaya)       params.set('wilaya_id', this.filter.wilaya)
+      if (this.filter.transporteur) params.set('transporteur', this.filter.transporteur)
+      const url = '/admin/stop-desks' + (params.toString() ? '?' + params : '')
+
+      const { data } = await api.get(url)
+      this.items = Array.isArray(data) ? data : []
+      this.render(container)
+    } catch (e) {
+      container.innerHTML =
+        '<div class="text-center py-10 text-red-400">' +
+          '<i class="fas fa-exclamation-triangle text-2xl mb-2 block"></i>' +
+          '<div class="text-sm">' + escapeHtml(humanizeApiError(e)) + '</div>' +
+          '<button onclick="StopDesks.load()" class="btn btn-outline mt-4 text-xs">' +
+            '<i class="fas fa-rotate mr-1"></i> Réessayer' +
+          '</button>' +
+        '</div>'
+    }
+  },
+
+  render(container) {
     const wilayas = state.wilayas || []
-    let url = '/admin/stop-desks'
-    const params = []
-    if (_sdFilter.wilaya) params.push('wilaya_id=' + _sdFilter.wilaya)
-    if (_sdFilter.transporteur) params.push('transporteur=' + encodeURIComponent(_sdFilter.transporteur))
-    if (params.length) url += '?' + params.join('&')
-    const { data } = await api.get(url)
-    const items = Array.isArray(data) ? data : []
-    _sdItems = items
+    const wOpts = '<option value="">Toutes les wilayas</option>' +
+      wilayas.map(w =>
+        '<option value="' + w.id + '"' +
+        (String(this.filter.wilaya) === String(w.id) ? ' selected' : '') + '>' +
+        escapeHtml(w.code) + ' - ' + escapeHtml(w.name) + '</option>'
+      ).join('')
+    const tOpts = '<option value="">Tous les transporteurs</option>' +
+      this.transporteurs.map(t =>
+        '<option value="' + escapeHtml(t) + '"' +
+        (this.filter.transporteur === t ? ' selected' : '') + '>' + escapeHtml(t) + '</option>'
+      ).join('')
 
-    const wilayaOptions = '<option value="">Toutes les wilayas</option>' +
-      wilayas.map(w => '<option value="' + w.id + '"' + (_sdFilter.wilaya == w.id ? ' selected' : '') + '>' + w.code + ' - ' + w.name + '</option>').join('')
-    const transporteurOptions = '<option value="">Tous les transporteurs</option>' +
-      _sdTransporteurs.map(t => '<option value="' + t + '"' + (_sdFilter.transporteur === t ? ' selected' : '') + '>' + t + '</option>').join('')
-
-    const rows = items.length === 0
-      ? '<tr><td colspan="5" class="text-center text-gray-500 py-8">Aucun point relais trouve</td></tr>'
-      : items.map(sd => '<tr>' +
-          '<td class="text-sm font-medium">' + escapeHtml(sd.name) + '</td>' +
-          '<td class="text-sm text-gray-400">' + escapeHtml(sd.address || '') + '</td>' +
-          '<td><span class="badge badge-blue text-xs">' + escapeHtml(sd.transporteur) + '</span></td>' +
-          '<td class="text-sm text-gray-300">' + (sd.wilaya_id ? String(sd.wilaya_id).padStart(2,'0') + ' - ' + escapeHtml(sd.wilaya_name || '') : '') + '</td>' +
-          '<td class="text-right">' +
-            '<button onclick="editStopDeskById(' + sd.id + ')" class="btn btn-secondary text-xs px-2 py-1 mr-1"><i class="fas fa-edit"></i></button>' +
-            '<button onclick="deleteStopDesk(' + sd.id + ')" class="btn text-xs px-2 py-1 bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/30"><i class="fas fa-trash"></i></button>' +
-          '</td>' +
-        '</tr>').join('')
+    const rows = this.items.length === 0
+      ? '<tr><td colspan="5"><div class="empty-state"><i class="fas fa-map-pin"></i><h3>Aucun point relais</h3><p>Ajoutez votre premier point de dépôt pour commencer.</p></div></td></tr>'
+      : this.items.map(sd =>
+          '<tr>' +
+            '<td class="text-sm font-medium">' + escapeHtml(sd.name) + '</td>' +
+            '<td class="text-sm text-gray-400">' + escapeHtml(sd.address || '') + '</td>' +
+            '<td><span class="badge-blue">' + escapeHtml(sd.transporteur) + '</span></td>' +
+            '<td class="text-sm text-gray-300">' + (sd.wilaya_id ? String(sd.wilaya_id).padStart(2, '0') + ' - ' + escapeHtml(sd.wilaya_name || '') : '') + '</td>' +
+            '<td class="text-right">' +
+              '<button onclick="StopDesks.edit(' + sd.id + ')" class="btn btn-outline text-xs px-2 py-1 mr-1" title="Modifier"><i class="fas fa-edit"></i></button>' +
+              '<button onclick="StopDesks.remove(' + sd.id + ')" class="btn btn-danger text-xs px-2 py-1" title="Supprimer"><i class="fas fa-trash"></i></button>' +
+            '</td>' +
+          '</tr>'
+        ).join('')
 
     container.innerHTML =
       '<div class="mb-6 flex items-center justify-between flex-wrap gap-3">' +
@@ -3268,106 +3387,152 @@ async function loadStopDesks() {
           '<h1 class="text-2xl font-bold"><i class="fas fa-map-pin text-indigo-400 mr-2"></i>Points Relais</h1>' +
           '<p class="text-gray-400 text-sm mt-1">Gérez les agences et points de dépôt par transporteur</p>' +
         '</div>' +
-        '<button onclick="openAddStopDesk()" class="btn btn-primary"><i class="fas fa-plus mr-2"></i>Ajouter un point</button>' +
+        '<button onclick="StopDesks.openAddModal()" class="btn btn-primary"><i class="fas fa-plus mr-2"></i>Ajouter un point</button>' +
       '</div>' +
       '<div class="card p-4 mb-4 flex flex-wrap gap-3 items-end">' +
         '<div class="flex flex-col gap-1">' +
           '<label class="text-xs text-gray-400">Wilaya</label>' +
-          '<select class="input text-sm" style="min-width:180px" onchange="_sdFilter.wilaya=this.value; loadStopDesks()">' + wilayaOptions + '</select>' +
+          '<select class="text-sm" style="min-width:180px" onchange="StopDesks.setFilter(\'wilaya\', this.value)">' + wOpts + '</select>' +
         '</div>' +
         '<div class="flex flex-col gap-1">' +
           '<label class="text-xs text-gray-400">Transporteur</label>' +
-          '<select class="input text-sm" style="min-width:160px" onchange="_sdFilter.transporteur=this.value; loadStopDesks()">' + transporteurOptions + '</select>' +
+          '<select class="text-sm" style="min-width:160px" onchange="StopDesks.setFilter(\'transporteur\', this.value)">' + tOpts + '</select>' +
         '</div>' +
-        '<div class="text-xs text-gray-500 self-end pb-1">' + items.length + ' point(s) relais</div>' +
+        '<div class="text-xs text-gray-500 self-end pb-1">' + this.items.length + ' point(s)</div>' +
       '</div>' +
       '<div class="card overflow-hidden">' +
         '<div class="overflow-x-auto">' +
           '<table class="w-full">' +
             '<thead><tr>' +
-              '<th class="text-left text-xs text-gray-400 uppercase p-3">Nom</th>' +
-              '<th class="text-left text-xs text-gray-400 uppercase p-3">Adresse</th>' +
-              '<th class="text-left text-xs text-gray-400 uppercase p-3">Transporteur</th>' +
-              '<th class="text-left text-xs text-gray-400 uppercase p-3">Wilaya</th>' +
-              '<th class="text-right text-xs text-gray-400 uppercase p-3">Actions</th>' +
+              '<th>Nom</th><th>Adresse</th><th>Transporteur</th><th>Wilaya</th><th class="text-right">Actions</th>' +
             '</tr></thead>' +
-            '<tbody class="divide-y divide-white/5">' + rows + '</tbody>' +
+            '<tbody>' + rows + '</tbody>' +
           '</table>' +
         '</div>' +
       '</div>'
-  } catch(e) {
-    container.innerHTML = '<div class="text-center py-10 text-red-400"><i class="fas fa-exclamation-triangle mb-2 block text-2xl"></i>Erreur: ' + e.message + '</div>'
+  },
+
+  setFilter(key, value) {
+    this.filter[key] = value
+    this.load()
+  },
+
+  validateBody(body) {
+    return validate(body, {
+      name:         [['string', { min: 2, max: 100, label: 'Nom' }]],
+      address:      [['string', { min: 0, max: 255, label: 'Adresse' }]],
+      wilaya_id:    [['required', { label: 'Wilaya' }], ['integer', { label: 'Wilaya' }]],
+      transporteur: [['oneOf', { allowed: this.transporteurs, label: 'Transporteur' }]]
+    })
+  },
+
+  openAddModal() {
+    this.modal('Ajouter un point relais', null, async (body, btn) => {
+      const err = this.validateBody(body)
+      if (err) { toast(err.message, 'error'); return false }
+      try {
+        await safeApiCall(() => api.post('/admin/stop-desks', body), {
+          button: btn,
+          successMsg: 'Point relais ajouté',
+          onSuccess: () => this.load()
+        })
+        return true
+      } catch (e) { return false }
+    })
+  },
+
+  edit(id) {
+    const sd = this.items.find(s => s.id === id)
+    if (!sd) return toast('Point relais introuvable', 'error')
+    this.modal('Modifier le point relais', sd, async (body, btn) => {
+      const err = this.validateBody(body)
+      if (err) { toast(err.message, 'error'); return false }
+      try {
+        await safeApiCall(() => api.put('/admin/stop-desks/' + Number(id), body), {
+          button: btn,
+          successMsg: 'Point relais modifié',
+          onSuccess: () => this.load()
+        })
+        return true
+      } catch (e) { return false }
+    })
+  },
+
+  async remove(id) {
+    const ok = await confirmDialog({
+      title: 'Supprimer ce point relais ?',
+      message: 'Cette action est irréversible.',
+      confirmText: 'Supprimer',
+      danger: true
+    })
+    if (!ok) return
+    try {
+      await api.delete('/admin/stop-desks/' + Number(id))
+      toast('Point relais supprimé', 'success')
+      this.load()
+    } catch (e) {
+      toast(humanizeApiError(e), 'error')
+    }
+  },
+
+  modal(title, sd, onSave) {
+    const wilayas = state.wilayas || []
+    const wOpts = '<option value="" disabled' + (!sd ? ' selected' : '') + '>Choisir une wilaya</option>' +
+      wilayas.map(w =>
+        '<option value="' + w.id + '"' +
+        (sd && String(sd.wilaya_id) === String(w.id) ? ' selected' : '') + '>' +
+        escapeHtml(w.code) + ' - ' + escapeHtml(w.name) + '</option>'
+      ).join('')
+    const tOpts = '<option value="" disabled' + (!sd ? ' selected' : '') + '>Choisir un transporteur</option>' +
+      this.transporteurs.map(t =>
+        '<option value="' + escapeHtml(t) + '"' +
+        (sd && sd.transporteur === t ? ' selected' : '') + '>' + escapeHtml(t) + '</option>'
+      ).join('')
+
+    const modal = document.createElement('div')
+    modal.className = 'modal-overlay-v2'
+    modal.innerHTML =
+      '<div class="modal-v2" style="max-width:480px">' +
+        '<div class="modal-v2-header">' +
+          '<h2><span class="header-icon"><i class="fas fa-map-pin"></i></span>' + escapeHtml(title) + '</h2>' +
+          '<button class="modal-v2-close" data-close>&times;</button>' +
+        '</div>' +
+        '<div class="modal-v2-body">' +
+          '<div class="float-field"><input id="sd-name" type="text" value="' + escapeHtml(sd?.name || '') + '" placeholder=" " required maxlength="100"/><label>Nom du point relais *</label></div>' +
+          '<div class="float-field"><input id="sd-address" type="text" value="' + escapeHtml(sd?.address || '') + '" placeholder=" " maxlength="255"/><label>Adresse</label></div>' +
+          '<div class="float-field"><select id="sd-wilaya" required>' + wOpts + '</select><label>Wilaya *</label><i class="fas fa-chevron-down select-arrow"></i></div>' +
+          '<div class="float-field"><select id="sd-transporteur" required>' + tOpts + '</select><label>Transporteur *</label><i class="fas fa-chevron-down select-arrow"></i></div>' +
+          '<div class="modal-v2-footer">' +
+            '<button class="btn-v2-cancel" data-close>Annuler</button>' +
+            '<button class="btn-v2-submit" id="sd-save-btn"><i class="fas fa-check"></i> Enregistrer</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>'
+    document.getElementById('modals').appendChild(modal)
+
+    const close = () => modal.remove()
+    modal.querySelectorAll('[data-close]').forEach(el => el.addEventListener('click', close))
+    modal.addEventListener('click', e => { if (e.target === modal) close() })
+
+    const btn = modal.querySelector('#sd-save-btn')
+    btn.addEventListener('click', async () => {
+      const body = {
+        name: modal.querySelector('#sd-name').value.trim(),
+        address: modal.querySelector('#sd-address').value.trim(),
+        wilaya_id: Number(modal.querySelector('#sd-wilaya').value),
+        transporteur: modal.querySelector('#sd-transporteur').value
+      }
+      const done = await onSave(body, btn)
+      if (done) close()
+    })
   }
 }
 
-function _sdModal(title, sd, onSave) {
-  const wilayas = state.wilayas || []
-  const wilayaOptions = '<option value="" disabled selected>Choisir une wilaya</option>' +
-    wilayas.map(w => '<option value="' + w.id + '"' + (sd && sd.wilaya_id == w.id ? ' selected' : '') + '>' + w.code + ' - ' + w.name + '</option>').join('')
-  const transporteurOptions = _sdTransporteurs.map(t => '<option value="' + t + '"' + (sd && sd.transporteur === t ? ' selected' : '') + '>' + t + '</option>').join('')
-  const modal = document.createElement('div')
-  modal.className = 'modal-overlay'
-  modal.innerHTML =
-    '<div class="modal-box" style="max-width:480px">' +
-      '<div class="modal-header"><h3 class="text-lg font-bold">' + title + '</h3>' +
-        '<button onclick="this.closest(&apos;.modal-overlay&apos;).remove()" class="text-gray-400 hover:text-white text-xl">&times;</button></div>' +
-      '<div class="modal-body space-y-4">' +
-        '<div class="float-field"><input id="sd-name" type="text" class="input" value="' + escapeHtml(sd?.name||'') + '" placeholder=" " required/><label>Nom du point relais *</label></div>' +
-        '<div class="float-field"><input id="sd-address" type="text" class="input" value="' + escapeHtml(sd?.address||'') + '" placeholder=" "/><label>Adresse</label></div>' +
-        '<div class="float-field"><select id="sd-wilaya" class="input" required>' + wilayaOptions + '</select><label>Wilaya *</label><i class="fas fa-chevron-down select-arrow"></i></div>' +
-        '<div class="float-field"><select id="sd-transporteur" class="input" required>' + transporteurOptions + '</select><label>Transporteur *</label><i class="fas fa-chevron-down select-arrow"></i></div>' +
-      '</div>' +
-      '<div class="modal-footer">' +
-        '<button onclick="this.closest(&apos;.modal-overlay&apos;).remove()" class="btn btn-secondary">Annuler</button>' +
-        '<button id="sd-save-btn" class="btn btn-primary">Enregistrer</button>' +
-      '</div>' +
-    '</div>'
-  document.getElementById('modals').appendChild(modal)
-  modal.querySelector('#sd-save-btn').addEventListener('click', async () => {
-    const name = modal.querySelector('#sd-name').value.trim()
-    const address = modal.querySelector('#sd-address').value.trim()
-    const wilaya_id = modal.querySelector('#sd-wilaya').value
-    const transporteur = modal.querySelector('#sd-transporteur').value
-    if (!name || !wilaya_id || !transporteur) { toast('Veuillez remplir tous les champs obligatoires', 'error'); return }
-    await onSave({ name, address, wilaya_id, transporteur })
-    modal.remove()
-  })
-}
-
-function openAddStopDesk() {
-  _sdModal('Ajouter un point relais', null, async (body) => {
-    try {
-      await api.post('/admin/stop-desks', body)
-      toast('Point relais ajouté !', 'success')
-      loadStopDesks()
-    } catch(e) { toast('Erreur: ' + e.message, 'error') }
-  })
-}
-
-function editStopDeskById(id) {
-  const sd = _sdItems.find(s => s.id === id)
-  if (!sd) { toast('Point relais introuvable', 'error'); return }
-  editStopDesk(id, sd.name, sd.wilaya_id, sd.transporteur, sd.address || '')
-}
-
-function editStopDesk(id, name, wilaya_id, transporteur, address) {
-  _sdModal('Modifier le point relais', { id, name, wilaya_id, transporteur, address }, async (body) => {
-    try {
-      await api.put('/admin/stop-desks/' + id, body)
-      toast('Point relais modifié !', 'success')
-      loadStopDesks()
-    } catch(e) { toast('Erreur: ' + e.message, 'error') }
-  })
-}
-
-async function deleteStopDesk(id) {
-  if (!confirm('Supprimer ce point relais ?')) return
-  try {
-    await api.delete('/admin/stop-desks/' + id)
-    toast('Point relais supprimé', 'success')
-    loadStopDesks()
-  } catch(e) { toast('Erreur: ' + e.message, 'error') }
-}
+// Aliases de compatibilité (l'ancien code appelait ces fonctions globalement)
+const loadStopDesks    = () => StopDesks.load()
+const openAddStopDesk  = () => StopDesks.openAddModal()
+const editStopDeskById = (id) => StopDesks.edit(id)
+const deleteStopDesk   = (id) => StopDesks.remove(id)
 
 checkAuth().then(ok => {
   if(ok) {
